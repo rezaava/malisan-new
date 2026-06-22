@@ -1,0 +1,60 @@
+.trx-title {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+.trx-title.buy {
+    background: #e7f1ff;
+    color: #0d6efd;
+}
+
+.trx-title.student {
+    background: #e7f8ee;
+    color: #198754;
+}
+
+.trx-title.teacher {
+    background: #e7f8ee;
+    color: #198754;
+}
+
+.trx-title.developer {
+    background: #f3e8ff;
+    color: #6f42c1;
+}
+
+.trx-title.seller {
+    background: #ffe8e8;
+    color: #c14242;
+}
+
+.trx-title.profit {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.trx-user {
+    text-decoration: none;
+    font-weight: 600;
+    color: #333;
+}
+
+.trx-user:hover {
+    color: #0d6efd;
+}
+
+.trx-sheba {
+    font-size: 13px;
+    color: #666;    
+}
+
+.trx-date {
+    font-size: 13px;
+    color: #777;
+}
+
+th,
+td {
+    min-width: 150px;
+}

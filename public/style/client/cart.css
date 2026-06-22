@@ -1,0 +1,70 @@
+body {
+    background-color: #f8f9fa;
+    font-family: Tahoma, 'Segoe UI', sans-serif;
+}
+
+/* Product card styling */
+.cart-card {
+    border: none;
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
+    overflow: hidden;
+}
+
+.cart-card:hover {
+    transform: translateY(-5px);
+}
+
+.border-danger {
+    background-color: rgb(255, 224, 224);
+    border: 1px solid rgb(255, 0, 0);
+}
+
+/* Product image styling */
+.product-img {
+    height: 200px;
+    object-fit: cover;
+    width: 100%;
+}
+
+/* Price tag styling */
+.price-tag {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+/* Summary card styling */
+.summary-card {
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: none;
+}
+
+/* Custom button styling */
+.btn-custom {
+    background-color: #3498db;
+    color: #fff;
+    border-radius: 10px;
+    padding: 10px 20px;
+    transition: background 0.3s;
+}
+
+.btn-custom:hover {
+    background-color: #2980b9;
+    color: #fff;
+}
+
+/* Quantity display styling */
+.quantity-display {
+    width: 40px;
+    text-align: center;
+    font-weight: bold;
+    color: #555;
+}
+
+.sticky-top {
+    top: 100px;
+}

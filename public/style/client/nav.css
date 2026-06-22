@@ -1,0 +1,242 @@
+/* General link settings */
+.nav-link {
+    position: relative;
+}
+
+.text-truncate-2-lines {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    /* تعداد خطوط را اینجا مشخص کنید */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.5;
+    /* ارتفاع هر خط (اختیاری) */
+    max-height: 3em;
+    /* حداکثر ارتفاع (۲ خط ضربدر ۱.۵) */
+}
+
+/* Underline effect for active links */
+.nav-link:hover,
+.nav-link.active {
+    color: #4dabf7 !important;
+}
+
+.navbar-nav .nav-link {
+    white-space: nowrap;
+}
+
+/* حالت خالی سفارشات */
+.empty-state {
+    background-color: #F3F4F6;
+    padding: 20px;
+    border-radius: 8px;
+    border-right: 4px solid rgb(31, 53, 255);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.main {
+    min-height: 70vh;
+}
+
+body,
+.main-color {
+    background-color: #f4f6f9;
+}
+
+.img-nav {
+    width: 130px;
+    height: 40px;
+}
+
+.img-footer {
+    width: 130px;
+    height: 50px;
+}
+
+.content-section {
+    margin-top: 80px;
+}
+
+/* Global Shadow Utility */
+.features-box {
+    box-shadow: 10px 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+.soon {
+    margin: 0 0;
+    margin-top: 5px;
+    font-size: 0.5rem;
+}
+
+/* Login Button Style */
+.login-A {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px !important;
+    border-radius: 12px !important;
+    background-color: #0d6efd;
+    color: #ffffff !important;
+    text-decoration: none;
+    font-weight: 500;
+    box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2);
+    transition: all 0.3s ease;
+}
+
+/* Hover effect for Login button */
+.login-A:hover {
+    background-color: #0b5ed7;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(13, 110, 253, 0.3);
+    color: #ffffff !important;
+}
+
+.admin .nav-item {
+    width: 100%;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    /* Align buttons to the right */
+    justify-content: flex-end;
+}
+
+.admin .div-vr {
+    border: 0;
+}
+
+.admin .nav-item:last-child {
+    border-bottom: none;
+    gap: 10px;
+    align-items: center;
+}
+
+th,
+td {
+    min-width: 150px;
+    text-align: center;
+}
+
+.navbar {
+    padding: 2px;
+}
+
+#navbarContent a {
+    padding: 4px;
+}
+
+/* Mobile menu style (Offcanvas) */
+@media (max-width: 1400.98px) {
+    .panel {
+        padding: 7px 0px !important;
+        border-radius: 12px !important;
+        background-color: #0d6efd;
+        color: #ffffff !important;
+        text-decoration: none;
+        text-align: center;
+        width: 130px !important;
+    }
+
+    .navbar .container {
+        padding: 0;
+    }
+
+    .order-md-2-c {
+        order: 2;
+    }
+
+    nav .container,
+    nav ul,
+    #navbarContent a,
+    #navbarContent span {
+        padding: 4px;
+    }
+
+    #navbarContent .badge {
+        padding: 2px;
+    }
+
+    #navbarContent {
+        padding: 0 20px;
+    }
+
+    h1 {
+        font-size: 1.75rem !important;
+    }
+
+    /* کمی کوچکتر از حالت عادی */
+    h2 {
+        font-size: 1.5rem !important;
+    }
+
+    h3 {
+        font-size: 1.25rem !important;
+    }
+
+    h4 {
+        font-size: 1.1rem !important;
+    }
+
+    h5 {
+        font-size: 1rem !important;
+    }
+
+    h6 {
+        font-size: 0.9rem !important;
+    }
+
+    p,
+    li,
+    a,
+    label,
+    input,
+    select,
+    button {
+        font-size: 0.9rem !important;
+        /* متن‌ها را کمی ریزتر می‌کند */
+    }
+
+    .highlight-number {
+        font-size: 20px !important;
+    }
+
+    .navbar-collapse-client {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: #ffffff;
+        z-index: 1050;
+        padding: 20px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.05);
+        border-bottom-left-radius: 15px;
+        border-bottom-right-radius: 15px;
+    }
+
+    .navbar-nav {
+        width: 100%;
+    }
+
+    .nav-item {
+        width: 100%;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        /* Align buttons to the right */
+        justify-content: flex-end;
+    }
+
+    .div-vr {
+        border: 0;
+    }
+
+    /* Style for the container of Login and Search buttons */
+    .nav-item:last-child {
+        border-bottom: none;
+        gap: 10px;
+        align-items: center;
+    }
+}

@@ -1,0 +1,147 @@
+:root {
+    --primary-color: #0855DF;
+    --text-color: #313131;
+    --bg-light: #F9F9F9;
+}
+
+body {
+    font-family: 'Tahoma', sans-serif;
+    background-color: #fff;
+    color: var(--text-color);
+}
+
+.text-primary-custom {
+    color: var(--primary-color);
+}
+
+.bg-primary-custom {
+    background-color: var(--primary-color);
+}
+
+.btn-primary-custom {
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 10px 25px;
+    border-radius: 8px;
+    border: none;
+    transition: 0.3s;
+}
+
+.btn-primary-custom:hover {
+    background-color: #0640b0;
+    color: #fff;
+}
+
+/* Product section styles */
+.product-badge {
+    background-color: #ffebeb;
+    color: #ff4d4d;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.feature-box {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    background: #fff;
+}
+
+.feature-box svg {
+    width: 40px;
+    height: 40px;
+    margin-left: 15px;
+    color: var(--primary-color);
+}
+
+.sticky-add-cart {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    padding: 15px 30px;
+    border-radius: 50px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    width: 90%;
+    max-width: 600px;
+    justify-content: space-between;
+}
+
+.accordion-item {
+    border: 1px solid #e5e7eb;
+    border-bottom: none;
+}
+
+.accordion-item:last-child {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.accordion-button {
+    background-color: #f3f4f6;
+    transition: all 0.3s ease;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #e5e7eb;
+    box-shadow: none;
+    color: #4b5563;
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+    border-color: rgba(0, 0, 0, .125);
+}
+
+.accordion-body {
+    padding: 1.5rem;
+    background-color: #fff;
+}
+
+.accordion-button::after {
+    display: none !important;
+}
+
+.accordion-icon {
+    transition: transform 0.3s ease;
+}
+
+.accordion-button:not(.collapsed) .accordion-icon {
+    transform: rotate(180deg);
+}
+
+.teacher-img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+}
+
+.product-img {
+    height: 500px;
+    object-fit: cover;
+}
+
+.product-vid {
+    height: 500px;
+    width: 100%;
+}
+
+
+
+/* Responsive Styles */
+@media (max-width: 991.98px) {
+    .img-vid-div {
+        width: 300px;
+        margin: auto;
+        height: unset;
+    }
+}
