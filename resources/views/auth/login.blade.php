@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="{{asset('css/style-auth.css')}}">
 @endsection
 
-@section('content')
+@section('mohtava')
 <div class="auth-container">
     <div class="auth-header">
         <div class="logo-icon">
