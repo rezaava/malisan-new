@@ -32,6 +32,13 @@ Route::get('/quizzes', [TestController::class, 'quizzes'])->name('quizzes');
 Route::get('/chats', [TestController::class, 'chats'])->name('chats');
 Route::get('/change', [TestController::class, 'change'])->name('change');
 Route::get('/students-list', [TestController::class, 'studentsList'])->name('studentsList');
+Route::get('/grades-list', [TestController::class, 'gradesList'])->name('gradesList');
+Route::get('/activities', [TestController::class, 'activities'])->name('activities');
+Route::get('/student-activities', [TestController::class, 'studentActivities'])->name('studentActivities');
+Route::get('/student-profile', [TestController::class, 'studentProfile'])->name('studentProfile');
+Route::get('/student-evaluation', [TestController::class, 'studentEvaluation'])->name('studentEvaluation');
+
+
 
 
 

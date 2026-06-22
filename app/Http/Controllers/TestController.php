@@ -45,4 +45,45 @@ class TestController extends Controller
 
         return view('quizzes');
     }
+
+    public function studentsList()
+    {
+
+        return view('students-list');
+    }
+
+    public function gradesList()
+
+    {
+
+        return view('grades-list');
+    }
+
+    public function activities()
+
+    {
+
+        return view('activities');
+    }
+
+    public function studentActivities()
+
+    {
+
+        return view('student-activities');
+    }
+
+    public function studentProfile()
+
+    {
+
+        return view('student-profile');
+    }
+
+    public function studentEvaluation()
+
+    {
+
+        return view('student-evaluation');
+    }
 }

@@ -1,0 +1,269 @@
+.evaluation-container {
+    padding: 1.5rem;
+}
+
+.evaluation-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid #eef2f8;
+}
+
+.evaluation-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #0b3b5f;
+    margin: 0 0 0.3rem 0;
+}
+
+.evaluation-title .score {
+    color: #22c55e;
+    font-size: 1.8rem;
+    text-decoration: underline;
+}
+
+.evaluation-subtitle {
+    font-size: 0.9rem;
+    color: #7a9cbb;
+    margin: 0;
+}
+
+.evaluation-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.evaluation-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.accordion-item {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    border: 1px solid #eef2f8;
+}
+
+.accordion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.accordion-header:hover {
+    background: #f8fafc;
+}
+
+.accordion-header.active {
+    background: #eef5fc;
+    border-bottom: 1px solid #eef2f8;
+}
+
+.accordion-title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 600;
+    color: #1f3e4b;
+    font-size: 0.9rem;
+}
+
+.accordion-title i {
+    color: #1e6f9f;
+    font-size: 1.1rem;
+}
+
+.accordion-stats {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 0.75rem;
+    color: #5f7f9c;
+}
+
+.score-badge {
+    background: #dcfce7;
+    color: #16a34a;
+    padding: 0.2rem 0.8rem;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.accordion-icon {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    transition: transform 0.3s ease;
+}
+
+.accordion-header.active .accordion-icon {
+    transform: rotate(180deg);
+}
+
+.accordion-body {
+    display: none;
+    padding: 1.2rem;
+    background: #fafcfd;
+}
+
+.accordion-body.active {
+    display: block;
+}
+
+.activity-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+
+.activity-table thead {
+    background: #f1f5f9;
+}
+
+.activity-table th {
+    padding: 0.5rem 0.8rem;
+    text-align: right;
+    font-weight: 700;
+    color: #5f7f9c;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    border-bottom: 2px solid #eef2f8;
+}
+
+.activity-table td {
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid #f0f3f7;
+    color: #1f3e4b;
+}
+
+.activity-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.activity-table td:first-child {
+    font-weight: 500;
+}
+
+.score-value {
+    font-weight: 600;
+    color: #1e6f9f;
+}
+
+.progress-bar-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.progress-bar-wrapper .progress-bar {
+    flex: 1;
+    height: 8px;
+    background: #378ADD;
+    border-radius: 6px;
+    min-width: 60px;
+}
+
+.progress-label {
+    font-size: 0.7rem;
+    color: #5f7f9c;
+    min-width: 45px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: #94a3b8;
+}
+
+.empty-state i {
+    font-size: 2rem;
+    color: #cbd5e1;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.evaluation-chart {
+    position: sticky;
+    top: 1rem;
+    align-self: start;
+}
+
+.chart-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    border: 1px solid #eef2f8;
+}
+
+.chart-container {
+    width: 100%;
+}
+
+@media (max-width: 992px) {
+    .evaluation-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .evaluation-chart {
+        position: relative;
+        top: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .evaluation-container {
+        padding: 1rem;
+    }
+
+    .evaluation-title {
+        font-size: 1rem;
+    }
+
+    .evaluation-title .score {
+        font-size: 1.3rem;
+    }
+
+    .accordion-header {
+        padding: 0.8rem 1rem;
+    }
+
+    .accordion-title {
+        font-size: 0.8rem;
+    }
+
+    .accordion-stats {
+        font-size: 0.65rem;
+        flex-wrap: wrap;
+    }
+
+    .accordion-body {
+        padding: 0.8rem;
+    }
+
+    .activity-table {
+        font-size: 0.7rem;
+        min-width: 500px;
+    }
+
+    .activity-table th,
+    .activity-table td {
+        padding: 0.4rem 0.5rem;
+    }
+
+    .progress-bar-wrapper .progress-bar {
+        min-width: 40px;
+    }
+
+    .chart-card {
+        padding: 1rem;
+    }
+}

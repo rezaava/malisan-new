@@ -1,0 +1,176 @@
+.grades-container {
+    padding: 1.5rem;
+}
+
+.grades-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #eef2f8;
+}
+
+.grades-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #0b3b5f;
+    margin: 0;
+}
+
+.grades-title span {
+    color: #1e6f9f;
+}
+
+.students-profile-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 1.5rem;
+    background: linear-gradient(135deg, #1e6f9f, #0b4a6e);
+    color: white;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.students-profile-btn i {
+    font-size: 1rem;
+    transition: transform 0.3s ease;
+}
+
+.students-profile-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 16px rgba(30, 111, 159, 0.4);
+}
+
+.students-profile-btn:hover i {
+    transform: translateX(-5px);
+}
+
+.table-wrapper {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    overflow-x: auto;
+}
+
+.grades-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+.grades-table thead {
+    background: #f8fafc;
+}
+
+.grades-table th {
+    padding: 1rem 1.2rem;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #5f7f9c;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #eef2f8;
+    white-space: nowrap;
+}
+
+.grades-table th:first-child {
+    text-align: center;
+}
+
+.grades-table th:nth-child(2) {
+    text-align: right;
+}
+
+.grades-table td {
+    padding: 0.9rem 1.2rem;
+    font-size: 0.9rem;
+    color: #1f3e4b;
+    border-bottom: 1px solid #f0f3f7;
+    vertical-align: middle;
+    text-align: center;
+    font-weight: 500;
+}
+
+.grades-table td:nth-child(2) {
+    text-align: right;
+    font-weight: 500;
+}
+
+.grades-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.grades-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.grades-table td:first-child {
+    font-weight: 700;
+    color: #1e6f9f;
+    font-size: 0.85rem;
+}
+
+/* رنگ‌بندی ستون نمرات */
+.grades-table td:nth-child(3) {
+    color: #d97706;
+    font-weight: 600;
+}
+
+.grades-table td:nth-child(4) {
+    color: #7c3aed;
+    font-weight: 600;
+}
+
+.grades-table td:nth-child(5) {
+    color: #16a34a;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+@media (max-width: 768px) {
+    .grades-container {
+        padding: 1rem;
+    }
+
+    .grades-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.8rem;
+    }
+
+    .grades-title {
+        font-size: 1rem;
+    }
+
+    .students-profile-btn {
+        padding: 0.4rem 1.2rem;
+        font-size: 0.75rem;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .table-wrapper {
+        border-radius: 14px;
+    }
+
+    .grades-table th {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.6rem;
+    }
+
+    .grades-table td {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.75rem;
+    }
+
+    .grades-table td:nth-child(5) {
+        font-size: 0.8rem;
+    }
+}
