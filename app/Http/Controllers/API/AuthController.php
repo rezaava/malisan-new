@@ -49,7 +49,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'mobile' => 'required|string|size:11',
+            'national' => 'required|string|size:10',
             'password' => 'required|string',
         ]);
 
@@ -60,7 +60,7 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user = User::where('mobile', $request->mobile)->first();
+        $user = User::where('national', $request->national)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([

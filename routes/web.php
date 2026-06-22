@@ -31,6 +31,8 @@ Route::get('/create-quiz', [TestController::class, 'createQuiz'])->name('createQ
 Route::get('/quizzes', [TestController::class, 'quizzes'])->name('quizzes');
 Route::get('/chats', [TestController::class, 'chats'])->name('chats');
 Route::get('/change', [TestController::class, 'change'])->name('change');
+Route::get('/students-list', [TestController::class, 'studentsList'])->name('studentsList');
+
 
 
 
