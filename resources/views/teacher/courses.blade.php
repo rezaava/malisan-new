@@ -29,7 +29,7 @@
 <div class="courses-grid">
     @forelse ($courses as $cours)
         <div class="course-card">
-            <a href="/courses/{{ $cours->id }}" class="course-link">
+            <a href="{{ route('view.coure',$cours->id)}}" class="course-link">
                 <div class="course-image">
                     <img src="{{ asset('images/course-default.jpg') }}" alt="{{ $cours->name }}">
                     <div class="course-badge">

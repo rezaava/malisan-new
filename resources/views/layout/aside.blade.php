@@ -1,6 +1,6 @@
 <aside class="sidebar-right" id="sidebarRight">
     <div class="sidebar-menu">
-        <a href="/dashboard" class="menu-item active-menu">
+        <a href="{{ route('login') }}" class="menu-item active-menu">
             <i class="fas fa-tachometer-alt"></i> <span>میز کار</span>
         </a>
         <a href="{{Route('courses')}}" class="menu-item">

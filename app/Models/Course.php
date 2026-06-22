@@ -55,7 +55,7 @@ class Course extends Model
 
     public function settings()
     {
-        return $this->hasMany(Setting::class, 'course_id');
+        return $this->hasOne(Setting::class, 'course_id');
     }
 
     public function surveys()

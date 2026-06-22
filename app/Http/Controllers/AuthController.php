@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Role;
 use Illuminate\Support\Facades\Validator;
+use Log;
 
 class AuthController extends Controller
 {
@@ -17,7 +18,7 @@ class AuthController extends Controller
             // اگر کاربر لاگین بود بر اساس نقش هدایتش کن
             $user = auth()->user();
             if ($user->hasRole('admin')) {
-                return redirect()->route('index_admin');
+                return redirect()->route('admin.dashboard');
             } elseif ($user->hasRole('teacher')) {
                 return redirect()->route('index_teacher');
             } elseif ($user->hasRole('student')) {
@@ -25,7 +26,7 @@ class AuthController extends Controller
             }
             return redirect()->route('home');
         }
-        return view('auth.login');
+        return view('fakeBlade.login');
     }
 
     public function register()
@@ -34,7 +35,7 @@ class AuthController extends Controller
             // اگر کاربر لاگین بود بر اساس نقش هدایتش کن
             $user = auth()->user();
             if ($user->hasRole('admin')) {
-                return redirect()->route('index_admin');
+                return redirect()->route('admin.dashboard');
             } elseif ($user->hasRole('teacher')) {
                 return redirect()->route('index_teacher');
             } elseif ($user->hasRole('student')) {
@@ -42,12 +43,13 @@ class AuthController extends Controller
             }
             return redirect()->route('home');
         }
-        return view('auth.register');
+        return view('fakeBlade.register');
     }
 
     public function registerPost(Request $request)
     {
         // اعتبارسنجی
+        Log::info('aaa');
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:191',
             'family' => 'required|string|max:191',
@@ -70,15 +72,29 @@ class AuthController extends Controller
                 'national' => $request->national,
                 'mobile' => $request->mobile,
                 'password' => Hash::make($request->password),
-                'role' => 3, // پیشفرض: دانشجو (role=2)
+                'role' => 3, // پیشفرض: دانشجو
                 'active' => 1,
-                'email' => null, // میتونی از موبایل یا ایمیل استفاده کنی
+                'email' => null,
             ]);
 
-            $user->addRole('student');
+            // اضافه کردن نقش دانشجو
+            $studentRole = Role::where('name', 'student')->first();
+            if ($studentRole) {
+                $user->roles()->attach($studentRole);
+            } else {
+                // اگر نقش وجود نداشت، ایجاد کن
+                $studentRole = Role::create([
+                    'name' => 'student',
+                    'display_name' => 'دانشجو',
+                    'description' => 'دسترسی به دوره‌ها'
+                ]);
+                $user->roles()->attach($studentRole);
+            }
 
+            // ورود کاربر
             Auth::login($user);
 
+            // هدایت بر اساس نقش
             if ($user->hasRole('admin')) {
                 return redirect()->route('admin.dashboard')->with('success', 'خوش آمدید مدیر گرامی');
             } elseif ($user->hasRole('teacher')) {
@@ -86,9 +102,12 @@ class AuthController extends Controller
             } elseif ($user->hasRole('student')) {
                 return redirect()->route('index_student')->with('success', 'خوش آمدید دانشجو گرامی');
             }
+
+            return redirect()->route('home')->with('success', 'ثبت نام با موفقیت انجام شد');
+
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('danger', 'خطا در ثبت نام: ' . $e->getMessage())
+                ->with('error', 'خطا در ثبت نام: ' . $e->getMessage())
                 ->withInput();
         }
     }
@@ -124,15 +143,16 @@ class AuthController extends Controller
         }
 
         // بررسی فعال بودن کاربر
-        // if ($user->active != 1) {
-        //     return redirect()->back()
-        //         ->with('error', 'حساب کاربری شما غیرفعال است')
-        //         ->withInput();
-        // }
+        if ($user->active != 1) {
+            return redirect()->back()
+                ->with('error', 'حساب کاربری شما غیرفعال است')
+                ->withInput();
+        }
 
         // ورود کاربر
         Auth::login($user, $request->has('remember'));
 
+        // هدایت بر اساس نقش
         if ($user->hasRole('admin')) {
             return redirect()->route('admin.dashboard')->with('success', 'خوش آمدید مدیر گرامی');
         } elseif ($user->hasRole('teacher')) {
@@ -140,6 +160,8 @@ class AuthController extends Controller
         } elseif ($user->hasRole('student')) {
             return redirect()->route('index_student')->with('success', 'خوش آمدید دانشجو گرامی');
         }
+
+        return redirect()->route('home')->with('success', 'خوش آمدید');
     }
 
     public function logout(Request $request)
@@ -150,7 +172,6 @@ class AuthController extends Controller
 
         return redirect('/login')->with('success', 'با موفقیت خارج شدید');
     }
-
     function roleFun() {
         $admin = new Role();
         $admin->name = 'admin';

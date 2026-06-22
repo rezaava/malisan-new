@@ -1,0 +1,195 @@
+.activities-container {
+    padding: 1.5rem;
+}
+
+.activities-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #eef2f8;
+}
+
+.activities-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #0b3b5f;
+    margin: 0;
+}
+
+.table-wrapper {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    overflow-x: auto;
+}
+
+.activities-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+.activities-table thead {
+    background: #f8fafc;
+}
+
+.activities-table th {
+    padding: 1rem 1.2rem;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #5f7f9c;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #eef2f8;
+    white-space: nowrap;
+}
+
+.activities-table th:first-child {
+    text-align: center;
+}
+
+.activities-table th:nth-child(2) {
+    text-align: right;
+}
+
+.activities-table td {
+    padding: 0.8rem 1.2rem;
+    font-size: 0.85rem;
+    color: #1f3e4b;
+    border-bottom: 1px solid #f0f3f7;
+    vertical-align: middle;
+    text-align: center;
+}
+
+.activities-table td:first-child {
+    font-weight: 600;
+    color: #1e6f9f;
+}
+
+.activities-table td:nth-child(2) {
+    text-align: right;
+    font-weight: 500;
+}
+
+.activities-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.activities-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+}
+
+.action-btn i {
+    font-size: 0.9rem;
+}
+
+.action-btn span {
+    font-weight: 600;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px) scale(1.05);
+}
+
+.questions-btn {
+    background: #eef5fc;
+    color: #1e6f9f;
+}
+
+.questions-btn:hover {
+    background: #1e6f9f;
+    color: white;
+    box-shadow: 0 4px 12px rgba(30, 111, 159, 0.3);
+}
+
+.reports-btn {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.reports-btn:hover {
+    background: #16a34a;
+    color: white;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+}
+
+.homeworks-btn {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.homeworks-btn:hover {
+    background: #d97706;
+    color: white;
+    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+}
+
+.self-tests-btn {
+    background: #f3e8ff;
+    color: #7c3aed;
+}
+
+.self-tests-btn:hover {
+    background: #7c3aed;
+    color: white;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+}
+
+.exams-btn {
+    background: #fce4ec;
+    color: #dc2626;
+}
+
+.exams-btn:hover {
+    background: #dc2626;
+    color: white;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+@media (max-width: 768px) {
+    .activities-container {
+        padding: 1rem;
+    }
+
+    .activities-title {
+        font-size: 1rem;
+    }
+
+    .table-wrapper {
+        border-radius: 14px;
+    }
+
+    .activities-table th {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.6rem;
+    }
+
+    .activities-table td {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.7rem;
+    }
+
+    .action-btn {
+        padding: 0.2rem 0.5rem;
+        font-size: 0.65rem;
+    }
+
+    .action-btn i {
+        font-size: 0.7rem;
+    }
+}

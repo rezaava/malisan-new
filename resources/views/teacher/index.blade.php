@@ -10,7 +10,6 @@
 @endsection
 
 
-
 @section('mohtava')
 <div class="motivation-banner">
     <div class="motivation-text-en">
