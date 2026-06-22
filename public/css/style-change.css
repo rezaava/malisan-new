@@ -1,0 +1,260 @@
+        * {
+            font-family: 'Inter', system-ui, 'Segoe UI', Tahoma, sans-serif;
+        }
+
+        body {
+            background: #eef2f8;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .survey-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            width: 100%;
+        }
+
+        .survey-card {
+            background: white;
+            border-radius: 28px;
+            padding: 2.5rem 3rem;
+            max-width: 650px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .survey-card:hover {
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.12);
+        }
+
+        .survey-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #eef2f8;
+        }
+
+        .survey-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1e6f9f, #0b4a6e);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 16px rgba(30, 111, 159, 0.25);
+        }
+
+        .survey-icon i {
+            font-size: 1.8rem;
+            color: white;
+        }
+
+        .survey-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #0b3b5f;
+            margin: 0 0 0.3rem 0;
+        }
+
+        .survey-subtitle {
+            font-size: 0.9rem;
+            color: #7a9cbb;
+            margin: 0;
+        }
+
+        .survey-body {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .survey-question {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .question-text {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #1f3e4b;
+            margin: 0;
+            text-align: center;
+            padding: 0.5rem 0;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.8rem;
+        }
+
+        .option-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            padding: 0.8rem 0.5rem;
+            border-radius: 16px;
+            border: 2px solid #e8edf3;
+            transition: all 0.3s ease;
+            background: white;
+            text-align: center;
+        }
+
+        .option-item:hover {
+            border-color: #1e6f9f;
+            background: #f8fafc;
+            transform: translateY(-2px);
+        }
+
+        .option-item input[type="radio"] {
+            display: none;
+        }
+
+        .option-item input[type="radio"]:checked+.option-label {
+            color: #1e6f9f;
+        }
+
+        .option-item input[type="radio"]:checked~.option-label {
+            color: #1e6f9f;
+        }
+
+        .option-item:has(input[type="radio"]:checked) {
+            border-color: #1e6f9f;
+            background: #eef5fc;
+            box-shadow: 0 4px 12px rgba(30, 111, 159, 0.15);
+        }
+
+        .option-label {
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: #5f7f9c;
+            transition: color 0.3s ease;
+            line-height: 1.3;
+        }
+
+        .option-item:has(input[type="radio"]:checked) .option-label {
+            color: #1e6f9f;
+            font-weight: 600;
+        }
+
+        .survey-actions {
+            display: flex;
+            justify-content: flex-end;
+            padding-top: 1rem;
+            border-top: 2px solid #eef2f8;
+        }
+
+        .submit-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.7rem 2.5rem;
+            background: linear-gradient(135deg, #1e6f9f, #0b4a6e);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn i {
+            font-size: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(30, 111, 159, 0.35);
+        }
+
+        .submit-btn:hover i {
+            transform: translateX(-5px);
+        }
+
+        @media (max-width: 768px) {
+            .survey-container {
+                padding: 1rem;
+            }
+
+            .survey-card {
+                padding: 1.5rem;
+                border-radius: 20px;
+            }
+
+            .survey-title {
+                font-size: 1.1rem;
+            }
+
+            .survey-subtitle {
+                font-size: 0.8rem;
+            }
+
+            .question-text {
+                font-size: 0.9rem;
+            }
+
+            .options-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+            }
+
+            .option-item {
+                padding: 0.6rem 0.3rem;
+            }
+
+            .option-label {
+                font-size: 0.65rem;
+            }
+
+            .survey-actions {
+                justify-content: center;
+            }
+
+            .submit-btn {
+                padding: 0.6rem 2rem;
+                font-size: 0.85rem;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .survey-icon {
+                width: 48px;
+                height: 48px;
+            }
+
+            .survey-icon i {
+                font-size: 1.4rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .options-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .survey-card {
+                padding: 1.2rem;
+            }
+
+            .option-item {
+                padding: 0.5rem 0.2rem;
+            }
+
+            .option-label {
+                font-size: 0.6rem;
+            }
+        }
