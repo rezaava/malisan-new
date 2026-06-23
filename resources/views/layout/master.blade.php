@@ -6,7 +6,7 @@
     <div class="header-spacer"></div>
     <div class="dashboard-wrapper">
         @if (Auth::user()->hasRole('teacher'))
-            @include('layout.TeasideTe')
+            @include('layout.asideTe')
         @elseif (Auth::user()->hasRole('student'))
             @include('layout.asideSt')
         @endif

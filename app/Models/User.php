@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laratrust\Contracts\LaratrustUser;
 use Laratrust\Traits\HasRolesAndPermissions;
@@ -170,5 +171,56 @@ class User extends Authenticatable implements LaratrustUser
     public function transactions()
     {
         return $this->hasMany(Transaction::class, 'user_id');
+    }
+
+      public function isOnline()
+    {
+        if (!$this->last_seen) {
+            return false;
+        }
+        
+        $lastSeen = Carbon::parse($this->last_seen);
+        $now = Carbon::now();
+        
+        // اگر کمتر از 5 دقیقه از آخرین فعالیت گذشته باشد
+        return $lastSeen->diffInMinutes($now) < 5;
+    }
+
+    /**
+     * به‌روزرسانی زمان آخرین فعالیت کاربر
+     */
+    public function updateLastSeen()
+    {
+        $this->last_seen = Carbon::now();
+        $this->save();
+    }
+
+    public function getAdjectivesCount()
+    {
+        return $this->studentAdjectives()->count();
+    }
+
+    /**
+     * دریافت تعداد رویدادهای ثبت شده برای این دانشجو
+     */
+    public function getEventsCount()
+    {
+        return $this->studentEvents()->count();
+    }
+
+    /**
+     * دریافت تمام صفات این دانشجو
+     */
+    public function getAdjectives()
+    {
+        return $this->studentAdjectives()->orderBy('created_at', 'desc')->get();
+    }
+
+    /**
+     * دریافت تمام رویدادهای این دانشجو
+     */
+    public function getEvents()
+    {
+        return $this->studentEvents()->orderBy('created_at', 'desc')->get();
     }
 }

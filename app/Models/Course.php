@@ -18,6 +18,17 @@ class Course extends Model
     ];
 
     // روابط
+    public function students()
+    {
+        $studentRole = Role::where('name', 'student')->first();
+        
+        if (!$studentRole) {
+            return collect();
+        }
+        
+        return $this->belongsToMany(User::class, 'course_user', 'course_id', 'user_id')
+            ->wherePivot('role_id', $studentRole->id);
+    }
     public function users()
     {
         return $this->belongsToMany(User::class, 'course_user', 'course_id', 'user_id');

@@ -7,369 +7,90 @@
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-students-list.css')}}">
 <style>
-    /* استایل‌های اضافی برای مودال و دکمه‌ها */
-    .badge-btn-wrap {
-        position: relative;
-        display: inline-block;
-    }
-
-    .badge-btn-wrap .badge-tooltip {
-        visibility: hidden;
-        opacity: 0;
-        background: #1a2332;
-        color: #fff;
-        font-size: 11px;
-        white-space: nowrap;
-        padding: 4px 10px;
-        border-radius: 6px;
-        position: absolute;
-        bottom: calc(100% + 6px);
-        left: 50%;
-        transform: translateX(-50%);
-        transition: all 0.2s;
-        pointer-events: none;
-        z-index: 10;
-    }
-
-    .badge-btn-wrap:hover .badge-tooltip {
-        visibility: visible;
-        opacity: 1;
-    }
-
-    .badge-count {
-        position: absolute;
-        top: -6px;
-        right: -6px;
-        background: #e53935;
-        color: #fff;
-        font-size: 10px;
-        font-weight: 700;
-        min-width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        display: flex;
+    /* استایل دکمه نمایش دانشجویان اخراج شده */
+    .removed-btn {
+        display: inline-flex;
         align-items: center;
-        justify-content: center;
-        padding: 0 4px;
-        line-height: 1;
-    }
-
-    .action-btn {
-        position: relative;
-    }
-
-    /* مودال */
-    .modal-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 9999;
-        align-items: center;
-        justify-content: center;
-        backdrop-filter: blur(4px);
-    }
-
-    .modal-overlay.open {
-        display: flex;
-    }
-
-    .modal-container {
-        background: #fff;
-        border-radius: 16px;
-        width: 580px;
-        max-width: 95vw;
-        max-height: 90vh;
-        display: flex;
-        flex-direction: column;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-        animation: modalSlideIn 0.3s ease;
-        overflow: hidden;
-        direction: rtl;
-    }
-
-    @keyframes modalSlideIn {
-        from {
-            transform: translateY(-30px) scale(0.95);
-            opacity: 0;
-        }
-        to {
-            transform: translateY(0) scale(1);
-            opacity: 1;
-        }
-    }
-
-    .modal-header {
-        padding: 16px 24px;
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-shrink: 0;
-    }
-
-    .modal-header.purple {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-    }
-
-    .modal-header.teal {
-        background: linear-gradient(135deg, #11998e, #38ef7d);
-    }
-
-    .modal-header h4 {
-        margin: 0;
-        font-size: 18px;
-        font-weight: 700;
-    }
-
-    .modal-close {
-        background: none;
-        border: none;
-        color: #fff;
-        cursor: pointer;
-        padding: 4px;
-        font-size: 20px;
-        border-radius: 50%;
-        transition: background 0.2s;
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .modal-close:hover {
-        background: rgba(255, 255, 255, 0.2);
-    }
-
-    .modal-body {
-        padding: 24px;
-        overflow-y: auto;
-        flex: 1;
-    }
-
-    .student-info {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        border-radius: 12px;
-        padding: 14px 18px;
-        margin-bottom: 16px;
-    }
-
-    .student-info.purple {
-        background: #f3f0ff;
-    }
-
-    .student-info.teal {
-        background: #e8fdf9;
-    }
-
-    .student-avatar {
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        font-size: 20px;
-    }
-
-    .student-avatar.purple {
-        background: #9fa8da;
-    }
-
-    .student-avatar.teal {
-        background: #80cbc4;
-    }
-
-    .student-meta strong {
-        display: block;
-        font-size: 16px;
-        font-weight: 700;
-        color: #1a2332;
-    }
-
-    .student-meta span {
-        font-size: 13px;
-        color: #6b7a8f;
-    }
-
-    .notice-box {
-        border-radius: 10px;
-        padding: 12px 16px;
-        font-size: 13px;
-        line-height: 1.8;
-        margin-bottom: 16px;
-        color: #333;
-    }
-
-    .notice-box.purple {
-        background: #faf8ff;
-        border-right: 3px solid #9fa8da;
-    }
-
-    .notice-box.teal {
-        background: #f4fdfb;
-        border-right: 3px solid #80cbc4;
-    }
-
-    .notice-box .notice-label {
-        font-weight: 800;
-        color: #d32f2f;
-    }
-
-    .notice-box .example {
-        color: #6b7a8f;
-        font-size: 12px;
-        display: block;
-        margin-top: 4px;
-    }
-
-    .add-row {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 20px;
-    }
-
-    .add-row input[type="text"] {
-        flex: 1;
-        border-radius: 10px;
-        padding: 10px 14px;
-        font-size: 14px;
-        border: 2px solid #e8edf3;
-        outline: none;
-        transition: all 0.3s ease;
-        background: #fafbfc;
-        color: #1a2332;
-        direction: rtl;
-    }
-
-    .add-row input[type="text"]:focus {
-        border-color: #1e6f9f;
-        background: #fff;
-        box-shadow: 0 0 0 4px rgba(30, 111, 159, 0.08);
-    }
-
-    .add-row input[type="text"].purple:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
-    }
-
-    .add-row input[type="text"].teal:focus {
-        border-color: #11998e;
-        box-shadow: 0 0 0 4px rgba(17, 153, 142, 0.15);
-    }
-
-    .add-btn {
-        color: #fff;
-        border: none;
-        border-radius: 10px;
+        gap: 8px;
         padding: 10px 20px;
-        font-size: 14px;
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
         font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 14px;
+        text-decoration: none;
+    }
+
+    .removed-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(231, 76, 60, 0.3);
+        color: #fff;
+    }
+
+    .removed-btn i {
+        font-size: 16px;
+    }
+
+    .removed-count {
+        background: rgba(255, 255, 255, 0.3);
+        padding: 2px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+
+    /* استایل مودال اخراج شده‌ها */
+    .restore-btn {
+        background: linear-gradient(135deg, #27ae60, #2ecc71);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 6px 14px;
+        font-size: 12px;
         cursor: pointer;
         transition: all 0.3s ease;
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        white-space: nowrap;
+        gap: 4px;
     }
 
-    .add-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    .restore-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
     }
 
-    .add-btn.purple {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-    }
-
-    .add-btn.teal {
-        background: linear-gradient(135deg, #11998e, #38efd7);
-    }
-
-    .add-btn i {
-        font-size: 16px;
-    }
-
-    .history-title {
-        font-size: 14px;
-        font-weight: 700;
-        color: #1a2332;
-        margin-bottom: 10px;
-        border-bottom: 2px solid #f0f4f9;
-        padding-bottom: 8px;
-    }
-
-    .history-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 13px;
-    }
-
-    .history-table thead tr {
-        background: #f8fafc;
-    }
-
-    .history-table.purple thead tr {
-        background: #f3f0ff;
-    }
-
-    .history-table.teal thead tr {
-        background: #e8fdf9;
-    }
-
-    .history-table th,
-    .history-table td {
-        padding: 8px 12px;
-        text-align: right;
-        border-bottom: 1px solid #f0f4f9;
-        color: #333;
-    }
-
-    .history-table th {
-        font-weight: 700;
+    .restore-btn i {
         font-size: 12px;
-        color: #1a2332;
     }
 
-    .history-table td.col-main {
-        width: 65%;
-        word-break: break-word;
-        white-space: normal;
+    .removed-badge {
+        display: inline-block;
+        background: #e74c3c;
+        color: #fff;
+        padding: 2px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
     }
 
-    .history-table tbody tr:hover {
-        background: #f8fafc;
+    .removed-date {
+        font-size: 12px;
+        color: #6b7a8f;
     }
 
-    .history-table .empty-row td {
+    .empty-removed {
         text-align: center;
-        color: #aaa;
-        padding: 20px;
+        padding: 40px;
+        color: #6b7a8f;
     }
 
-    .flash-message {
-        display: none;
-        padding: 10px 16px;
-        border-radius: 8px;
-        font-size: 13px;
-        margin-bottom: 14px;
-    }
-
-    .flash-message.success {
-        background: #e8f5e9;
-        color: #2e7d32;
+    .empty-removed i {
+        font-size: 48px;
+        color: #d0d7e2;
         display: block;
-    }
-
-    .flash-message.error {
-        background: #ffebee;
-        color: #c62828;
-        display: block;
+        margin-bottom: 16px;
     }
 </style>
 @endsection
@@ -378,10 +99,17 @@
 <div class="students-container">
     <div class="students-header">
         <h4 class="students-title">دانشجویان درس : <span>{{ $course->name ?? 'عنوان درس' }}</span></h4>
-        <a href="/export/students?course_id={{ $course->id ?? 0 }}" class="export-btn">
-            <i class="fas fa-file-excel"></i>
-            خروجی فایل اکسل
-        </a>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <a href="/export/students?course_id={{ $course->id ?? 0 }}" class="export-btn">
+                <i class="fas fa-file-excel"></i>
+                خروجی فایل اکسل
+            </a>
+            <button class="removed-btn" onclick="openRemovedModal()">
+                <i class="fas fa-user-slash"></i>
+                دانشجویان اخراج شده
+                <span class="removed-count" id="removedCountBadge">{{ $removedCount ?? 0 }}</span>
+            </button>
+        </div>
     </div>
 
     <div class="table-wrapper">
@@ -410,7 +138,7 @@
                             <td>{{ $user->nomre ?? 0 }}</td>
                         @endif
                         <td>
-                            <a href="/dashboard/user/{{ $user->id }}" class="action-btn profile-btn" title="مشخصات">
+                            <a href="{{ route('studentProfile', $user->id) }}" class="action-btn profile-btn" title="مشخصات">
                                 <i class="fas fa-user-circle"></i>
                             </a>
                         </td>
@@ -427,10 +155,10 @@
                         <td>
                             <div class="badge-btn-wrap">
                                 <button type="button" class="action-btn attributes-btn"
-                                        onclick="openAdjModal({{ $user->id }}, '{{ addslashes($user->name . ' ' . $user->family) }}', {{ $user->adjectives_count ?? 0 }})"
+                                        onclick="openAdjModal({{ $user->id }}, '{{ addslashes($user->name . ' ' . $user->family) }}', {{ $user->student_adjectives_count ?? 0 }})"
                                         title="صفات">
                                     <i class="fas fa-list-ul"></i>
-                                    <span class="badge-count">{{ $user->adjectives_count ?? 0 }}</span>
+                                    <span class="badge-count">{{ $user->student_adjectives_count ?? 0 }}</span>
                                 </button>
                                 <span class="badge-tooltip">ثبت صفت جدید</span>
                             </div>
@@ -438,20 +166,20 @@
                         <td>
                             <div class="badge-btn-wrap">
                                 <button type="button" class="action-btn events-btn"
-                                        onclick="openEvtModal({{ $user->id }}, '{{ addslashes($user->name . ' ' . $user->family) }}', {{ $user->events_count ?? 0 }})"
+                                        onclick="openEvtModal({{ $user->id }}, '{{ addslashes($user->name . ' ' . $user->family) }}', {{ $user->student_events_count ?? 0 }})"
                                         title="رویداد">
                                     <i class="fas fa-calendar-alt"></i>
-                                    <span class="badge-count">{{ $user->events_count ?? 0 }}</span>
+                                    <span class="badge-count">{{ $user->student_events_count ?? 0 }}</span>
                                 </button>
                                 <span class="badge-tooltip">ثبت رویداد جدید</span>
                             </div>
                         </td>
                         <td>
-                            <a href="/dashboard/courses/destroy-user?u={{ $user->id }}&c={{ $course->id ?? 0 }}" 
-                               class="action-btn remove-btn" title="اخراج"
-                               onclick="return confirm('آیا از اخراج این دانشجو اطمینان دارید؟')">
+                            <button type="button" class="action-btn remove-btn" 
+                                    onclick="removeStudent({{ $user->id }}, {{ $course->id }}, '{{ addslashes($user->name . ' ' . $user->family) }}')"
+                                    title="اخراج">
                                 <i class="fas fa-user-minus"></i>
-                            </a>
+                            </button>
                         </td>
                     </tr>
                 @empty
@@ -578,6 +306,29 @@
         </div>
     </div>
 </div>
+
+<!-- ============================================
+     مودال دانشجویان اخراج شده (Removed Students)
+     ============================================ -->
+<div class="modal-overlay" id="removedModalOverlay">
+    <div class="modal-container" style="max-width: 700px;">
+        <div class="modal-header" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+            <h4><i class="fas fa-user-slash"></i> دانشجویان اخراج شده</h4>
+            <button class="modal-close" onclick="closeRemovedModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div id="removedStudentsList">
+                <!-- لیست دانشجویان اخراج شده با AJAX بارگذاری می‌شود -->
+                <div class="text-center" style="padding:20px;">
+                    <i class="fas fa-spinner fa-spin" style="font-size:24px;color:#1e6f9f;"></i>
+                    <p>در حال بارگذاری...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('js')
@@ -587,6 +338,138 @@
     // ============================================
     let _adjStudentId = null;
     let _evtStudentId = null;
+
+    // ============================================
+    // مودال دانشجویان اخراج شده
+    // ============================================
+    function openRemovedModal() {
+        document.getElementById('removedModalOverlay').classList.add('open');
+        loadRemovedStudents();
+    }
+
+    function closeRemovedModal() {
+        document.getElementById('removedModalOverlay').classList.remove('open');
+    }
+
+    document.getElementById('removedModalOverlay').addEventListener('click', function(e) {
+        if (e.target === this) closeRemovedModal();
+    });
+
+    function loadRemovedStudents() {
+        const container = document.getElementById('removedStudentsList');
+        container.innerHTML = '<div class="text-center" style="padding:20px;"><i class="fas fa-spinner fa-spin" style="font-size:24px;color:#1e6f9f;"></i><p>در حال بارگذاری...</p></div>';
+
+        fetch('/teacher/courses/students/removed/{{ $course->id }}')
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    container.innerHTML = `
+                        <div class="empty-removed">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>${data.message || 'خطا در بارگذاری اطلاعات'}</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                if (!data.data || data.data.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-removed">
+                            <i class="fas fa-user-check"></i>
+                            <p>هیچ دانشجویی از این دوره اخراج نشده است</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = `
+                    <div style="margin-bottom:16px;padding:12px 16px;background:#fff5f5;border-radius:10px;border-right:3px solid #e74c3c;">
+                        <span style="font-weight:700;color:#e74c3c;">تعداد دانشجویان اخراج شده: ${data.data.length}</span>
+                    </div>
+                    <table class="history-table" style="width:100%;">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th class="col-main">نام دانشجو</th>
+                                <th>تاریخ اخراج</th>
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                data.data.forEach((item, index) => {
+                    const userName = item.user ? (item.user.name + ' ' + item.user.family) : 'کاربر حذف شده';
+                    const deletedAt = item.deleted_at ? new Date(item.deleted_at).toLocaleDateString('fa-IR') : '-';
+                    
+                    html += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td class="col-main">${userName}</td>
+                            <td>${deletedAt}</td>
+                            <td>
+                                <button class="restore-btn" onclick="restoreStudent(${item.user_id}, ${item.course_id})">
+                                    <i class="fas fa-undo"></i>
+                                    برگرداندن
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                html += `
+                        </tbody>
+                    </table>
+                `;
+
+                container.innerHTML = html;
+
+                // بروزرسانی تعداد در Badge
+                document.getElementById('removedCountBadge').textContent = data.data.length;
+
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                container.innerHTML = `
+                    <div class="empty-removed">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>خطا در ارتباط با سرور</p>
+                    </div>
+                `;
+            });
+    }
+
+    function restoreStudent(userId, courseId) {
+        if (!confirm('آیا از بازگرداندن این دانشجو به دوره اطمینان دارید؟')) {
+            return;
+        }
+
+        fetch(`/teacher/courses/students/restore/${userId}/${courseId}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                // بارگذاری مجدد لیست
+                loadRemovedStudents();
+                // بروزرسانی تعداد در Badge
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                showToast(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('خطا در ارتباط با سرور', 'error');
+        });
+    }
 
     // ============================================
     // مودال صفات (Adjectives)
@@ -614,7 +497,7 @@
         const tbody = document.getElementById('adjHistoryBody');
         tbody.innerHTML = '<tr class="empty-row"><td colspan="3">در حال بارگذاری...</td></tr>';
         
-        fetch('/dashboard/adjectives/' + studentId)
+        fetch('/teacher/courses/adjectives/' + studentId)
             .then(r => r.json())
             .then(data => {
                 if (!data || !data.length) {
@@ -641,7 +524,7 @@
             return;
         }
         
-        fetch('/dashboard/adjectives', {
+        fetch('/teacher/courses/adjectives', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -711,7 +594,7 @@
         const tbody = document.getElementById('evtHistoryBody');
         tbody.innerHTML = '<tr class="empty-row"><td colspan="3">در حال بارگذاری...</td></tr>';
         
-        fetch('/dashboard/events/' + studentId)
+        fetch('/teacher/courses/events/' + studentId)
             .then(r => r.json())
             .then(data => {
                 if (!data || !data.length) {
@@ -738,7 +621,7 @@
             return;
         }
         
-        fetch('/dashboard/events', {
+        fetch('/teacher/courses/events', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -783,6 +666,40 @@
     }
 
     // ============================================
+    // اخراج دانشجو
+    // ============================================
+    function removeStudent(userId, courseId, userName) {
+        if (confirm(`آیا از اخراج دانشجو "${userName}" از این دوره اطمینان دارید؟`)) {
+            fetch(`/teacher/courses/students/remove/${userId}/${courseId}`, {
+                method: 'get',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    // بروزرسانی تعداد در Badge
+                    const badge = document.getElementById('removedCountBadge');
+                    if (badge) {
+                        const current = parseInt(badge.textContent) || 0;
+                        badge.textContent = current + 1;
+                    }
+                    location.reload();
+                } else {
+                    showToast(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('خطا در ارتباط با سرور', 'error');
+            });
+        }
+    }
+
+    // ============================================
     // توابع کمکی
     // ============================================
     function showFlash(id, msg, type) {
@@ -795,6 +712,32 @@
         const el = document.getElementById(id);
         el.className = 'flash-message';
         el.textContent = '';
+    }
+
+    function showToast(message, type) {
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.textContent = message;
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            background: ${type === 'success' ? '#28a745' : '#dc3545'};
+            direction: rtl;
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.3s';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
     }
 </script>
 @endsection

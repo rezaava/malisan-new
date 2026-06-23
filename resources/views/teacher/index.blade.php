@@ -28,12 +28,12 @@
             </a>
         </div>
         <div class="col-md-3 col-sm-6">
-            <a href="/students" class="card-dash">
+            <div class="card-dash">
                 <div class="card-icon"><i class="fas fa-users"></i></div>
                 <div class="card-title">دانشجو‌ها</div>
                 <div class="card-count">{{ $student_count }}</div>
                 <div class="card-text-sm">دانشجوی فعال</div>
-            </a>
+            </div>
         </div>
         <div class="col-md-3 col-sm-6">
             <a href="/malisan-courses" class="card-dash">

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
+use App\Models\Amali;
 use App\Models\Course;
 use App\Models\Role;
 use App\Models\Scoring;
@@ -353,6 +354,7 @@ class CourseController extends Controller
         $role = Role::where("name", "student")->first();
         
         $users = $course->users()
+            ->wherePivotNull('deleted_at')
             ->where('role_id', $role->id)
             ->orderBy('family', 'asc')
             ->withCount(['studentEvents', 'studentAdjectives'])
@@ -378,13 +380,192 @@ class CourseController extends Controller
             // وضعیت آنلاین
             $user->online = $user->isOnline() ? 1 : 0;
         }
+        $removedCount = CourseUser::onlyTrashed()
+            ->where('course_id', $course->id)
+            ->where('role_id', $role->id)
+            ->count();
 
-        return view('teacher.students-list', compact('users', 'course', 'setting'))->with([
+        return view('teacher.students-list', compact('users', 'course', 'setting','removedCount'))->with([
             'pageTitle' => 'صفحه دانشجویان دروس',
             'pageName' => 'دانشجویان درس',
             'pageDescription' => 'مدرس گرامی ! لیست دانشجو های شما به شرح زیر می باشد',
         ]);
     }
+    public function studentProfile($id)
+    {
+        $user = User::findOrFail($id);
+        
+        // بررسی اینکه کاربر دانشجو باشد
+        if (!$user->hasRole('student')) {
+            return redirect()->back()->with('error', 'این کاربر دانشجو نیست');
+        }
+        
+        return view('teacher.student-profile', compact('user'))->with([
+            'pageTitle' => 'پروفایل دانشجو',
+            'pageName' => 'پروفایل دانشجو',
+            'pageDescription' => 'مشخصات دانشجو',
+        ]);
+    }
+    /**
+     * به‌روزرسانی پروفایل دانشجو
+     */
+    public function updateStudentProfile(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        
+        $validator = Validator::make($request->all(), [
+            'name' => 'nullable|string|max:255',
+            'family' => 'nullable|string|max:255',
+            'national' => 'nullable|string|max:20',
+            'mobile' => 'nullable|string|max:15',
+            'email' => 'nullable|email|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'password' => 'nullable|min:8',
+        ]);
+        
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+        
+        try {
+            $data = $request->except(['_token', '_method', 'password', 'image']);
+            
+            // تغییر رمز عبور
+            if ($request->filled('password')) {
+                $data['password'] = bcrypt($request->password);
+            }
+            
+            // آپلود عکس
+            if ($request->hasFile('image')) {
+                $file = $request->file('image');
+                $fileName = time() . '_' . $user->id . '.' . $file->getClientOriginalExtension();
+                $destinationPath = public_path('files/users');
+                
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0777, true);
+                }
+                
+                $file->move($destinationPath, $fileName);
+                $data['image'] = '/files/users/' . $fileName;
+            }
+            
+            $user->update($data);
+            
+            return redirect()->back()->with('success', 'پروفایل با موفقیت به‌روزرسانی شد');
+            
+        } catch (\Exception $e) {
+            \Log::error('Update profile failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'خطا در به‌روزرسانی پروفایل');
+        }
+    }
+
+    /**
+     * اخراج دانشجو از دوره (Soft Delete)
+     */
+    public function destroyUser($userId, $courseId)
+    {
+        try {
+            // پیدا کردن رکورد عضویت دانشجو در دوره
+            $courseUser = CourseUser::where('user_id', $userId)
+                ->where('course_id', $courseId)
+                ->first();
+
+            if (!$courseUser) {
+                return redirect()->back()->with('error', 'این دانشجو در این دوره عضویت ندارد');
+            }
+
+            // دریافت اطلاعات برای لاگ
+            $user = User::find($userId);
+            $course = Course::find($courseId);
+
+            // انجام Soft Delete
+            $courseUser->delete();
+
+            // لاگ کردن (اختیاری)
+            \Log::info("Student removed from course", [
+                'student_id' => $userId,
+                'student_name' => $user->name . ' ' . $user->family,
+                'course_id' => $courseId,
+                'course_name' => $course->name,
+                'teacher_id' => Auth::id(),
+                'teacher_name' => Auth::user()->name . ' ' . Auth::user()->family,
+                'removed_at' => now()
+            ]);
+
+            return redirect()->back()->with('success', 'دانشجو با موفقیت از دوره اخراج شد');
+
+        } catch (\Exception $e) {
+            \Log::error('Remove student failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'خطا در اخراج دانشجو: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * بازگرداندن دانشجو به دوره (بازیابی از Soft Delete)
+     */
+    public function restoreUser($userId, $courseId)
+    {
+        try {
+            // پیدا کردن رکورد حذف شده
+            $courseUser = CourseUser::withTrashed()
+                ->where('user_id', $userId)
+                ->where('course_id', $courseId)
+                ->first();
+
+            if (!$courseUser) {
+                return redirect()->back()->with('error', 'این دانشجو در این دوره وجود ندارد');
+            }
+
+            if (!$courseUser->trashed()) {
+                return redirect()->back()->with('error', 'این دانشجو اخراج نشده است');
+            }
+
+            // بازگرداندن
+            $courseUser->restore();
+
+            // لاگ کردن
+            \Log::info("Student restored to course", [
+                'student_id' => $userId,
+                'course_id' => $courseId,
+                'teacher_id' => Auth::id(),
+                'restored_at' => now()
+            ]);
+
+            return redirect()->back()->with('success', 'دانشجو با موفقیت به دوره بازگردانده شد');
+
+        } catch (\Exception $e) {
+            \Log::error('Restore student failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'خطا در بازگرداندن دانشجو: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * دریافت لیست دانشجویان اخراج شده (JSON)
+     */
+    public function removedStudents($courseId)
+    {
+        try {
+            $course = Course::findOrFail($courseId);
+            
+            $removedStudents = CourseUser::onlyTrashed()
+                ->where('course_id', $courseId)
+                ->with('user')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $removedStudents
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Get removed students failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در دریافت لیست دانشجویان اخراج شده'
+            ], 500);
+        }
+    }
+
     // ==========================================
     // متدهای کمکی (Helper Methods)
     // ==========================================

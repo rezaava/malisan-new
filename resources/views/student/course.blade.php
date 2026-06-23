@@ -13,65 +13,26 @@
     <div class="course-header">
         <h4 class="course-title-main">{{ $course->name ?? 'عنوان درس' }}</h4>
     </div>
-
-    <div class="course-actions-bar">
-        <a href="/dashboard/courses/setting?course_id={{ $course->id }}" class="action-btn settings-btn">
-            <i class="fas fa-cog"></i>
-        </a>
-        <a href="#" class="action-btn back-btn" onclick="history.back()">
-            <i class="fas fa-arrow-right"></i>
-        </a>
-    </div>
-
     <div class="course-chips">
-        <a href="{{ route('studentsList',$course->id) }}" class="chip-item">
-            <i class="fas fa-user-graduate"></i>
-            مشخصات دانشجویان ({{ $course->students->count() ?? 0 }})
-        </a>
-        <a href="#" class="chip-item {{ $isJudment ? '' : 'inactive' }}">
-            <i class="fas {{ $isJudment ? 'fa-gavel' : 'fa-ban' }}"></i>
-            {{ $isJudment ? 'داوری ('. $pendingCount ?? 0 .')' : 'اعتراضات (غیر فعال)' }}
-        </a>
-        <a href="/dashboard/evaluation?course_id={{ $course->id }}" class="chip-item">
-            <i class="fas fa-chart-line"></i>
-            پایش و ارزیابی
-        </a>
         <a href="/dashboard/courses/grades/{{ $course->id }}" class="chip-item">
             <i class="fas fa-star"></i>
-            نمرات دانشجویان
+            خودآزمایی
         </a>
         <a href="/dashboard/courses/bank?course_id={{ $course->id }}" class="chip-item">
             <i class="fas fa-database"></i>
-            بانک سوالات
+            فعالیت های من 
         </a>
         <a href="/dashboard/azmon?id={{ $course->id }}" class="chip-item">
             <i class="fas fa-pencil-alt"></i>
-            تعریف آزمون
-        </a>
-        <a href="/dashboard/allprogress?course_id={{ $course->id }}" class="chip-item">
-            <i class="fas fa-eye"></i>
-            پایش دانشجویان
-        </a>
-        <a href="/dashboard/survey?course_id={{ $course->id }}" class="chip-item">
-            <i class="fas fa-poll"></i>
-            نظرسنجی
-        </a>
-        <a href="/dashboard/kholaseha?course_id={{ $course->id }}" class="chip-item">
-            <i class="fas fa-file-alt"></i>
-            لیست گزارش دانشجویان
-        </a>
-        <a href="/dashboard/courses/{{ $course->id }}/nomreha" class="chip-item">
-            <i class="fas fa-tasks"></i>
-            فعالیت های دانشجویان
+            پیشرفت درسی
         </a>
     </div>
+
 
     <div class="sessions-section">
         <div class="sessions-sidebar">
             <div class="sessions-header">
                 <h5>جلسه های ارائه شده</h5>
-                <a href="{{ route('sessions.create',$course->id) }}" class="add-session-btn">
-                    <i class="fas fa-plus"></i>
                 </a>
             </div>
             <div class="sessions-list">
@@ -110,17 +71,8 @@
                     <a href="#" id="homeworkTeacherBtn" class="action-icon-btn" data-position="bottom" data-tooltip="دادن تکلیف">
                         <i class="fas fa-file-alt"></i>
                     </a>
-                    <a href="#" id="toggleActiveBtn" class="action-icon-btn" data-position="bottom" data-tooltip="غیرفعال کردن">
-                        <i class="fas fa-check-circle"></i>
-                    </a>
-                    <a href="#" id="homeworkBtn" class="action-icon-btn" data-position="bottom" data-tooltip="تکلیف">
-                        <i class="fas fa-tasks"></i>
-                    </a>
                     <a href="#" id="editBtn" class="action-icon-btn" data-position="bottom" data-tooltip="ویرایش">
                         <i class="fas fa-edit"></i>
-                    </a>
-                    <a href="#" id="profExBtn" class="action-icon-btn" data-position="bottom" data-tooltip="تکلیفها">
-                        <i class="fas fa-list-ul"></i>
                     </a>
                 </div>
             </div>

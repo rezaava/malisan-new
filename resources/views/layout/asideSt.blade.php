@@ -28,9 +28,6 @@
             <i class="fas fa-comments"></i> <span>مکالمات</span>
         </a>
         <div class="menu-divider"></div>
-        <a href="/student-panel" class="menu-item">
-            <i class="fas fa-user-graduate"></i> <span>انتقال به پنل دانشجو</span>
-        </a>
         <a href="/logout" class="menu-item">
             <i class="fas fa-sign-out-alt"></i> <span>خروج از حساب</span>
         </a>

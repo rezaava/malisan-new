@@ -231,3 +231,316 @@
         border-radius: 8px;
     }
 }
+
+.badge-btn-wrap {
+    position: relative;
+    display: inline-block;
+}
+.badge-btn-wrap .badge-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    background: #1a2332;
+    color: #fff;
+    font-size: 11px;
+    white-space: nowrap;
+    padding: 4px 10px;
+    border-radius: 6px;
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    transition: all 0.2s;
+    pointer-events: none;
+    z-index: 10;
+}
+.badge-btn-wrap:hover .badge-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+.badge-count {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #e53935;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    line-height: 1;
+}
+.action-btn {
+    position: relative;
+}
+/* مودال */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+.modal-overlay.open {
+    display: flex;
+}
+.modal-container {
+    background: #fff;
+    border-radius: 16px;
+    width: 580px;
+    max-width: 95vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    animation: modalSlideIn 0.3s ease;
+    overflow: hidden;
+    direction: rtl;
+}
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-30px) scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+.modal-header {
+    padding: 16px 24px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+.modal-header.purple {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+}
+.modal-header.teal {
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+}
+.modal-header h4 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+}
+.modal-close {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    padding: 4px;
+    font-size: 20px;
+    border-radius: 50%;
+    transition: background 0.2s;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+.modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+.student-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+}
+.student-info.purple {
+    background: #f3f0ff;
+}
+.student-info.teal {
+    background: #e8fdf9;
+}
+.student-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 20px;
+}
+.student-avatar.purple {
+    background: #9fa8da;
+}
+.student-avatar.teal {
+    background: #80cbc4;
+}
+.student-meta strong {
+    display: block;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a2332;
+}
+.student-meta span {
+    font-size: 13px;
+    color: #6b7a8f;
+}
+.notice-box {
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    line-height: 1.8;
+    margin-bottom: 16px;
+    color: #333;
+}
+.notice-box.purple {
+    background: #faf8ff;
+    border-right: 3px solid #9fa8da;
+}
+.notice-box.teal {
+    background: #f4fdfb;
+    border-right: 3px solid #80cbc4;
+}
+.notice-box .notice-label {
+    font-weight: 800;
+    color: #d32f2f;
+}
+.notice-box .example {
+    color: #6b7a8f;
+    font-size: 12px;
+    display: block;
+    margin-top: 4px;
+}
+.add-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.add-row input[type="text"] {
+    flex: 1;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 14px;
+    border: 2px solid #e8edf3;
+    outline: none;
+    transition: all 0.3s ease;
+    background: #fafbfc;
+    color: #1a2332;
+    direction: rtl;
+}
+.add-row input[type="text"]:focus {
+    border-color: #1e6f9f;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(30, 111, 159, 0.08);
+}
+.add-row input[type="text"].purple:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+}
+.add-row input[type="text"].teal:focus {
+    border-color: #11998e;
+    box-shadow: 0 0 0 4px rgba(17, 153, 142, 0.15);
+}
+.add-btn {
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+.add-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+.add-btn.purple {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+}
+.add-btn.teal {
+    background: linear-gradient(135deg, #11998e, #38efd7);
+}
+.add-btn i {
+    font-size: 16px;
+}
+.history-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a2332;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #f0f4f9;
+    padding-bottom: 8px;
+}
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+.history-table thead tr {
+    background: #f8fafc;
+}
+.history-table.purple thead tr {
+    background: #f3f0ff;
+}
+.history-table.teal thead tr {
+    background: #e8fdf9;
+}
+.history-table th,
+.history-table td {
+    padding: 8px 12px;
+    text-align: right;
+    border-bottom: 1px solid #f0f4f9;
+    color: #333;
+}
+.history-table th {
+    font-weight: 700;
+    font-size: 12px;
+    color: #1a2332;
+}
+.history-table td.col-main {
+    width: 65%;
+    word-break: break-word;
+    white-space: normal;
+}
+.history-table tbody tr:hover {
+    background: #f8fafc;
+}
+.history-table .empty-row td {
+    text-align: center;
+    color: #aaa;
+    padding: 20px;
+}
+.flash-message {
+    display: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 14px;
+}
+.flash-message.success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    display: block;
+}
+.flash-message.error {
+    background: #ffebee;
+    color: #c62828;
+    display: block;
+}
