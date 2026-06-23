@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Angizesh;
 use App\Models\Course;
+use App\Models\Azmon;
 use App\Models\CourseUser;
 use App\Models\Konkor;
 use App\Models\Role;
@@ -99,5 +100,26 @@ class TeacherSiteController extends Controller
             ->get();
         
         return view('teacher.courses', compact('courses'));
+    }
+    function azmoon(){
+        $user = Auth::user();
+        // Get courses where user is a teacher
+        $teacherRole = Role::where('name', 'teacher')->first();
+        
+        $courses = $user->courses()
+            ->wherePivot('role_id', $teacherRole->id)
+            ->get();
+        $exams = collect();
+
+    if ($courses->isNotEmpty()) {
+        $courses->load('Azmons');                    // رابطه رو لود کن
+
+        $exams = $courses->flatMap(function ($course) {
+            return $course->Azmons;                  // رابطه به صورت property
+        })->values();
+    }
+        // $exams = $courses->Azmons();
+
+        return view('teacher.azmoon', compact('exams'));
     }
 }

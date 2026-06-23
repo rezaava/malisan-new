@@ -28,6 +28,7 @@ Route::get('/grades-list', [TestController::class, 'gradesList'])->name('gradesL
 Route::get('/activities', [TestController::class, 'activities'])->name('activities');
 Route::get('/student-activities', [TestController::class, 'studentActivities'])->name('studentActivities');
 Route::get('/student-evaluation', [TestController::class, 'studentEvaluation'])->name('studentEvaluation');
+Route::get('/azmoon',[TeacherSiteController::class,'azmoon'])->name('azmoon');
 
 
 
