@@ -75,6 +75,9 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
 
         Route::post('/create', [CourseController::class, 'storeCourse'])->name('courses.store');
 
+        Route::post('/toggle-status/{id}', [CourseController::class, 'toggleStatus'])->name('courses.toggle.status');
+        Route::post('/toggle-archive/{id}', [CourseController::class, 'toggleArchive'])->name('courses.toggle.archive');
+        Route::get('/archived', [CourseController::class, 'archivedCourses'])->name('courses.archived');
 
 
         Route::get('/student-profile/{id}', [CourseController::class, 'studentProfile'])->name('studentProfile');
