@@ -28,6 +28,14 @@ Route::get('/grades-list', [TestController::class, 'gradesList'])->name('gradesL
 Route::get('/activities', [TestController::class, 'activities'])->name('activities');
 Route::get('/student-activities', [TestController::class, 'studentActivities'])->name('studentActivities');
 Route::get('/student-evaluation', [TestController::class, 'studentEvaluation'])->name('studentEvaluation');
+Route::get('/student-setting', [TestController::class, 'studentSetting'])->name('studentSetting');
+Route::get('/create-question', [TestController::class, 'createQuestion'])->name('createQuestion');
+Route::get('/self-tests-list', [TestController::class, 'selfTestsList'])->name('selfTestsList');
+Route::get('/student-questions', [TestController::class, 'studentQuestions'])->name('studentQuestions');
+Route::get('/student-reports', [TestController::class, 'studentReports'])->name('studentReports');
+Route::get('/student-homeworks', [TestController::class, 'studentHomeworks'])->name('studentHomeworks');
+Route::get('/student-self-tests', [TestController::class, 'studentSelfTests'])->name('studentSelfTests');
+Route::get('/student-official-exams', [TestController::class, 'studentOfficialExams'])->name('studentOfficialExams');
 
 
 
@@ -55,16 +63,16 @@ Route::get('/role', [AuthController::class, 'roleFun']);
 // Teacher
 Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function () {
     Route::get('/', [TeacherSiteController::class, 'index'])->name('index_teacher');
-    
+
     Route::prefix('/courses')->middleware(['role:teacher|admin'])->group(function () {
         Route::get('/', [TeacherSiteController::class, 'courses'])->name('courses');
         Route::get('/copy/{id}', [CourseController::class, 'getCopyData'])->name('courses.copy.data');
         Route::get('/view/{id}', [CourseController::class, 'view'])->name('view.coure');
-        
+
         // مسیرهای ایجاد جلسه
         Route::get('/sessions/create/{id}', [CourseController::class, 'create'])->name('sessions.create');
         Route::post('/sessions/store/{id}', [CourseController::class, 'store'])->name('sessions.store');
-                
+
         Route::post('/create', [CourseController::class, 'storeCourse'])->name('courses.store');
 
         Route::post('/toggle-status/{id}', [CourseController::class, 'toggleStatus'])->name('courses.toggle.status');
@@ -94,19 +102,18 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
 // Student
 Route::prefix('/student')->middleware(['role:student|admin'])->group(function () {
     Route::get('/', [StudentSiteController::class, 'index'])->name('index_student');
-        
-        Route::prefix('/courses')->middleware(['role:student|admin'])->group(function () {
-            Route::get('/', [StudentSiteController::class, 'courses'])->name('courses.st');
-            Route::get('/view/{id}', [StudentCourseController::class, 'view'])->name('view.coure.St');
 
-            Route::post('/join-course', [StudentCourseController::class, 'join'])->name('join.course');
+    Route::prefix('/courses')->middleware(['role:student|admin'])->group(function () {
+        Route::get('/', [StudentSiteController::class, 'courses'])->name('courses.st');
+        Route::get('/view/{id}', [StudentCourseController::class, 'view'])->name('view.coure.St');
+
+        Route::post('/join-course', [StudentCourseController::class, 'join'])->name('join.course');
 
 
-            Route::get('/adjectives/{studentId}', [StudentAdjectiveController::class, 'index']);
-            Route::post('/adjectives', [StudentAdjectiveController::class, 'store']);
+        Route::get('/adjectives/{studentId}', [StudentAdjectiveController::class, 'index']);
+        Route::post('/adjectives', [StudentAdjectiveController::class, 'store']);
 
-            Route::get('/events/{studentId}', [StudentEventController::class, 'index']);
-            Route::post('/events', [StudentEventController::class, 'store']);
+        Route::get('/events/{studentId}', [StudentEventController::class, 'index']);
+        Route::post('/events', [StudentEventController::class, 'store']);
     });
 });
-
