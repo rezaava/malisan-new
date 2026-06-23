@@ -347,14 +347,44 @@ class CourseController extends Controller
         }
     }
 
-    /**
-     * نمایش فرم ایجاد جلسه (مسیر قدیمی)
-     */
-    public function createSession()
+    public function studentsList($id)
     {
-        return view('create-session');
-    }
+        $course = Course::findOrFail($id);
+        $role = Role::where("name", "student")->first();
+        
+        $users = $course->users()
+            ->where('role_id', $role->id)
+            ->orderBy('family', 'asc')
+            ->withCount(['studentEvents', 'studentAdjectives'])
+            ->get();
 
+        $setting = Setting::where('course_id', $course->id)->first();
+
+        foreach ($users as $user) {
+            // نمره عملی
+            $nomre = Amali::where('course_id', $course->id)
+                ->where('user_id', $user->id)
+                ->where('type', 2)
+                ->first();
+            $user->nomre = $nomre ? $nomre->nomre : 0;
+
+            // نمره نهایی
+            $final = Amali::where('course_id', $course->id)
+                ->where('user_id', $user->id)
+                ->where('type', 1)
+                ->first();
+            $user->final = $final ? $final->nomre : 0;
+
+            // وضعیت آنلاین
+            $user->online = $user->isOnline() ? 1 : 0;
+        }
+
+        return view('teacher.students-list', compact('users', 'course', 'setting'))->with([
+            'pageTitle' => 'صفحه دانشجویان دروس',
+            'pageName' => 'دانشجویان درس',
+            'pageDescription' => 'مدرس گرامی ! لیست دانشجو های شما به شرح زیر می باشد',
+        ]);
+    }
     // ==========================================
     // متدهای کمکی (Helper Methods)
     // ==========================================

@@ -13,47 +13,81 @@ use Illuminate\Http\Request;
 
 class TeacherSiteController extends Controller
 {
-    function index() {
-        $user = Auth::user();        
-        $coursesCount = $user->courses()->count();
-
-        $message = Angizesh::whereIn('level',[7,8])->inRandomOrder()->first();
+    public function index()
+    {
+        $user = Auth::user();
         
-        $course_count = Auth::user()
-            ->courses()
+        // دریافت پیام انگیزشی
+        $message = Angizesh::whereIn('level', [7, 8])
+            ->inRandomOrder()
+            ->first();
+        
+        // دریافت اطلاعات کیف پول
+        $aneto = null;
+        if ($user->national != 'admin') {
+            // منطق دریافت کیف پول را اینجا بنویسید
+            // $aneto = $user->wallet->balance ?? 0;
+            $aneto = null;
+        }
+        
+        // تعداد کل دوره‌های کاربر
+        $coursesCount = $user->courses()->count();
+        
+        // ==========================================
+        // آمار مخصوص معلم
+        // ==========================================
+        $teacherRoleId = Role::where('name', 'teacher')->value('id');
+        $studentRoleId = Role::where('name', 'student')->value('id');
+
+        // 1. تعداد دوره‌های فعال و خصوصی معلم
+        $course_count = $user->courses()
             ->where('active', '1')
             ->where('private', '1')
             ->count();
 
-        $konkor_count = Konkor::where('active', 1)->count();
-        $student_role_id = Role::where('name', 'student')->value('id');
-        
+        // 2. تعداد کل دوره‌های فعال در سیستم
+        $total_course_count = Course::where('active', '1')
+            ->where('private', '1')
+            ->count();
+
+        // 3. تعداد دانشجویان (دانشجویانی که در دوره‌های این معلم ثبت‌نام کرده‌اند)
         $student_count = DB::table('course_user')
             ->join('courses', 'courses.id', '=', 'course_user.course_id')
-            ->where('course_user.role_id', $student_role_id)
+            ->where('course_user.role_id', $studentRoleId)
             ->where('courses.active', 1)
             ->where('courses.archieve', 0)
-            // فقط درس‌هایی که این استاد داره
-            ->whereIn('course_user.course_id', function($query) {
+            ->whereIn('course_user.course_id', function ($query) use ($teacherRoleId) {
                 $query->select('course_id')
                     ->from('course_user')
                     ->where('user_id', Auth::id())
-                    ->where('role_id', DB::table('roles')->where('name','teacher')->value('id'));
+                    ->where('role_id', $teacherRoleId);
             })
             ->distinct('course_user.user_id')
             ->count('course_user.user_id');
-            
-        $teacher_role_id = Role::where('name', 'teacher')->value('id');
-        
+
+        // 4. تعداد درس‌های معلم
         $lesson_count = DB::table('course_user')
             ->join('courses', 'courses.id', '=', 'course_user.course_id')
             ->where('course_user.user_id', Auth::id())
-            ->where('course_user.role_id', $teacher_role_id)
+            ->where('course_user.role_id', $teacherRoleId)
             ->where('courses.archieve', 0)
             ->where('courses.active', 1)
             ->count();
 
-        return view('teacher.index', compact('coursesCount','message'));
+        // 5. تعداد کنکورهای فعال
+        $konkor_count = Konkor::where('active', 1)->count();
+
+        return view('teacher.index', compact(
+            'user',
+            'aneto',
+            'message',
+            'coursesCount',
+            'course_count',
+            'total_course_count',
+            'student_count',
+            'lesson_count',
+            'konkor_count'
+        ));
     }
     function courses() {
         $user = Auth::user();

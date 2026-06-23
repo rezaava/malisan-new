@@ -3,6 +3,8 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\StudentSiteController;
 use App\Http\Controllers\Teacher\CourseController;
+use App\Http\Controllers\Teacher\StudentAdjectiveController;
+use App\Http\Controllers\Teacher\StudentEventController;
 use App\Http\Controllers\Teacher\TeacherCourseController;
 use App\Http\Controllers\TeacherSiteController;
 use Illuminate\Support\Facades\Route;
@@ -63,9 +65,48 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         Route::post('/sessions/store/{id}', [CourseController::class, 'store'])->name('sessions.store');
                 
         Route::post('/create', [CourseController::class, 'storeCourse'])->name('courses.store');
+
+
+
+
+        Route::get('/students-list/{id}', [CourseController::class, 'studentsList'])->name('studentsList');
+
+
+
+
+        Route::get('/adjectives/{studentId}', [StudentAdjectiveController::class, 'index']);
+        Route::post('/adjectives', [StudentAdjectiveController::class, 'store']);
+
+        Route::get('/events/{studentId}', [StudentEventController::class, 'index']);
+        Route::post('/events', [StudentEventController::class, 'store']);
     });
 });
 Route::prefix('/student')->middleware(['role:student|admin'])->group(function () {
     Route::get('/', [StudentSiteController::class, 'index'])->name('index_student');
+        Route::prefix('/courses')->middleware(['role:teacher|admin'])->group(function () {
+        Route::get('/', [TeacherSiteController::class, 'courses'])->name('courses');
+        Route::get('/copy/{id}', [CourseController::class, 'getCopyData'])->name('courses.copy.data');
+        Route::get('/view/{id}', [CourseController::class, 'view'])->name('view.coure');
+        
+        // مسیرهای ایجاد جلسه
+        Route::get('/sessions/create/{id}', [CourseController::class, 'create'])->name('sessions.create');
+        Route::post('/sessions/store/{id}', [CourseController::class, 'store'])->name('sessions.store');
+                
+        Route::post('/create', [CourseController::class, 'storeCourse'])->name('courses.store');
+
+
+
+
+        Route::get('/students-list/{id}', [CourseController::class, 'studentsList'])->name('studentsList');
+
+
+
+
+        Route::get('/adjectives/{studentId}', [StudentAdjectiveController::class, 'index']);
+        Route::post('/adjectives', [StudentAdjectiveController::class, 'store']);
+
+        Route::get('/events/{studentId}', [StudentEventController::class, 'index']);
+        Route::post('/events', [StudentEventController::class, 'store']);
+    });
 });
 

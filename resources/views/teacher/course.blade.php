@@ -24,7 +24,7 @@
     </div>
 
     <div class="course-chips">
-        <a href="/dashboard/courses/students?course_id={{ $course->id }}" class="chip-item">
+        <a href="{{ route('studentsList',$course->id) }}" class="chip-item">
             <i class="fas fa-user-graduate"></i>
             مشخصات دانشجویان ({{ $course->students_count ?? 0 }})
         </a>
