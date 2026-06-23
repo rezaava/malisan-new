@@ -8,10 +8,11 @@ use App\Http\Controllers\Teacher\StudentAdjectiveController;
 use App\Http\Controllers\Teacher\StudentEventController;
 use App\Http\Controllers\Teacher\TeacherCourseController;
 use App\Http\Controllers\TeacherSiteController;
+use App\Http\Controllers\ExamController;
 use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\TestController;
 
+// مسیرهای عمومی
 Route::get('/', [TestController::class, 'index'])->name('index');
 Route::get('/courses', [TestController::class, 'courses'])->name('courses');
 Route::get('/quiz-course', [TestController::class, 'quizCourse'])->name('quizCourse');
@@ -29,7 +30,6 @@ Route::get('/activities', [TestController::class, 'activities'])->name('activiti
 Route::get('/student-activities', [TestController::class, 'studentActivities'])->name('studentActivities');
 Route::get('/student-evaluation', [TestController::class, 'studentEvaluation'])->name('studentEvaluation');
 Route::get('/student-setting', [TestController::class, 'studentSetting'])->name('studentSetting');
-Route::get('/create-question', [TestController::class, 'createQuestion'])->name('createQuestion');
 Route::get('/self-tests-list', [TestController::class, 'selfTestsList'])->name('selfTestsList');
 Route::get('/student-questions', [TestController::class, 'studentQuestions'])->name('studentQuestions');
 Route::get('/student-reports', [TestController::class, 'studentReports'])->name('studentReports');
@@ -37,21 +37,13 @@ Route::get('/student-homeworks', [TestController::class, 'studentHomeworks'])->n
 Route::get('/student-self-tests', [TestController::class, 'studentSelfTests'])->name('studentSelfTests');
 Route::get('/student-official-exams', [TestController::class, 'studentOfficialExams'])->name('studentOfficialExams');
 
-
-
-
-
-
-
-
-
+// مسیرهای احراز هویت
 Route::get('/login', [AuthController::class, 'login'])->name('login');
 Route::get('/register', [AuthController::class, 'register'])->name('register');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::post('/loginPost', [AuthController::class, 'loginPost'])->name('loginPost');
 Route::post('/registerPost', [AuthController::class, 'registerPost'])->name('registerPost');
-
 
 Route::get("/", function () {
     return redirect("/login");
@@ -69,7 +61,6 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         Route::get('/copy/{id}', [CourseController::class, 'getCopyData'])->name('courses.copy.data');
         Route::get('/view/{id}', [CourseController::class, 'view'])->name('view.coure');
 
-        // مسیرهای ایجاد جلسه
         Route::get('/sessions/create/{id}', [CourseController::class, 'create'])->name('sessions.create');
         Route::post('/sessions/store/{id}', [CourseController::class, 'store'])->name('sessions.store');
 
@@ -78,7 +69,6 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         Route::post('/toggle-status/{id}', [CourseController::class, 'toggleStatus'])->name('courses.toggle.status');
         Route::post('/toggle-archive/{id}', [CourseController::class, 'toggleArchive'])->name('courses.toggle.archive');
         Route::get('/archived', [CourseController::class, 'archivedCourses'])->name('courses.archived');
-
 
         Route::get('/student-profile/{id}', [CourseController::class, 'studentProfile'])->name('studentProfile');
         Route::post('/student-profile/{id}', [CourseController::class, 'updateStudentProfile'])->name('studentProfile.update');
@@ -97,6 +87,13 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         Route::get('/events/{studentId}', [StudentEventController::class, 'index']);
         Route::post('/events', [StudentEventController::class, 'store']);
     });
+
+    // مسیرهای مربوط به سوالات - اصلاح شده
+    Route::prefix('/questions')->middleware(['role:teacher|admin'])->group(function () {
+        Route::get('/create', [ExamController::class, 'create'])->name('createQuestion');
+        Route::post('/store', [ExamController::class, 'store'])->name('question.store');
+        Route::get('/random/{count?}', [ExamController::class, 'getRandomQuestions'])->name('api.random.questions');
+    });
 });
 
 // Student
@@ -108,7 +105,6 @@ Route::prefix('/student')->middleware(['role:student|admin'])->group(function ()
         Route::get('/view/{id}', [StudentCourseController::class, 'view'])->name('view.coure.St');
 
         Route::post('/join-course', [StudentCourseController::class, 'join'])->name('join.course');
-
 
         Route::get('/adjectives/{studentId}', [StudentAdjectiveController::class, 'index']);
         Route::post('/adjectives', [StudentAdjectiveController::class, 'store']);

@@ -97,7 +97,7 @@ class TestController extends Controller
 
     {
 
-        return view('create-question');
+        return view('teacher.create-question');
     }
 
     public function selfTestsList()

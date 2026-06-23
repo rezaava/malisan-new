@@ -104,7 +104,7 @@
                     </h5>
                 </div>
                 <div class="session-action-buttons">
-                    <a href="#" id="questionBtn" class="action-icon-btn" data-position="bottom" data-tooltip="طرح سوال">
+                    <a href="{{ route('createQuestion') }}" id="questionBtn" class="action-icon-btn" data-position="bottom" data-tooltip="طرح سوال">
                         <i class="fas fa-question-circle"></i>
                     </a>
                     <a href="#" id="homeworkTeacherBtn" class="action-icon-btn" data-position="bottom" data-tooltip="دادن تکلیف">
