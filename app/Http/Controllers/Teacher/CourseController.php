@@ -406,9 +406,6 @@ class CourseController extends Controller
             'pageDescription' => 'مشخصات دانشجو',
         ]);
     }
-    /**
-     * به‌روزرسانی پروفایل دانشجو
-     */
     public function updateStudentProfile(Request $request, $id)
     {
         $user = User::findOrFail($id);
@@ -459,9 +456,6 @@ class CourseController extends Controller
         }
     }
 
-    /**
-     * اخراج دانشجو از دوره (Soft Delete)
-     */
     public function destroyUser($userId, $courseId)
     {
         try {
@@ -501,8 +495,111 @@ class CourseController extends Controller
     }
 
     /**
-     * بازگرداندن دانشجو به دوره (بازیابی از Soft Delete)
+     * تغییر وضعیت فعال/غیرفعال (private)
      */
+    public function toggleStatus($id)
+    {
+        try {
+            $course = Course::findOrFail($id);
+            
+            // تغییر وضعیت private (1 -> 0 یا 0 -> 1)
+            $course->private = $course->private == 1 ? 0 : 1;
+            $course->save();
+            
+            $status = $course->private == 1 ? 'فعال' : 'غیرفعال';
+            
+            return response()->json([
+                'success' => true,
+                'message' => "وضعیت دوره با موفقیت به {$status} تغییر یافت",
+                'private' => $course->private,
+                'status_text' => $status
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Toggle course status failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در تغییر وضعیت دوره: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * تغییر وضعیت آرشیو
+     */
+    public function toggleArchive($id)
+    {
+        try {
+            $course = Course::findOrFail($id);
+            
+            // تغییر وضعیت archieve (1 -> 0 یا 0 -> 1)
+            $course->archieve = $course->archieve == 1 ? 0 : 1;
+            $course->save();
+            
+            $status = $course->archieve == 1 ? 'آرشیو شده' : 'فعال';
+            
+            return response()->json([
+                'success' => true,
+                'message' => "دوره با موفقیت {$status} شد",
+                'archieve' => $course->archieve,
+                'status_text' => $status
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Toggle archive failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در آرشیو دوره: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * دریافت دوره‌های آرشیو شده
+     */
+    public function archivedCourses()
+    {
+        try {
+            $user = Auth::user();
+            $teacherRole = Role::where('name', 'teacher')->first();
+            
+            $archivedCourses = $user->courses()
+                ->wherePivot('role_id', $teacherRole->id)
+                ->where('archieve', 1)
+                ->orderBy('updated_at', 'desc')
+                ->get();
+            
+            return response()->json([
+                'success' => true,
+                'data' => $archivedCourses
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Get archived courses failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در دریافت دوره‌های آرشیو شده'
+            ], 500);
+        }
+    }
+
+    /**
+     * نمایش دوره‌های فعال (غیر آرشیو)
+     */
+    public function courses()
+    {
+        $user = Auth::user();
+        $teacherRole = Role::where('name', 'teacher')->first();
+        
+        // فقط دوره‌هایی که آرشیو نشده‌اند (archieve = 0)
+        $courses = $user->courses()
+            ->wherePivot('role_id', $teacherRole->id)
+            ->where('archieve', 0)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        return view('teacher.courses', compact('courses'));
+    }
     public function restoreUser($userId, $courseId)
     {
         try {
