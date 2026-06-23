@@ -80,7 +80,8 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         Route::post('/students/restore/{userId}/{courseId}', [CourseController::class, 'restoreUser'])->name('students.restore');
         Route::get('/students/removed/{courseId}', [CourseController::class, 'removedStudents'])->name('students.removed');
 
-
+        Route::get('/setting/{id}', [CourseController::class, 'setting'])->name('courses.setting');
+        Route::post('/edit-setting', [CourseController::class, 'editSetting'])->name('courses.setting.update');
 
         Route::get('/adjectives/{studentId}', [StudentAdjectiveController::class, 'index']);
         Route::post('/adjectives', [StudentAdjectiveController::class, 'store']);

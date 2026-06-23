@@ -20,6 +20,7 @@ use App\Models\Exercise;
 use App\Models\Question;
 use App\Models\User;
 use Carbon\Carbon;
+use Log;
 
 class CourseController extends Controller
 {
@@ -663,6 +664,210 @@ class CourseController extends Controller
         }
     }
 
+
+    public function setting($id)
+    {
+        $course = Course::findOrFail($id);
+        
+        // دریافت تنظیمات (Setting)
+        $setting = Setting::firstOrCreate(
+            ['course_id' => $course->id],
+            ['course_id' => $course->id]
+        );
+        
+        // دریافت بارم‌بندی (Scoring)
+        $scoring = Scoring::firstOrCreate(
+            ['course_id' => $course->id],
+            ['course_id' => $course->id]
+        );
+
+        return view('teacher.course-setting', compact('course', 'setting', 'scoring'))->with([
+            'pageTitle' => 'صفحه تنظیمات',
+            'pageName' => 'تنظیمات',
+            'pageDescription' => 'مدرس گرامی ! صفحه تنظیمات در اختیار شماست',
+        ]);
+    }
+
+    /**
+     * ذخیره تنظیمات درس
+     */
+    public function editSetting(Request $request)
+    {
+        Log::info($request->all());
+        // اعتبارسنجی
+        $validator = Validator::make($request->all(), [
+            'course_id' => 'required|exists:courses,id',
+            'jalasat' => 'nullable|numeric|min:0',
+            'mostamar_nomre' => 'nullable|numeric|min:0|max:100',
+            'taklif_seminar_nomre' => 'nullable|numeric|min:0|max:100',
+            'azmon_nomre' => 'nullable|numeric|min:0|max:100',
+            'max_soal' => 'nullable|numeric|min:0',
+            'max_taklif' => 'nullable|numeric|min:0',
+            'max_seminar' => 'nullable|numeric|min:0',
+            'min_w_khod' => 'nullable|numeric|min:0',
+            'q_num' => 'nullable|numeric|min:0',
+            'sath_khod' => 'nullable|in:1,2,3',
+            'quiz_num' => 'nullable|numeric|min:0',
+            'sath_quiz' => 'nullable|in:1,2,3',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // اگر course_id == 99999 باشد، همه دوره‌ها را به‌روز می‌کند
+            if ($request->course_id == 99999) {
+                return $this->updateAllSettings($request);
+            }
+
+            $course = Course::findOrFail($request->course_id);
+            
+            // ==========================================
+            // 1. به‌روزرسانی بارم‌بندی (Scoring)
+            // ==========================================
+            $scoring = Scoring::firstOrCreate(['course_id' => $course->id]);
+            $scoring->update([
+                'q_1' => $request->q_1 ?? $scoring->q_1,
+                'q_2' => $request->q_2 ?? $scoring->q_2,
+                'q_3' => $request->q_3 ?? $scoring->q_3,
+                'q_4' => $request->q_4 ?? $scoring->q_4,
+                'd_1' => $request->d_1 ?? $scoring->d_1,
+                'd_2' => $request->d_2 ?? $scoring->d_2,
+                'd_3' => $request->d_3 ?? $scoring->d_3,
+                'd_4' => $request->d_4 ?? $scoring->d_4,
+                'e_1' => $request->e_1 ?? $scoring->e_1,
+                'e_2' => $request->e_2 ?? $scoring->e_2,
+                'e_3' => $request->e_3 ?? $scoring->e_3,
+                'e_4' => $request->e_4 ?? $scoring->e_4,
+                's_1' => $request->s_1 ?? $scoring->s_1,
+                's_2' => $request->s_2 ?? $scoring->s_2,
+                's_3' => $request->s_3 ?? $scoring->s_3,
+                's_4' => $request->s_4 ?? $scoring->s_4,
+            ]);
+
+            // ==========================================
+            // 2. به‌روزرسانی تنظیمات (Setting)
+            // ==========================================
+            $setting = Setting::firstOrCreate(['course_id' => $course->id]);
+            
+            // فیلدهای عددی
+            $setting->fill([
+                'tarahi_soal_nomre' => $request->tarahi_soal_nomre ?? 0,
+                'mostamar_nomre' => $request->mostamar_nomre ?? 0,
+                'jalasat' => $request->jalasat ?? 0,
+                'ersal_gozaresh_nomre' => $request->ersal_gozaresh_nomre ?? 0,
+                'taklif_seminar_nomre' => $request->taklif_seminar_nomre ?? 0,
+                'azmon_nomre' => $request->azmon_nomre ?? 0,
+                'max_soal' => $request->max_soal ?? 3,
+                'max_taklif' => $request->max_taklif ?? 8,
+                'max_seminar' => $request->max_seminar ?? 5,
+                'min_w_khod' => $request->min_w_khod ?? 14,
+                'q_num' => $request->q_num ?? 10,
+                'sath_khod' => $request->sath_khod ?? 2,
+                'quiz_num' => $request->quiz_num ?? 10,
+                'sath_quiz' => $request->sath_quiz ?? 2,
+            ]);
+
+            // فیلدهای توضیحی
+            if ($request->has('tarahi_soal_desc')) {
+                $setting->tarahi_soal_desc = $request->tarahi_soal_desc;
+            }
+            if ($request->has('ersal_gozaresh_desc')) {
+                $setting->ersal_gozaresh_desc = $request->ersal_gozaresh_desc;
+            }
+
+            // ==========================================
+            // فیلدهای چک‌باکس (boolean)
+            // ==========================================
+            $setting->soal_last = in_array($request->soal_last, ['on', '1', true]) ? 1 : 0;
+            $setting->gozaresh_last = in_array($request->gozaresh_last, ['on', '1', true]) ? 1 : 0;
+            $setting->taklif_last = in_array($request->taklif_last, ['on', '1', true]) ? 1 : 0;
+            $setting->show_khod = in_array($request->show_khod, ['on', '1', true]) ? 1 : 0;
+            $setting->natije = in_array($request->natije, ['on', '1', true]) ? 1 : 0;
+            $setting->show_quiz = in_array($request->show_quiz, ['on', '1', true]) ? 1 : 0;
+
+            $setting->save();
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'تنظیمات با موفقیت ذخیره شد');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Edit setting failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'خطا در ذخیره تنظیمات: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * به‌روزرسانی تنظیمات همه دوره‌ها (برای course_id = 99999)
+     */
+    private function updateAllSettings($request)
+    {
+        DB::beginTransaction();
+
+        try {
+            // به‌روزرسانی همه بارم‌بندی‌ها (Scoring)
+            $scores = Scoring::all();
+            foreach ($scores as $score) {
+                $score->update([
+                    'q_1' => $request->q_1 ?? $score->q_1,
+                    'q_2' => $request->q_2 ?? $score->q_2,
+                    'q_3' => $request->q_3 ?? $score->q_3,
+                    'q_4' => $request->q_4 ?? $score->q_4,
+                    'd_1' => $request->d_1 ?? $score->d_1,
+                    'd_2' => $request->d_2 ?? $score->d_2,
+                    'd_3' => $request->d_3 ?? $score->d_3,
+                    'd_4' => $request->d_4 ?? $score->d_4,
+                    'e_1' => $request->e_1 ?? $score->e_1,
+                    'e_2' => $request->e_2 ?? $score->e_2,
+                    'e_3' => $request->e_3 ?? $score->e_3,
+                    'e_4' => $request->e_4 ?? $score->e_4,
+                    's_1' => $request->s_1 ?? $score->s_1,
+                    's_2' => $request->s_2 ?? $score->s_2,
+                    's_3' => $request->s_3 ?? $score->s_3,
+                    's_4' => $request->s_4 ?? $score->s_4,
+                ]);
+            }
+
+            // به‌روزرسانی همه تنظیمات (Setting)
+            $settings = Setting::all();
+            foreach ($settings as $setting) {
+                $setting->update([
+                    'taklif_seminar_desc' => $request->taklif_seminar_desc ?? $setting->taklif_seminar_desc,
+                    'taklif_seminar_type' => $request->taklif_seminar_type ?? $setting->taklif_seminar_type,
+                    'quiz_mid_nomre' => $request->quiz_mid_nomre ?? $setting->quiz_mid_nomre,
+                    'quiz_mid_desc' => $request->quiz_mid_desc ?? $setting->quiz_mid_desc,
+                    'quiz_mid_type' => $request->quiz_mid_type ?? $setting->quiz_mid_type,
+                    'pishraft_nomre' => $request->pishraft_nomre ?? $setting->pishraft_nomre,
+                    'pishraft_desc' => $request->pishraft_desc ?? $setting->pishraft_desc,
+                    'talash_nomre' => $request->talash_nomre ?? $setting->talash_nomre,
+                    'talash_desc' => $request->talash_desc ?? $setting->talash_desc,
+                    'hozor_nomre' => $request->hozor_nomre ?? $setting->hozor_nomre,
+                    'hozor_desc' => $request->hozor_desc ?? $setting->hozor_desc,
+                    'amali_nomre' => $request->amali_nomre ?? $setting->amali_nomre,
+                    'amali_desc' => $request->amali_desc ?? $setting->amali_desc,
+                    'final_nomre' => $request->final_nomre ?? $setting->final_nomre,
+                    'final_desc' => $request->final_desc ?? $setting->final_desc,
+                    'erfagh_nomre' => $request->erfagh_nomre ?? $setting->erfagh_nomre,
+                    'erfagh_desc' => $request->erfagh_desc ?? $setting->erfagh_desc,
+                    'min_davari' => $request->min_davari ?? $setting->min_davari,
+                ]);
+            }
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'تنظیمات همه دوره‌ها با موفقیت به‌روزرسانی شد');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Update all settings failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'خطا در به‌روزرسانی تنظیمات: ' . $e->getMessage());
+        }
+    }
     // ==========================================
     // متدهای کمکی (Helper Methods)
     // ==========================================
