@@ -15,7 +15,7 @@
     </div>
 
     <div class="course-actions-bar">
-        <a href="/dashboard/courses/setting?course_id={{ $course->id }}" class="action-btn settings-btn">
+        <a href="{{ route('courses.setting',$course->id) }}" class="action-btn settings-btn">
             <i class="fas fa-cog"></i>
         </a>
         <a href="#" class="action-btn back-btn" onclick="history.back()">

@@ -85,4 +85,54 @@ class TestController extends Controller
 
         return view('student-evaluation');
     }
+
+    public function studentSetting()
+
+    {
+
+        return view('student-setting');
+    }
+
+    public function createQuestion()
+
+    {
+
+        return view('create-question');
+    }
+
+    public function selfTestsList()
+
+    {
+
+        return view('self-tests-list');
+    }
+
+    public function studentQuestions()
+
+    {
+
+        return view('student-questions');
+    }
+
+    public function studentReports()
+
+    {
+
+        return view('student-reports');
+    }
+
+    public function studentHomeworks()
+    {
+        return view('student-homeworks');
+    }
+
+    public function studentSelfTests()
+    {
+        return view('student-self-tests');
+    }
+
+    public function studentOfficialExams()
+    {
+        return view('student-official-exams');
+    }
 }

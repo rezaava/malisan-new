@@ -28,7 +28,18 @@ Route::get('/grades-list', [TestController::class, 'gradesList'])->name('gradesL
 Route::get('/activities', [TestController::class, 'activities'])->name('activities');
 Route::get('/student-activities', [TestController::class, 'studentActivities'])->name('studentActivities');
 Route::get('/student-evaluation', [TestController::class, 'studentEvaluation'])->name('studentEvaluation');
+<<<<<<< HEAD
 Route::get('/azmoon',[TeacherSiteController::class,'azmoon'])->name('azmoon');
+=======
+Route::get('/student-setting', [TestController::class, 'studentSetting'])->name('studentSetting');
+Route::get('/create-question', [TestController::class, 'createQuestion'])->name('createQuestion');
+Route::get('/self-tests-list', [TestController::class, 'selfTestsList'])->name('selfTestsList');
+Route::get('/student-questions', [TestController::class, 'studentQuestions'])->name('studentQuestions');
+Route::get('/student-reports', [TestController::class, 'studentReports'])->name('studentReports');
+Route::get('/student-homeworks', [TestController::class, 'studentHomeworks'])->name('studentHomeworks');
+Route::get('/student-self-tests', [TestController::class, 'studentSelfTests'])->name('studentSelfTests');
+Route::get('/student-official-exams', [TestController::class, 'studentOfficialExams'])->name('studentOfficialExams');
+>>>>>>> cac518b96a519934cf2cfdcff5360705c84f2e31
 
 
 
@@ -56,18 +67,21 @@ Route::get('/role', [AuthController::class, 'roleFun']);
 // Teacher
 Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function () {
     Route::get('/', [TeacherSiteController::class, 'index'])->name('index_teacher');
-    
+
     Route::prefix('/courses')->middleware(['role:teacher|admin'])->group(function () {
         Route::get('/', [TeacherSiteController::class, 'courses'])->name('courses');
         Route::get('/copy/{id}', [CourseController::class, 'getCopyData'])->name('courses.copy.data');
         Route::get('/view/{id}', [CourseController::class, 'view'])->name('view.coure');
-        
+
         // مسیرهای ایجاد جلسه
         Route::get('/sessions/create/{id}', [CourseController::class, 'create'])->name('sessions.create');
         Route::post('/sessions/store/{id}', [CourseController::class, 'store'])->name('sessions.store');
-                
+
         Route::post('/create', [CourseController::class, 'storeCourse'])->name('courses.store');
 
+        Route::post('/toggle-status/{id}', [CourseController::class, 'toggleStatus'])->name('courses.toggle.status');
+        Route::post('/toggle-archive/{id}', [CourseController::class, 'toggleArchive'])->name('courses.toggle.archive');
+        Route::get('/archived', [CourseController::class, 'archivedCourses'])->name('courses.archived');
 
 
         Route::get('/student-profile/{id}', [CourseController::class, 'studentProfile'])->name('studentProfile');
@@ -78,7 +92,8 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         Route::post('/students/restore/{userId}/{courseId}', [CourseController::class, 'restoreUser'])->name('students.restore');
         Route::get('/students/removed/{courseId}', [CourseController::class, 'removedStudents'])->name('students.removed');
 
-
+        Route::get('/setting/{id}', [CourseController::class, 'setting'])->name('courses.setting');
+        Route::post('/edit-setting', [CourseController::class, 'editSetting'])->name('courses.setting.update');
 
         Route::get('/adjectives/{studentId}', [StudentAdjectiveController::class, 'index']);
         Route::post('/adjectives', [StudentAdjectiveController::class, 'store']);
@@ -91,19 +106,18 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
 // Student
 Route::prefix('/student')->middleware(['role:student|admin'])->group(function () {
     Route::get('/', [StudentSiteController::class, 'index'])->name('index_student');
-        
-        Route::prefix('/courses')->middleware(['role:student|admin'])->group(function () {
-            Route::get('/', [StudentSiteController::class, 'courses'])->name('courses.st');
-            Route::get('/view/{id}', [StudentCourseController::class, 'view'])->name('view.coure.St');
 
-            Route::post('/join-course', [StudentCourseController::class, 'join'])->name('join.course');
+    Route::prefix('/courses')->middleware(['role:student|admin'])->group(function () {
+        Route::get('/', [StudentSiteController::class, 'courses'])->name('courses.st');
+        Route::get('/view/{id}', [StudentCourseController::class, 'view'])->name('view.coure.St');
+
+        Route::post('/join-course', [StudentCourseController::class, 'join'])->name('join.course');
 
 
-            Route::get('/adjectives/{studentId}', [StudentAdjectiveController::class, 'index']);
-            Route::post('/adjectives', [StudentAdjectiveController::class, 'store']);
+        Route::get('/adjectives/{studentId}', [StudentAdjectiveController::class, 'index']);
+        Route::post('/adjectives', [StudentAdjectiveController::class, 'store']);
 
-            Route::get('/events/{studentId}', [StudentEventController::class, 'index']);
-            Route::post('/events', [StudentEventController::class, 'store']);
+        Route::get('/events/{studentId}', [StudentEventController::class, 'index']);
+        Route::post('/events', [StudentEventController::class, 'store']);
     });
 });
-
