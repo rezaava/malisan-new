@@ -24,9 +24,8 @@ class AuthController extends Controller
             } elseif ($user->hasRole('student')) {
                 return redirect()->route('index_student');
             }
-            return redirect()->route('home');
         }
-        return view('fakeBlade.login');
+        return view('auth.login');
     }
 
     public function register()
@@ -41,9 +40,8 @@ class AuthController extends Controller
             } elseif ($user->hasRole('student')) {
                 return redirect()->route('index_student');
             }
-            return redirect()->route('home');
         }
-        return view('fakeBlade.register');
+        return view('auth.register');
     }
 
     public function registerPost(Request $request)

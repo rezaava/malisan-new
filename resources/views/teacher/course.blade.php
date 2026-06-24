@@ -30,7 +30,7 @@
         </a>
         <a href="#" class="chip-item {{ $isJudment ? '' : 'inactive' }}">
             <i class="fas {{ $isJudment ? 'fa-gavel' : 'fa-ban' }}"></i>
-            {{ $isJudment ? 'داوری ('. $pendingCount ?? 0 .')' : 'اعتراضات (غیر فعال)' }}
+            اعتراضات (غیر فعال) 
         </a>
         <a href="/dashboard/evaluation?course_id={{ $course->id }}" class="chip-item">
             <i class="fas fa-chart-line"></i>
@@ -134,7 +134,7 @@
                 </div>
                 <div class="pdf-viewer">
                     @if($sessions->isNotEmpty() && $sessions->first()->file)
-                        <object id="pdfViewer" data="{{ $sessions->first()->file }}" type="application/pdf" width="100%" height="550px">
+                        <object id="pdfViewer" data="/files/session{{ $sessions->first()->file }}" type="application/pdf" width="100%" height="550px">
                             <object width="100%" height="550" data="https://docs.google.com/gview?embedded=true&url={{ $sessions->first()->file }}"></object>
                         </object>
                     @else

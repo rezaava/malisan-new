@@ -14,10 +14,10 @@
         <h4 class="course-title-main">{{ $course->name ?? 'عنوان درس' }}</h4>
     </div>
     <div class="course-chips">
-        <a href="/dashboard/courses/grades/{{ $course->id }}" class="chip-item">
-            <i class="fas fa-star"></i>
-            خودآزمایی
-        </a>
+    <a href="{{ route('student.selfTest.start', $course->id) }}" class="chip-item">
+        <i class="fas fa-star"></i>
+        خودآزمایی
+    </a>
         <a href="/dashboard/courses/bank?course_id={{ $course->id }}" class="chip-item">
             <i class="fas fa-database"></i>
             فعالیت های من 
@@ -86,7 +86,7 @@
                 </div>
                 <div class="pdf-viewer">
                     @if($sessions->isNotEmpty() && $sessions->first()->file)
-                        <object id="pdfViewer" data="{{ $sessions->first()->file }}" type="application/pdf" width="100%" height="550px">
+                        <object id="pdfViewer" data="/files/session{{ $sessions->first()->file }}" type="application/pdf" width="100%" height="550px">
                             <object width="100%" height="550" data="https://docs.google.com/gview?embedded=true&url={{ $sessions->first()->file }}"></object>
                         </object>
                     @else
@@ -161,9 +161,12 @@
         const editBtn = document.getElementById('editBtn');
         editBtn.setAttribute('href', `/dashboard/courses/sessions/edit/${sessionId}`);
 
+        // ==========================================
+        // اصلاح: لینک طرح سوال به مسیر دانشجو
+        // ==========================================
         const questionBtn = document.getElementById('questionBtn');
-        questionBtn.setAttribute('href', `/dashboard/question/show?session_id=${sessionId}`);
-
+        questionBtn.setAttribute('href', '/student/questions/create/' + sessionId);
+        
         const homeworkTeacherBtn = document.getElementById('homeworkTeacherBtn');
         homeworkTeacherBtn.setAttribute('href', `/dashboard/exercise/show/${sessionId}`);
 
@@ -202,7 +205,12 @@
                 
                 // تنظیم لینک‌ها برای جلسه اول
                 document.getElementById('editBtn').setAttribute('href', `/dashboard/courses/sessions/edit/${sessionId}`);
-                document.getElementById('questionBtn').setAttribute('href', `/dashboard/question/show?session_id=${sessionId}`);
+                
+                // ==========================================
+                // اصلاح: لینک طرح سوال به مسیر دانشجو
+                // ==========================================
+                document.getElementById('questionBtn').setAttribute('href', '/student/questions/create/' + sessionId);
+
                 document.getElementById('homeworkTeacherBtn').setAttribute('href', `/dashboard/exercise/show/${sessionId}`);
                 document.getElementById('homeworkBtn').setAttribute('href', `/dashboard/exercise/show/${sessionId}`);
                 document.getElementById('toggleActiveBtn').setAttribute('href', `/dashboard/courses/sessions/active/${sessionId}`);

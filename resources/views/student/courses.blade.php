@@ -31,6 +31,12 @@
     .btn-join-course i {
         font-size: 16px;
     }
+
+    .empty-state {
+        width: 80vw;
+        margin-top: 30vh;
+        text-align: center;
+    }
 </style>
 @endsection
 
@@ -69,7 +75,7 @@
             </a>
         </div>
     @empty
-        <div class="empty-state">
+        <div class="empty-state text-center">
             <i class="fas fa-book-open"></i>
             <p>شما هیچ درسی ندارید</p>
         </div>

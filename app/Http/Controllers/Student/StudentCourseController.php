@@ -217,7 +217,7 @@ class StudentCourseController extends Controller
                 'success' => true,
                 'message' => 'عضویت با موفقیت انجام شد',
                 'course_name' => $course->name,
-                'redirect' => route('view.coure', $course->id)
+                'redirect' => route('view.coure.St', $course->id)
             ]);
 
         } catch (\Exception $exception) {

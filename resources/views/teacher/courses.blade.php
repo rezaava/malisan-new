@@ -7,112 +7,7 @@
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-courses.css')}}">
 <style>
-    /* استایل مودال آرشیو */
-    .archived-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 20px;
-        background: linear-gradient(135deg, #6c757d, #495057);
-        color: #fff;
-        border: none;
-        border-radius: 10px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 14px;
-        text-decoration: none;
-    }
 
-    .archived-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 16px rgba(108, 117, 125, 0.3);
-        color: #fff;
-    }
-
-    .archived-btn i {
-        font-size: 16px;
-    }
-
-    .archived-count {
-        background: rgba(255, 255, 255, 0.3);
-        padding: 2px 10px;
-        border-radius: 20px;
-        font-size: 12px;
-    }
-
-    /* کارت آرشیو شده */
-    .course-card.archived {
-        opacity: 0.7;
-        border-color: #dc3545;
-    }
-
-    .course-card.archived .course-badge {
-        background: #dc3545 !important;
-    }
-
-    /* مودال آرشیو */
-    .archived-list-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 16px;
-        border-bottom: 1px solid #f0f4f9;
-    }
-
-    .archived-list-item:last-child {
-        border-bottom: none;
-    }
-
-    .archived-list-item .course-info {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-
-    .archived-list-item .course-name {
-        font-weight: 600;
-        color: #1a2332;
-    }
-
-    .archived-list-item .course-code {
-        font-size: 13px;
-        color: #6b7a8f;
-    }
-
-    .archived-list-item .restore-btn {
-        background: linear-gradient(135deg, #28a745, #20c997);
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        padding: 6px 16px;
-        font-size: 13px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .archived-list-item .restore-btn:hover {
-        transform: scale(1.05);
-        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
-    }
-
-    .archived-list-item .archived-date {
-        font-size: 12px;
-        color: #6b7a8f;
-    }
-
-    .empty-archived {
-        text-align: center;
-        padding: 40px;
-        color: #6b7a8f;
-    }
-
-    .empty-archived i {
-        font-size: 48px;
-        color: #d0d7e2;
-        display: block;
-        margin-bottom: 16px;
-    }
 </style>
 @endsection
 
@@ -185,10 +80,6 @@
         <div class="empty-state">
             <i class="fas fa-book-open"></i>
             <p>شما هیچ درسی ندارید</p>
-            <button class="btn-create-course" onclick="openCreateModal()">
-                <i class="fas fa-plus"></i>
-                اولین درس خود را ایجاد کنید
-            </button>
         </div>
     @endforelse
 </div>

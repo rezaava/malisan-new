@@ -29,6 +29,7 @@ Route::get('/grades-list', [TestController::class, 'gradesList'])->name('gradesL
 Route::get('/activities', [TestController::class, 'activities'])->name('activities');
 Route::get('/student-activities', [TestController::class, 'studentActivities'])->name('studentActivities');
 Route::get('/student-evaluation', [TestController::class, 'studentEvaluation'])->name('studentEvaluation');
+Route::get('/azmoon',[TeacherSiteController::class,'azmoon'])->name('azmoon');
 Route::get('/student-setting', [TestController::class, 'studentSetting'])->name('studentSetting');
 Route::get('/self-tests-list', [TestController::class, 'selfTestsList'])->name('selfTestsList');
 Route::get('/student-questions', [TestController::class, 'studentQuestions'])->name('studentQuestions');
@@ -52,7 +53,9 @@ Route::get("/", function () {
 // test
 Route::get('/role', [AuthController::class, 'roleFun']);
 
-// Teacher
+// ==========================================
+// Teacher Routes
+// ==========================================
 Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function () {
     Route::get('/', [TeacherSiteController::class, 'index'])->name('index_teacher');
 
@@ -88,15 +91,21 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         Route::post('/events', [StudentEventController::class, 'store']);
     });
 
-    // مسیرهای مربوط به سوالات - اصلاح شده
+    // ==========================================
+    // مسیرهای مربوط به سوالات - معلم
+    // ==========================================
     Route::prefix('/questions')->middleware(['role:teacher|admin'])->group(function () {
         Route::get('/create', [ExamController::class, 'create'])->name('createQuestion');
         Route::post('/store', [ExamController::class, 'store'])->name('question.store');
         Route::get('/random/{count?}', [ExamController::class, 'getRandomQuestions'])->name('api.random.questions');
+        Route::get('/show/{id}', [ExamController::class, 'show'])->name('question.show');
+        Route::get('/list', [ExamController::class, 'list'])->name('question.list');
     });
 });
 
-// Student
+// ==========================================
+// Student Routes
+// ==========================================
 Route::prefix('/student')->middleware(['role:student|admin'])->group(function () {
     Route::get('/', [StudentSiteController::class, 'index'])->name('index_student');
 
@@ -112,4 +121,22 @@ Route::prefix('/student')->middleware(['role:student|admin'])->group(function ()
         Route::get('/events/{studentId}', [StudentEventController::class, 'index']);
         Route::post('/events', [StudentEventController::class, 'store']);
     });
-});
+
+    // ==========================================
+    // خودآزمایی - دانشجو
+    // ==========================================
+    Route::prefix('/self-test')->middleware(['role:student|admin'])->group(function () {
+        Route::get('/start/{course_id}', [ExamController::class, 'startSelfTest'])->name('student.selfTest.start');
+        Route::post('/next', [ExamController::class, 'nextQuestion'])->name('student.selfTest.next');
+        Route::get('/results', [ExamController::class, 'selfTestResults'])->name('student.selfTest.results');
+        Route::get('/history', [ExamController::class, 'selfTestHistory'])->name('student.selfTest.history');
+    });
+
+    // ==========================================
+    // مسیرهای طرح سوال - دانشجو
+    // ==========================================
+    Route::prefix('/questions')->middleware(['role:student|admin'])->group(function () {
+        Route::get('/create/{session_id}', [ExamController::class, 'studentCreate'])->name('student.question.create');
+        Route::post('/store/{session_id}', [ExamController::class, 'studentStore'])->name('student.question.store');
+    });
+ });
