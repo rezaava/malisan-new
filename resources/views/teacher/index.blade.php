@@ -13,7 +13,7 @@
 @section('mohtava')
 <div class="motivation-banner">
     <div class="motivation-text-en">
-        {!! $message->text !!}
+        {!! $message->text ?? 'به سامانه ملیسان خوش آمدید' !!}
     </div>
 </div>
 
@@ -36,20 +36,20 @@
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
-            <a href="/malisan-courses" class="card-dash">
+            <div class="card-dash">
                 <div class="card-icon"><i class="fas fa-layer-group"></i></div>
                 <div class="card-title">دوره‌ها</div>
                 <div class="card-count">{{ $course_count }}</div>
                 <div class="card-text-sm">دوره در حال برگزاری</div>
-            </a>
+            </div>
         </div>
         <div class="col-md-3 col-sm-6">
-            <a href="/exams" class="card-dash">
+            <div class="card-dash">
                 <div class="card-icon"><i class="fas fa-clipboard-list"></i></div>
                 <div class="card-title">آزمون‌ها</div>
                 <div class="card-count">{{ $konkor_count }}</div>
                 <div class="card-text-sm">آزمون در حال برگزاری</div>
-            </a>
+            </div>
         </div>
     </div>
 </div>

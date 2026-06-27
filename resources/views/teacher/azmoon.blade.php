@@ -11,10 +11,6 @@
 
 @section('mohtava')
 <div class="content-header">
-    <button class="archive-btn">
-        <i class="fas fa-archive"></i>
-        <span>آرشیوها</span>
-    </button>
     <button class="exams-btn active">
         <i class="fas fa-book"></i>
         <span>آزمون‌ها</span>
@@ -81,13 +77,8 @@
         <div class="empty-state">
             <i class="fas fa-book-open"></i>
             <p>شما هیچ آزمونی ندارید</p>
-            <button class="btn-create-exam" onclick="openCreateModal()">
-                <i class="fas fa-plus"></i>
-                اولین آزمون خود را ایجاد کنید
-            </button>
         </div>
     @endforelse
-</div>
 
 <!-- Modal -->
 <div class="modal-overlay" id="createexamModal">

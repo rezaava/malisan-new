@@ -65,13 +65,6 @@ class TestController extends Controller
         return view('activities');
     }
 
-    public function studentActivities()
-
-    {
-
-        return view('student-activities');
-    }
-
     public function studentProfile()
 
     {

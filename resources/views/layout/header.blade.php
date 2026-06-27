@@ -6,13 +6,14 @@
             </div>
             <div class="logo-text">ملیسان | Malisan</div>
         </a>
-        <button class="menu-toggle-mobile" id="mobileMenuToggle">
+        {{-- ===== دکمه همبرگری ===== --}}
+        <button class="navbar-toggler" id="sidebarToggle" aria-label="Toggle navigation">
             <i class="fas fa-bars"></i>
         </button>
     </div>
     <div class="top-actions">
         <a href="/profile" class="profile-btn" title="پروفایل کاربر">
-            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="پروفایل" class="profile-img">
+            <img src="" alt="پروفایل" class="profile-img">
         </a>
         <a href="/messages" class="top-icon-btn" title="پیام‌ها">
             <i class="far fa-envelope"></i>

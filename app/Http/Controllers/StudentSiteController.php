@@ -8,6 +8,7 @@ use App\Models\Course;
 use App\Models\Konkor;
 use App\Models\Role;
 use Auth;
+use Carbon\Carbon;
 use DB;
 use Illuminate\Http\Request;
 
@@ -16,6 +17,10 @@ class StudentSiteController extends Controller
     public function index()
     {
         $user = Auth::user();
+
+        if ($user->hasRole('student') && !session()->has('onboarding_done')) {
+            return redirect()->route('student.onboarding');
+        }
         
         // دریافت پیام انگیزشی
         $message = Angizesh::whereIn('level', [7, 8])
@@ -34,12 +39,14 @@ class StudentSiteController extends Controller
             ->pluck('azmon_id');
         
         // دریافت آزمون‌های فعال
-        $azmons = Azmon::whereIn('course_id', $userCourseIds)
-            ->where('start', '<=', now())
-            ->where('end', '>=', now())
-            ->whereNotIn('id', $participatedAzmonIds)
-            ->get();
+        $activeExams = Azmon::whereIn('course_id', $userCourseIds)
+        ->where('start', '<=', Carbon::now())
+        ->where('end', '>=', Carbon::now())
+        ->whereNotIn('id', $participatedAzmonIds)
+        ->with('course')
+        ->get();
         
+
         // آمار کلی
         $course_count = Course::where('active', '1')
             ->where('private', '1')
@@ -48,18 +55,23 @@ class StudentSiteController extends Controller
         $konkor_count = Konkor::where('active', 1)
             ->count();
         
+        // تعداد آزمون‌های فعال برای نمایش در کارت
+        $active_exam_count = $activeExams->count();
+        
         return view('student.index', compact(
             'user',
             'message',
-            'azmons',
+            'activeExams',
+            'active_exam_count',
             'course_count',
             'konkor_count'
         ))->with([
             'pageTitle' => 'صفحه دانشجو',
             'pageName' => 'دانشجو',
-            'pageDescription' => 'خوش امدید',
+            'pageDescription' => 'خوش آمدید',
         ]);
     }
+
     public function courses()
     {
         $user = Auth::user();

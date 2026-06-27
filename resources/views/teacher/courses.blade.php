@@ -6,14 +6,11 @@
 
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-courses.css')}}">
-<style>
-
-</style>
 @endsection
 
 @section('mohtava')
 <div class="content-header">
-    <button class="archive-btn" onclick="openArchivedModal()">
+    <button class="archive-btn" id="archiveBtn">
         <i class="fas fa-archive"></i>
         <span>آرشیوها</span>
         <span class="archived-count" id="archivedCountBadge">0</span>
@@ -84,11 +81,13 @@
     @endforelse
 </div>
 
-<!-- Modal ایجاد درس -->
+<!-- ==========================================
+     مودال ایجاد درس
+     ========================================== -->
 <div class="modal-overlay" id="createCourseModal">
     <div class="modal-container">
-        <div class="modal-header">
-            <h3 id="modalTitle">ایجاد درس جدید</h3>
+        <div class="modal-header" style="background: linear-gradient(135deg, #1e6f9f, #155a82);">
+            <h3 id="modalTitle" style="color:#fff;">ایجاد درس جدید</h3>
             <button class="modal-close" onclick="closeModal()">
                 <i class="fas fa-times"></i>
             </button>
@@ -123,7 +122,9 @@
     </div>
 </div>
 
-<!-- مودال نمایش دوره‌های آرشیو شده -->
+<!-- ==========================================
+     مودال نمایش دوره‌های آرشیو شده
+     ========================================== -->
 <div class="modal-overlay" id="archivedModalOverlay">
     <div class="modal-container" style="max-width: 700px;">
         <div class="modal-header" style="background: linear-gradient(135deg, #6c757d, #495057);">
@@ -210,29 +211,67 @@
     });
 
     // ============================================
-    // مودال آرشیو
+    // مودال آرشیو - با EventListener
     // ============================================
     
+    // باز کردن مودال با EventListener
+    document.addEventListener('DOMContentLoaded', function() {
+        // دکمه آرشیو
+        var archiveBtn = document.getElementById('archiveBtn');
+        if (archiveBtn) {
+            archiveBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                openArchivedModal();
+            });
+        }
+
+        // بستن مودال با کلیک روی پس‌زمینه
+        var modal = document.getElementById('archivedModalOverlay');
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeArchivedModal();
+                }
+            });
+        }
+
+        // بارگذاری تعداد آرشیوها
+        loadArchivedCount();
+    });
+
     function openArchivedModal() {
-        document.getElementById('archivedModalOverlay').classList.add('open');
+        var modal = document.getElementById('archivedModalOverlay');
+        if (!modal) {
+            console.error('Modal not found!');
+            showToast('خطا: مودال آرشیو پیدا نشد', 'error');
+            return;
+        }
+        
+        modal.classList.add('active');
         loadArchivedCourses();
     }
 
     function closeArchivedModal() {
-        document.getElementById('archivedModalOverlay').classList.remove('open');
+        var modal = document.getElementById('archivedModalOverlay');
+        if (modal) {
+            modal.classList.remove('active');
+        }
     }
 
-    document.getElementById('archivedModalOverlay').addEventListener('click', function(e) {
-        if (e.target === this) closeArchivedModal();
-    });
-
     function loadArchivedCourses() {
-        const container = document.getElementById('archivedCoursesList');
+        var container = document.getElementById('archivedCoursesList');
+        if (!container) return;
+        
         container.innerHTML = '<div class="text-center" style="padding:20px;"><i class="fas fa-spinner fa-spin" style="font-size:24px;color:#1e6f9f;"></i><p>در حال بارگذاری...</p></div>';
 
         fetch('/teacher/courses/archived')
-            .then(response => response.json())
-            .then(data => {
+            .then(function(response) {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(function(data) {
                 if (!data.success) {
                     container.innerHTML = `
                         <div class="empty-archived">
@@ -253,19 +292,22 @@
                     return;
                 }
 
-                let html = `
+                var html = `
                     <div style="margin-bottom:16px;padding:12px 16px;background:#f8f9fa;border-radius:10px;border-right:3px solid #6c757d;">
                         <span style="font-weight:700;color:#495057;">تعداد دوره‌های آرشیو شده: ${data.data.length}</span>
                     </div>
                 `;
 
-                data.data.forEach((course, index) => {
+                data.data.forEach(function(course, index) {
+                    var date = new Date(course.updated_at);
+                    var persianDate = date.toLocaleDateString('fa-IR');
+                    
                     html += `
                         <div class="archived-list-item">
                             <div class="course-info">
                                 <span class="course-name">${index + 1}. ${course.name}</span>
                                 <span class="course-code">کد: ${course.code}</span>
-                                <span class="archived-date">آرشیو شده در: ${new Date(course.updated_at).toLocaleDateString('fa-IR')}</span>
+                                <span class="archived-date">آرشیو شده در: ${persianDate}</span>
                             </div>
                             <button class="restore-btn" onclick="restoreCourse(${course.id})">
                                 <i class="fas fa-undo"></i>
@@ -278,10 +320,13 @@
                 container.innerHTML = html;
 
                 // بروزرسانی تعداد Badge
-                document.getElementById('archivedCountBadge').textContent = data.data.length;
+                var badge = document.getElementById('archivedCountBadge');
+                if (badge) {
+                    badge.textContent = data.data.length;
+                }
 
             })
-            .catch(error => {
+            .catch(function(error) {
                 console.error('Error:', error);
                 container.innerHTML = `
                     <div class="empty-archived">
@@ -290,6 +335,76 @@
                     </div>
                 `;
             });
+    }
+
+    function loadArchivedCount() {
+        fetch('/teacher/courses/archived')
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    var badge = document.getElementById('archivedCountBadge');
+                    if (badge) {
+                        badge.textContent = data.data ? data.data.length : 0;
+                    }
+                }
+            })
+            .catch(function(error) {
+                console.error('Error loading archived count:', error);
+            });
+    }
+
+    function restoreCourse(courseId) {
+        if (!confirm('آیا از بازگرداندن این دوره از آرشیو اطمینان دارید؟')) {
+            return;
+        }
+        
+        // پیدا کردن دکمه‌ها و غیرفعال کردن
+        var btns = document.querySelectorAll('.restore-btn');
+        var targetBtn = null;
+        btns.forEach(function(btn) {
+            var onclickAttr = btn.getAttribute('onclick');
+            if (onclickAttr && onclickAttr.includes('restoreCourse(' + courseId + ')')) {
+                targetBtn = btn;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                btn.disabled = true;
+            }
+        });
+        
+        fetch('/teacher/courses/toggle-archive/' + courseId, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            if (data.success) {
+                showToast(data.message, 'success');
+                loadArchivedCourses();
+                setTimeout(function() {
+                    location.reload();
+                }, 2000);
+            } else {
+                showToast(data.message, 'error');
+                if (targetBtn) {
+                    targetBtn.innerHTML = '<i class="fas fa-undo"></i> بازگرداندن';
+                    targetBtn.disabled = false;
+                }
+            }
+        })
+        .catch(function(error) {
+            console.error('Error:', error);
+            showToast('خطا در ارتباط با سرور', 'error');
+            if (targetBtn) {
+                targetBtn.innerHTML = '<i class="fas fa-undo"></i> بازگرداندن';
+                targetBtn.disabled = false;
+            }
+        });
     }
 
     // ============================================
@@ -392,38 +507,6 @@
         });
     }
 
-    function restoreCourse(courseId) {
-        if (!confirm('آیا از بازگرداندن این دوره از آرشیو اطمینان دارید؟')) {
-            return;
-        }
-        
-        fetch(`/teacher/courses/toggle-archive/${courseId}`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showToast(data.message, 'success');
-                // بارگذاری مجدد لیست آرشیو
-                loadArchivedCourses();
-                // ریفرش صفحه بعد از 2 ثانیه
-                setTimeout(() => {
-                    location.reload();
-                }, 2000);
-            } else {
-                showToast(data.message, 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast('خطا در ارتباط با سرور', 'error');
-        });
-    }
-
     function toggleCourseStatus(courseId) {
         event.preventDefault();
         event.stopPropagation();
@@ -502,15 +585,15 @@
     // ============================================
     
     function showToast(message, type = 'info') {
-        const existingToast = document.querySelector('.toast-notification');
+        var existingToast = document.querySelector('.toast-notification');
         if (existingToast) {
             existingToast.remove();
         }
         
-        const toast = document.createElement('div');
+        var toast = document.createElement('div');
         toast.className = 'toast-notification';
         
-        const colors = {
+        var colors = {
             success: '#4CAF50',
             error: '#f44336',
             info: '#2196F3',
@@ -539,10 +622,12 @@
         toast.textContent = message;
         document.body.appendChild(toast);
         
-        setTimeout(() => {
+        setTimeout(function() {
             toast.style.opacity = '0';
             toast.style.transition = 'opacity 0.4s';
-            setTimeout(() => toast.remove(), 400);
+            setTimeout(function() {
+                toast.remove();
+            }, 400);
         }, 3500);
     }
 
@@ -551,12 +636,12 @@
     // ============================================
     
     document.getElementById('createCourseForm')?.addEventListener('submit', function(e) {
-        const submitButton = this.querySelector('.btn-submit');
-        const originalText = submitButton.innerHTML;
+        var submitButton = this.querySelector('.btn-submit');
+        var originalText = submitButton.innerHTML;
         submitButton.innerHTML = '<span class="spinner"></span> در حال ارسال...';
         submitButton.disabled = true;
         
-        setTimeout(() => {
+        setTimeout(function() {
             submitButton.innerHTML = originalText;
             submitButton.disabled = false;
         }, 5000);
@@ -568,27 +653,15 @@
     
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            const createModal = document.getElementById('createCourseModal');
-            if (createModal.classList.contains('active')) {
+            var createModal = document.getElementById('createCourseModal');
+            if (createModal && createModal.classList.contains('active')) {
                 closeModal();
             }
-            const archivedModal = document.getElementById('archivedModalOverlay');
-            if (archivedModal.classList.contains('active')) {
+            var archivedModal = document.getElementById('archivedModalOverlay');
+            if (archivedModal && archivedModal.classList.contains('active')) {
                 closeArchivedModal();
             }
         }
-    });
-
-    // بارگذاری تعداد آرشیوها هنگام لود صفحه
-    document.addEventListener('DOMContentLoaded', function() {
-        fetch('/teacher/courses/archived')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('archivedCountBadge').textContent = data.data?.length || 0;
-                }
-            })
-            .catch(error => console.error('Error loading archived count:', error));
     });
 
     console.log('✅ Course management loaded successfully!');

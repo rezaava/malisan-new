@@ -32,35 +32,35 @@
             <i class="fas {{ $isJudment ? 'fa-gavel' : 'fa-ban' }}"></i>
             اعتراضات (غیر فعال) 
         </a>
-        <a href="/dashboard/evaluation?course_id={{ $course->id }}" class="chip-item">
+        <a href="{{ route('judgment.index') }}" class="chip-item">
             <i class="fas fa-chart-line"></i>
             پایش و ارزیابی
         </a>
-        <a href="/dashboard/courses/grades/{{ $course->id }}" class="chip-item">
+        <a href="{{ route('gradesList',$course->id) }}" class="chip-item">
             <i class="fas fa-star"></i>
             نمرات دانشجویان
         </a>
-        <a href="/dashboard/courses/bank?course_id={{ $course->id }}" class="chip-item">
+        <a href="{{ route('question.bank',$course->id) }}" class="chip-item">
             <i class="fas fa-database"></i>
             بانک سوالات
         </a>
-        <a href="/dashboard/azmon?id={{ $course->id }}" class="chip-item">
+        <a href="{{ route('azmon.list',$course->id) }}" class="chip-item">
             <i class="fas fa-pencil-alt"></i>
             تعریف آزمون
         </a>
-        <a href="/dashboard/allprogress?course_id={{ $course->id }}" class="chip-item">
+        <a href="{{ route('activities',$course->id) }}" class="chip-item">
             <i class="fas fa-eye"></i>
             پایش دانشجویان
         </a>
-        <a href="/dashboard/survey?course_id={{ $course->id }}" class="chip-item">
+        <a href="{{ route('surveys.index', $course->id) }}" class="chip-item">
             <i class="fas fa-poll"></i>
             نظرسنجی
         </a>
-        <a href="/dashboard/kholaseha?course_id={{ $course->id }}" class="chip-item">
+        <a href="{{ route('teacher.reports.list', $course->id) }}" class="chip-item">
             <i class="fas fa-file-alt"></i>
             لیست گزارش دانشجویان
         </a>
-        <a href="/dashboard/courses/{{ $course->id }}/nomreha" class="chip-item">
+        <a href="{{ route('studentActivities',$course) }}" class="chip-item">
             <i class="fas fa-tasks"></i>
             فعالیت های دانشجویان
         </a>
@@ -103,26 +103,32 @@
                         @endif
                     </h5>
                 </div>
-                <div class="session-action-buttons">
-                    <a href="{{ route('createQuestion') }}" id="questionBtn" class="action-icon-btn" data-position="bottom" data-tooltip="طرح سوال">
-                        <i class="fas fa-question-circle"></i>
-                    </a>
-                    <a href="#" id="homeworkTeacherBtn" class="action-icon-btn" data-position="bottom" data-tooltip="دادن تکلیف">
-                        <i class="fas fa-file-alt"></i>
-                    </a>
-                    <a href="#" id="toggleActiveBtn" class="action-icon-btn" data-position="bottom" data-tooltip="غیرفعال کردن">
-                        <i class="fas fa-check-circle"></i>
-                    </a>
-                    <a href="#" id="homeworkBtn" class="action-icon-btn" data-position="bottom" data-tooltip="تکلیف">
-                        <i class="fas fa-tasks"></i>
-                    </a>
-                    <a href="#" id="editBtn" class="action-icon-btn" data-position="bottom" data-tooltip="ویرایش">
-                        <i class="fas fa-edit"></i>
-                    </a>
-                    <a href="#" id="profExBtn" class="action-icon-btn" data-position="bottom" data-tooltip="تکلیفها">
-                        <i class="fas fa-list-ul"></i>
-                    </a>
-                </div>
+                    <div class="session-action-buttons">
+                        {{-- دکمه تکلیف (برای استاد) --}}
+                        <a href="#" id="homeworkTeacherBtn" class="action-icon-btn" data-position="bottom" data-tooltip="مدیریت تکالیف">
+                            <i class="fas fa-file-alt"></i>
+                        </a>
+                        
+                        {{-- دکمه غیرفعال کردن جلسه --}}
+                        {{-- <a href="#" id="toggleActiveBtn" class="action-icon-btn" data-position="bottom" data-tooltip="غیرفعال کردن">
+                            <i class="fas fa-check-circle"></i>
+                        </a> --}}
+                        
+                        {{-- دکمه مشاهده تکالیف دانشجو --}}
+                        <a href="#" id="homeworkBtn" class="action-icon-btn" data-position="bottom" data-tooltip="تکالیف من">
+                            <i class="fas fa-tasks"></i>
+                        </a>
+                        
+                        {{-- دکمه ویرایش جلسه --}}
+                        {{-- <a href="#" id="editBtn" class="action-icon-btn" data-position="bottom" data-tooltip="ویرایش جلسه">
+                            <i class="fas fa-edit"></i>
+                        </a> --}}
+                        
+                        {{-- دکمه لیست تکالیف (برای استاد) --}}
+                        <a href="#" id="profExBtn" class="action-icon-btn" data-position="bottom" data-tooltip="لیست تکالیف">
+                            <i class="fas fa-list-ul"></i>
+                        </a>
+                    </div>
             </div>
 
             <div class="session-pdf-container">
@@ -207,22 +213,22 @@
         }
 
         const editBtn = document.getElementById('editBtn');
-        editBtn.setAttribute('href', `/dashboard/courses/sessions/edit/${sessionId}`);
+        editBtn.setAttribute('href', `/teacher/courses/sessions/edit/${sessionId}`);
 
         const questionBtn = document.getElementById('questionBtn');
-        questionBtn.setAttribute('href', `/dashboard/question/show?session_id=${sessionId}`);
+        questionBtn.setAttribute('href', `/teacher/question/show?session_id=${sessionId}`);
 
         const homeworkTeacherBtn = document.getElementById('homeworkTeacherBtn');
-        homeworkTeacherBtn.setAttribute('href', `/dashboard/exercise/show/${sessionId}`);
+        homeworkTeacherBtn.setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
 
         const homeworkBtn = document.getElementById('homeworkBtn');
-        homeworkBtn.setAttribute('href', `/dashboard/exercise/show/${sessionId}`);
+        homeworkBtn.setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
 
         const toggleActiveBtn = document.getElementById('toggleActiveBtn');
-        toggleActiveBtn.setAttribute('href', `/dashboard/courses/sessions/active/${sessionId}`);
+        toggleActiveBtn.setAttribute('href', `/teacher/courses/sessions/active/${sessionId}`);
 
         const profExBtn = document.getElementById('profExBtn');
-        profExBtn.setAttribute('href', `/dashboard/courses/sessions/prof-ex/${sessionId}`);
+        profExBtn.setAttribute('href', `/teacher/courses/sessions/prof-ex/${sessionId}`);
     }
 
     // Event listener for collapsible
@@ -244,17 +250,57 @@
             const firstSession = document.querySelector('.session-item.active');
             if (firstSession) {
                 const sessionId = firstSession.dataset.session;
+                
+                // تنظیم لینک‌ها برای جلسه اول
+                const editBtn = document.getElementById('editBtn');
+                if (editBtn) {
+                    editBtn.setAttribute('href', `/teacher/courses/sessions/edit/${sessionId}`);
+                }
+                
+                const questionBtn = document.getElementById('questionBtn');
+                if (questionBtn) {
+                    questionBtn.setAttribute('href', `/teacher/question/show?session_id=${sessionId}`);
+                }
+                
+                const homeworkTeacherBtn = document.getElementById('homeworkTeacherBtn');
+                if (homeworkTeacherBtn) {
+                    homeworkTeacherBtn.setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
+                }
+                
+                const homeworkBtn = document.getElementById('homeworkBtn');
+                if (homeworkBtn) {
+                    homeworkBtn.setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
+                }
+                
+                const toggleActiveBtn = document.getElementById('toggleActiveBtn');
+                if (toggleActiveBtn) {
+                    toggleActiveBtn.setAttribute('href', `/teacher/courses/sessions/active/${sessionId}`);
+                }
+                
+                const profExBtn = document.getElementById('profExBtn');
+                if (profExBtn) {
+                    profExBtn.setAttribute('href', `/teacher/courses/sessions/prof-ex/${sessionId}`);
+                }
+            }
+        });
+    @endif
+
+    @if($sessions->isNotEmpty())
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstSession = document.querySelector('.session-item.active');
+            if (firstSession) {
+                const sessionId = firstSession.dataset.session;
                 const pdfUrl = '{{ $sessions->first()->file ?? "" }}';
                 const title = '{{ addslashes($sessions->first()->name) }}';
                 const number = 'جلسه {{ $sessions->first()->number }}';
                 
                 // تنظیم لینک‌ها برای جلسه اول
-                document.getElementById('editBtn').setAttribute('href', `/dashboard/courses/sessions/edit/${sessionId}`);
-                document.getElementById('questionBtn').setAttribute('href', `/dashboard/question/show?session_id=${sessionId}`);
-                document.getElementById('homeworkTeacherBtn').setAttribute('href', `/dashboard/exercise/show/${sessionId}`);
-                document.getElementById('homeworkBtn').setAttribute('href', `/dashboard/exercise/show/${sessionId}`);
-                document.getElementById('toggleActiveBtn').setAttribute('href', `/dashboard/courses/sessions/active/${sessionId}`);
-                document.getElementById('profExBtn').setAttribute('href', `/dashboard/courses/sessions/prof-ex/${sessionId}`);
+                document.getElementById('editBtn').setAttribute('href', `/teacher/courses/sessions/edit/${sessionId}`);
+                document.getElementById('questionBtn').setAttribute('href', `/teacher/question/show?session_id=${sessionId}`);
+                document.getElementById('homeworkTeacherBtn').setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
+                document.getElementById('homeworkBtn').setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
+                document.getElementById('toggleActiveBtn').setAttribute('href', `/teacher/courses/sessions/active/${sessionId}`);
+                document.getElementById('profExBtn').setAttribute('href', `/teacher/courses/sessions/prof-ex/${sessionId}`);
             }
         });
     @endif

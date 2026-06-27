@@ -496,3 +496,107 @@
     margin-top: 30vh;
     text-align: center;
 }
+
+/* ============================================
+   استایل‌های مودال آرشیو
+   ============================================ */
+.archived-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid #f0f4f9;
+    transition: background 0.3s ease;
+    gap: 12px;
+}
+
+.archived-list-item:hover {
+    background: #f8fafc;
+}
+
+.archived-list-item:last-child {
+    border-bottom: none;
+}
+
+.archived-list-item .course-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    text-align: right;
+}
+
+.archived-list-item .course-name {
+    font-weight: 600;
+    color: #1a2332;
+    font-size: 15px;
+}
+
+.archived-list-item .course-code {
+    font-size: 13px;
+    color: #6b7a8f;
+}
+
+.archived-list-item .archived-date {
+    font-size: 12px;
+    color: #9aa8b9;
+}
+
+.archived-list-item .restore-btn {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.archived-list-item .restore-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.archived-list-item .restore-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.archived-list-item .restore-btn i {
+    font-size: 14px;
+}
+
+.empty-archived {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6b7a8f;
+}
+
+.empty-archived i {
+    font-size: 48px;
+    color: #d0d7e2;
+    display: block;
+    margin-bottom: 16px;
+}
+
+.empty-archived p {
+    font-size: 15px;
+    margin: 0;
+}
+
+.archived-count {
+    background: rgba(255, 255, 255, 0.3);
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+}

@@ -6,6 +6,63 @@
 
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-course.css')}}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    .session-action-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .action-icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: #f0f4f9;
+        color: #4a5a6e;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        font-size: 16px;
+        position: relative;
+    }
+
+    .action-icon-btn:hover {
+        background: #1e6f9f;
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(30, 111, 159, 0.3);
+    }
+
+    .action-icon-btn[data-tooltip]:hover::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: -32px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1a2332;
+        color: #fff;
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 500;
+        white-space: nowrap;
+        z-index: 10;
+    }
+
+    @media (max-width: 768px) {
+        .session-action-buttons {
+            gap: 6px;
+        }
+        .action-icon-btn {
+            width: 34px;
+            height: 34px;
+            font-size: 14px;
+        }
+    }
+</style>
 @endsection
 
 @section('mohtava')
@@ -13,11 +70,12 @@
     <div class="course-header">
         <h4 class="course-title-main">{{ $course->name ?? 'عنوان درس' }}</h4>
     </div>
+    
     <div class="course-chips">
-    <a href="{{ route('student.selfTest.start', $course->id) }}" class="chip-item">
-        <i class="fas fa-star"></i>
-        خودآزمایی
-    </a>
+        <a href="{{ route('student.selfTest.start', $course->id) }}" class="chip-item">
+            <i class="fas fa-star"></i>
+            خودآزمایی
+        </a>
         <a href="/dashboard/courses/bank?course_id={{ $course->id }}" class="chip-item">
             <i class="fas fa-database"></i>
             فعالیت های من 
@@ -28,12 +86,10 @@
         </a>
     </div>
 
-
     <div class="sessions-section">
         <div class="sessions-sidebar">
             <div class="sessions-header">
                 <h5>جلسه های ارائه شده</h5>
-                </a>
             </div>
             <div class="sessions-list">
                 @forelse($sessions as $session)
@@ -65,13 +121,16 @@
                     </h5>
                 </div>
                 <div class="session-action-buttons">
-                    <a href="#" id="questionBtn" class="action-icon-btn" data-position="bottom" data-tooltip="طرح سوال">
+                    <a href="{{ route('student.question.create',$course->id) }}" class="action-icon-btn" data-tooltip="طرح سوال">
                         <i class="fas fa-question-circle"></i>
                     </a>
-                    <a href="#" id="homeworkTeacherBtn" class="action-icon-btn" data-position="bottom" data-tooltip="دادن تکلیف">
+                    
+                    <a href="{{ route('student.exercise.show',$course->id) }}" class="action-icon-btn" data-tooltip="مدیریت تکالیف">
                         <i class="fas fa-file-alt"></i>
                     </a>
-                    <a href="#" id="editBtn" class="action-icon-btn" data-position="bottom" data-tooltip="ویرایش">
+                    
+                    {{-- دکمه گزارش --}}
+                    <a href="{{ route('student.discussion.create',$course->id) }}" id="reportBtn" class="action-icon-btn" data-tooltip="ارسال گزارش">
                         <i class="fas fa-edit"></i>
                     </a>
                 </div>
@@ -158,29 +217,35 @@
             pdfOpenBtn.style.display = 'none';
         }
 
-        const editBtn = document.getElementById('editBtn');
-        editBtn.setAttribute('href', `/dashboard/courses/sessions/edit/${sessionId}`);
-
         // ==========================================
-        // اصلاح: لینک طرح سوال به مسیر دانشجو
+        // تنظیم لینک ۳ دکمه
         // ==========================================
-        const questionBtn = document.getElementById('questionBtn');
-        questionBtn.setAttribute('href', '/student/questions/create/' + sessionId);
         
+        // 1. دکمه ویرایش جلسه (استاد)
+        const editBtn = document.getElementById('editBtn');
+        if (editBtn) {
+            editBtn.setAttribute('href', `/dashboard/courses/sessions/edit/${sessionId}`);
+        }
+
+        // 2. دکمه طرح سوال (دانشجو)
+        const questionBtn = document.getElementById('questionBtn');
+        if (questionBtn) {
+            questionBtn.setAttribute('href', `/student/questions/create/${sessionId}`);
+        }
+
+        // 3. دکمه مدیریت تکالیف (استاد)
         const homeworkTeacherBtn = document.getElementById('homeworkTeacherBtn');
-        homeworkTeacherBtn.setAttribute('href', `/dashboard/exercise/show/${sessionId}`);
+        if (homeworkTeacherBtn) {
+            homeworkTeacherBtn.setAttribute('href', `/dashboard/exercise/show/${sessionId}`);
+        }
+        const reportBtn = document.getElementById('reportBtn');
+        if (reportBtn) {
+            reportBtn.setAttribute('href', `/student/discussion/create/${sessionId}`);
+        }
 
-        const homeworkBtn = document.getElementById('homeworkBtn');
-        homeworkBtn.setAttribute('href', `/dashboard/exercise/show/${sessionId}`);
-
-        const toggleActiveBtn = document.getElementById('toggleActiveBtn');
-        toggleActiveBtn.setAttribute('href', `/dashboard/courses/sessions/active/${sessionId}`);
-
-        const profExBtn = document.getElementById('profExBtn');
-        profExBtn.setAttribute('href', `/dashboard/courses/sessions/prof-ex/${sessionId}`);
     }
 
-    // Event listener for collapsible
+    // ===== Collapsible =====
     document.querySelector('.collapsible-header')?.addEventListener('click', function() {
         const body = this.nextElementSibling;
         const icon = this.querySelector('.expand-icon');
@@ -193,31 +258,34 @@
         }
     });
 
-    // اگر اولین جلسه وجود داشته باشد، لینک‌های اولیه را تنظیم کن
+    // ===== تنظیم لینک‌های اولیه برای جلسه اول =====
     @if($sessions->isNotEmpty())
         document.addEventListener('DOMContentLoaded', function() {
             const firstSession = document.querySelector('.session-item.active');
             if (firstSession) {
                 const sessionId = firstSession.dataset.session;
-                const pdfUrl = '{{ $sessions->first()->file ?? "" }}';
-                const title = '{{ addslashes($sessions->first()->name) }}';
-                const number = 'جلسه {{ $sessions->first()->number }}';
                 
-                // تنظیم لینک‌ها برای جلسه اول
+                // 1. دکمه ویرایش جلسه
                 document.getElementById('editBtn').setAttribute('href', `/dashboard/courses/sessions/edit/${sessionId}`);
                 
-                // ==========================================
-                // اصلاح: لینک طرح سوال به مسیر دانشجو
-                // ==========================================
-                document.getElementById('questionBtn').setAttribute('href', '/student/questions/create/' + sessionId);
+                // 2. دکمه طرح سوال
+                document.getElementById('questionBtn').setAttribute('href', `/student/questions/create/${sessionId}`);
+                
+                // 3. دکمه مدیریت تکالیف
+                document.getElementById('homeworkTeacherBtn').setAttribute('href', `/student/exercise/show/${sessionId}`);
 
-                document.getElementById('homeworkTeacherBtn').setAttribute('href', `/dashboard/exercise/show/${sessionId}`);
-                document.getElementById('homeworkBtn').setAttribute('href', `/dashboard/exercise/show/${sessionId}`);
-                document.getElementById('toggleActiveBtn').setAttribute('href', `/dashboard/courses/sessions/active/${sessionId}`);
-                document.getElementById('profExBtn').setAttribute('href', `/dashboard/courses/sessions/prof-ex/${sessionId}`);
+                document.getElementById('reportBtn').setAttribute('href', `/student/discussion/create/${sessionId}`);
             }
         });
     @endif
+    // ===== Report Button =====
+    const reportBtn = document.getElementById('reportBtn');
+    if (reportBtn) {
+        reportBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = '/student/discussion/create/' + currentSessionId;
+        });
+    }
 </script>
 
 <style>

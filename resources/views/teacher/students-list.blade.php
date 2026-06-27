@@ -143,7 +143,7 @@
                             </a>
                         </td>
                         <td>
-                            <a href="/dashboard/progress?course_id={{ $course->id ?? 0 }}&user={{ $user->id }}" class="action-btn progress-btn" title="پیشرفت درسی">
+                            <a href="{{ route('studentEvaluation', ['courseId' => $course->id, 'userId' => $user->id]) }}" class="action-btn progress-btn" title="پیشرفت درسی">
                                 <i class="fas fa-chart-line"></i>
                             </a>
                         </td>
