@@ -28,14 +28,14 @@
             <i class="fas fa-user-graduate"></i>
             مشخصات دانشجویان ({{ $course->students->count() ?? 0 }})
         </a>
-        <a href="#" class="chip-item {{ $isJudment ? '' : 'inactive' }}">
-            <i class="fas {{ $isJudment ? 'fa-gavel' : 'fa-ban' }}"></i>
-            اعتراضات (غیر فعال) 
+        <a href="{{ route('teacher.question.reports.list', $course->id) }}" class="chip-item">
+            <i class="fas fa-flag" style="color:#f44336;"></i>
+            ایراد سوال‌ها ({{ $reportCount ?? 0 }})
         </a>
-        <a href="{{ route('judgment.index') }}" class="chip-item">
+        {{-- <a href="{{ route('judgment.index') }}" class="chip-item">
             <i class="fas fa-chart-line"></i>
             پایش و ارزیابی
-        </a>
+        </a> --}}
         <a href="{{ route('gradesList',$course->id) }}" class="chip-item">
             <i class="fas fa-star"></i>
             نمرات دانشجویان

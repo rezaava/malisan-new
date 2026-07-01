@@ -141,11 +141,11 @@ class AuthController extends Controller
         }
 
         // بررسی فعال بودن کاربر
-        if ($user->active != 1) {
-            return redirect()->back()
-                ->with('error', 'حساب کاربری شما غیرفعال است')
-                ->withInput();
-        }
+        // if ($user->active != 1) {
+        //     return redirect()->back()
+        //         ->with('error', 'حساب کاربری شما غیرفعال است')
+        //         ->withInput();
+        // }
 
         // ورود کاربر
         Auth::login($user, $request->has('remember'));

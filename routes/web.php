@@ -7,6 +7,7 @@ use App\Http\Controllers\DiscussionController;
 use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\JudgmentController;
+use App\Http\Controllers\QuestionReportController;
 use App\Http\Controllers\Student\StudentCourseController;
 use App\Http\Controllers\StudentSiteController;
 use App\Http\Controllers\Teacher\CourseController;
@@ -94,9 +95,11 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         Route::get('/activities/{id}', [CourseController::class, 'allProgress'])->name('activities');
         Route::post('/activities-range/{id}', [CourseController::class, 'getStudentActivitiesRange'])->name('get.student.activities.range');
 
+        // ===== گزارش‌های دانشجویان =====
         Route::get('/reports-list/{course_id}', [CourseController::class, 'reportsList'])->name('teacher.reports.list');
         Route::get('/report/{id}', [CourseController::class, 'getReportDetail'])->name('teacher.report.detail');
 
+        // ===== فعالیت‌های دانشجویان =====
         Route::get('/student-activities/{course}', [CourseController::class, 'studentActivities'])->name('studentActivities');
         Route::get('/student-questions/{id}', [CourseController::class, 'studentQuestions'])->name('studentQuestions');
         Route::get('/student-reports/{id}', [CourseController::class, 'studentReports'])->name('studentReports');
@@ -104,12 +107,13 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         Route::get('/student-self-tests/{id}', [CourseController::class, 'studentSelfTests'])->name('studentSelfTests');
         Route::get('/student-official-exams/{id}', [CourseController::class, 'studentOfficialExams'])->name('studentOfficialExams');
 
-
+        // ===== بانک سوالات =====
         Route::prefix('/bank')->group(function () {
             Route::get('/{id}', [CourseController::class, 'questionBank'])->name('question.bank');
             Route::post('/star/{id}', [CourseController::class, 'toggleStar'])->name('question.star');
         });
 
+        // ===== نظرسنجی =====
         Route::prefix('/survey')->group(function () {
             Route::get('/{id}', [SurveyController::class, 'index'])->name('surveys.index');
             Route::post('/store', [SurveyController::class, 'store'])->name('survey.store');
@@ -120,6 +124,7 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
             Route::post('/update/{id}', [SurveyController::class, 'update'])->name('survey.update');
         });
 
+        // ===== آزمون‌ها =====
         Route::prefix('/azmon')->group(function () {
             Route::get('/list/{id}', [AzmonController::class, 'list'])->name('azmon.list');
             Route::get('/create', [AzmonController::class, 'create'])->name('azmon.create');
@@ -131,9 +136,7 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
             Route::get('/stats/{id}', [AzmonController::class, 'azmonStats'])->name('azmon.stats');
         });
 
-        // ==========================================
-        // مسیرهای تمرین (Exercise) - استاد
-        // ==========================================
+        // ===== تمرین (Exercise) - استاد =====
         Route::prefix('/exercises')->group(function () {
             Route::get('/show/{session_id}', [ExerciseController::class, 'show'])->name('exercise.show');
             Route::post('/create', [ExerciseController::class, 'create'])->name('exercise.create');
@@ -144,20 +147,9 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
             Route::post('/score', [ExerciseController::class, 'score'])->name('exercise.score');
         });
 
-        Route::prefix('/judgment')->group(function () {
-            Route::get('/', [JudgmentController::class, 'index'])->name('judgment.index');
-            Route::post('/store', [JudgmentController::class, 'store'])->name('judgment.store');
-            Route::get('/stats', [JudgmentController::class, 'stats'])->name('judgment.stats');
-            Route::delete('/{id}', [JudgmentController::class, 'destroy'])->name('judgment.destroy');
-        });
-
-        // ==========================================
-        // مسیرهای آپلود فایل
-        // ==========================================
+        // ===== آپلود فایل =====
         Route::post('/upload/image', [FileController::class, 'uploadImage'])->name('upload.image');
         Route::post('/upload/video', [FileController::class, 'uploadVideo'])->name('upload.video');
-
-
     });
 
     // ==========================================
@@ -168,7 +160,20 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         Route::post('/store', [ExamController::class, 'store'])->name('question.store');
         Route::get('/random/{count?}', [ExamController::class, 'getRandomQuestions'])->name('api.random.questions');
         Route::get('/show/{id}', [ExamController::class, 'show'])->name('question.show');
+        Route::get('/show/{id}', [ExamController::class, 'getQuestionData'])->name('question.getData');
+        Route::put('/status/{id}', [ExamController::class, 'updateStatusTe'])->name('question.updateStatus');
+        Route::delete('/{id}', [ExamController::class, 'destroy'])->name('question.destroy');
         Route::get('/list', [ExamController::class, 'list'])->name('question.list');
+    });
+
+    // ==========================================
+    // مسیرهای گزارش ایراد سوال
+    // ==========================================
+    Route::get('/question-reports', [QuestionReportController::class, 'index'])->name('teacher.question.reports');
+    Route::put('/question-report/{id}', [QuestionReportController::class, 'update'])->name('teacher.question.report.update');
+    
+    Route::prefix('/reports')->group(function () {
+        Route::get('/list/{course_id}', [QuestionReportController::class, 'courseReports'])->name('teacher.question.reports.list');
     });
 });
 
@@ -189,6 +194,17 @@ Route::prefix('/student')->middleware(['role:student|admin'])->group(function ()
 
         Route::get('/events/{studentId}', [StudentEventController::class, 'index']);
         Route::post('/events', [StudentEventController::class, 'store']);
+
+        // ===== فعالیت‌های من =====
+        Route::get('/my-activities/{course_id}', [StudentSiteController::class, 'myActivities'])->name('student.my.activities');
+        
+        // ===== مشاهده جزئیات =====
+        Route::get('/question/{id}', [StudentSiteController::class, 'viewQuestion'])->name('student.question.view');
+        Route::get('/discussion/{id}', [StudentSiteController::class, 'viewDiscussion'])->name('student.discussion.view');
+        Route::get('/exercise/{id}', [StudentSiteController::class, 'viewExercise'])->name('student.exercise.view');
+
+        // ===== پیشرفت درسی =====
+        Route::get('/progress/{course_id}', [StudentSiteController::class, 'progress'])->name('student.progress');
     });
 
     // ==========================================
@@ -232,15 +248,37 @@ Route::prefix('/student')->middleware(['role:student|admin'])->group(function ()
     // مسیرهای تمرین - دانشجو
     // ==========================================
     Route::prefix('/exercise')->group(function () {
-        Route::get('/show/{session_id}', [ExerciseController::class, 'studentShow'])->name('student.exercise.show');        
+        Route::get('/show/{id}', [ExerciseController::class, 'studentShow'])->name('student.exercise.show');        
         Route::post('/answer', [ExerciseController::class, 'answer'])->name('student.exercise.answer');        
         Route::put('/answer/{id}', [ExerciseController::class, 'updateAnswer'])->name('student.exercise.answer.update');        
         Route::get('/answer/{id}', [ExerciseController::class, 'deleteAnswer'])->name('student.exercise.answer.delete');
     });
 
+    // ==========================================
+    // مسیرهای گزارش - دانشجو
+    // ==========================================
     Route::prefix('/discussion')->group(function () {
         Route::get('/create/{session_id}', [DiscussionController::class, 'create'])->name('student.discussion.create');
         Route::post('/store', [DiscussionController::class, 'store'])->name('student.discussion.store');
+    });
+
+    // ==========================================
+    // مسیرهای داوری - دانشجو
+    // ==========================================
+    Route::prefix('/judgment')->middleware(['role:student|admin'])->group(function () {
+        Route::get('/', [JudgmentController::class, 'index'])->name('student.judgment.index');        
+        Route::post('/store', [JudgmentController::class, 'store'])->name('student.judgment.store');        
+        Route::get('/stats', [JudgmentController::class, 'stats'])->name('student.judgment.stats');        
+        Route::get('/returned', [JudgmentController::class, 'returnedItems'])->name('student.judgment.returned');        
+        Route::post('/resubmit', [JudgmentController::class, 'resubmit'])->name('student.judgment.resubmit');        
+        Route::delete('/{id}', [JudgmentController::class, 'destroy'])->name('student.judgment.destroy');
+    });
+
+    // ==========================================
+    // مسیرهای گزارش ایراد سوال - دانشجو
+    // ==========================================
+    Route::prefix('/question-report')->middleware(['role:student|admin'])->group(function () {
+        Route::post('/store', [QuestionReportController::class, 'store'])->name('question.report.store');
     });
 });
 

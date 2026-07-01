@@ -5,6 +5,9 @@
 @endsection
 
 @section('head')
+{{-- اضافه کردن استایل Jodit --}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.css">
+
 <style>
     .report-container {
         max-width: 850px;
@@ -316,9 +319,10 @@
 </div>
 @endsection
 
-@section('script')
-    <script src="{{ asset('textEditor/assets/ckeditor/ckeditor.js') }}"></script>
-    <script src="{{ asset('textEditor/assets/js/select2/select2.full.min.js') }}"></script>
+@section('js')
+{{-- حذف اسکریپت‌های CKEditor و Select2 غیرضروری --}}
+<script src="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.js"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // ===== Jodit Editor =====
@@ -337,31 +341,95 @@
                 'font', 'fontsize', 'brush', 'paragraph', '|',
                 'ul', 'ol', 'outdent', 'indent', '|',
                 'align', 'hr', 'table', '|',
-                'link', 'unlink', 'image', '|',
-                'fullsize', 'preview', '|', 'about'
-            ],
-            uploader: {
-                url: '{{ route("upload.image") }}',
-                format: 'json',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                filesVariableName: 'file',
-                insertImageAsBase64URI: false,
-                imagesExtensions: ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'],
-                process: function (resp) {
-                    if (resp.files && resp.files[0] && resp.files[0].url) {
-                        return {
-                            files: [{
-                                url: resp.files[0].url,
-                                name: resp.files[0].name || 'image',
-                                size: resp.files[0].size || 0
-                            }],
-                            error: null
+                'link', 'unlink',
+                {
+                    name: 'uploadImage',
+                    iconURL: 'https://cdn-icons-png.flaticon.com/512/1829/1829586.png',
+                    tooltip: 'آپلود تصویر',
+                    exec: (editor) => {
+                        let input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = 'image/*';
+                        input.onchange = () => {
+                            let file = input.files[0];
+                            if (!file) return;
+
+                            let formData = new FormData();
+                            formData.append('file', file);
+
+                            fetch('{{ route("upload.image") }}', {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                                body: formData
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.files && data.files[0].url) {
+                                    let img = document.createElement('img');
+                                    img.src = data.files[0].url;
+                                    img.style.maxWidth = '100%';
+                                    editor.s.insertNode(img);
+                                } else {
+                                    alert('خطا در آپلود تصویر');
+                                }
+                            })
+                            .catch(err => alert('Upload error: ' + err));
                         };
+                        input.click();
                     }
-                    return { error: 'خطا در آپلود فایل' };
-                }
+                },
+                {
+                    name: 'uploadVideo',
+                    iconURL: 'https://cdn-icons-png.flaticon.com/512/727/727245.png',
+                    tooltip: 'آپلود ویدیو',
+                    exec: (editor) => {
+                        let input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = 'video/*';
+                        input.onchange = () => {
+                            let file = input.files[0];
+                            if (!file) return;
+
+                            let formData = new FormData();
+                            formData.append('file', file);
+
+                            fetch('{{ route("upload.video") }}', {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                                body: formData
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.files && data.files[0].url) {
+                                    let wrapper = document.createElement('div');
+                                    wrapper.classList.add('video-wrapper');
+
+                                    let video = document.createElement('video');
+                                    video.setAttribute('controls', '');
+                                    video.src = data.files[0].url;
+                                    video.style.maxWidth = '100%';
+
+                                    wrapper.appendChild(video);
+                                    editor.s.insertNode(wrapper);
+                                } else {
+                                    alert('خطا در آپلود ویدیو');
+                                }
+                            })
+                            .catch(err => alert('Upload error: ' + err));
+                        };
+                        input.click();
+                    }
+                },
+                '|', 'symbols', 'emoticons', '|',
+                'print', 'fullsize', 'preview'
+            ],
+            colors: {
+                text: ['#000000', '#ff0000', '#00ff00', '#0000ff', '#ff00ff', '#00ffff'],
+                background: ['#ffffff', '#ffff00', '#00ffff', '#ffcc99']
             }
         });
 

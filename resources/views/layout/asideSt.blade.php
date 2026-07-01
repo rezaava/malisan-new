@@ -15,11 +15,11 @@
             <i class="fas fa-university"></i> <span>دوره های ملیسان</span>
         </a> --}}
         
-        {{-- آزمون ها --}}
-        {{-- <a href="{{ route('exams') }}" class="menu-item {{ request()->routeIs('exams') || request()->is('exams') ? 'active-menu' : '' }}">
-            <i class="fas fa-pen-alt"></i> <span>آزمون ها</span>
+        {{-- داوری ها --}}
+        <a href="{{ route('student.judgment.index') }}" class="menu-item {{ request()->routeIs('student.judgment.index') || request()->is('student.judgment.stats') || request()->is('student.judgment.returned') ? 'active-menu' : '' }}">
+            <i class="fas fa-pen-alt"></i> <span>داوری</span>
         </a>
-         --}}
+        
         {{-- نظرسنجی --}}
         {{-- <a href="{{ route('surveys') }}" class="menu-item {{ request()->routeIs('surveys') || request()->is('surveys') ? 'active-menu' : '' }}">
             <i class="fas fa-chart-simple"></i> <span>نظرسنجی</span>

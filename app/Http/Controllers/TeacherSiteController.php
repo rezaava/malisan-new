@@ -92,7 +92,6 @@ class TeacherSiteController extends Controller
     }
     function courses() {
         $user = Auth::user();
-        // Get courses where user is a teacher
         $teacherRole = Role::where('name', 'teacher')->first();
         
         $courses = $user->courses()->where('archieve',0)

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
+use App\Models\CourseUser;
 use App\Models\Exercise;
 use App\Models\ExerciseAnswer;
 use App\Models\Session;
@@ -14,13 +15,33 @@ use Illuminate\Support\Facades\Validator;
 
 class ExerciseController extends Controller
 {
-        public function studentShow($sessionId)
+/**
+ * نمایش تکالیف یک درس برای دانشجو (با course_id)
+ */
+    public function studentShow($courseId)
     {
         $user = Auth::user();
-        $session = Session::with('course')->findOrFail($sessionId);
-        $course = $session->course;
         
-        $exercises = Exercise::where('session_id', $session->id)
+        $course = Course::findOrFail($courseId);
+        
+        $isEnrolled = CourseUser::where('user_id', $user->id)
+            ->where('course_id', $courseId)
+            ->exists();
+
+        if (!$isEnrolled) {
+            return redirect()->back()->with('error', 'شما در این درس ثبت نام نکرده‌اید.');
+        }
+        
+        // دریافت تمام جلسات این درس
+        $sessions = Session::where('course_id', $courseId)
+            ->orderBy('number', 'asc')
+            ->get();
+        
+        // دریافت تمام تکالیف این درس با جلسات
+        $sessionIds = $sessions->pluck('id')->toArray();
+        
+        $exercises = Exercise::whereIn('session_id', $sessionIds)
+            ->with('session')
             ->orderBy('created_at', 'desc')
             ->get();
         
@@ -32,7 +53,21 @@ class ExerciseController extends Controller
             $exercise['user_answer'] = $answer;
         }
         
-        return view('student.exercises', compact('session', 'course', 'exercises'));
+        // آمار تکالیف
+        $stats = [
+            'total' => $exercises->count(),
+            'answered' => $exercises->filter(function($e) {
+                return isset($e->user_answer);
+            })->count(),
+            'not_answered' => $exercises->filter(function($e) {
+                return !isset($e->user_answer);
+            })->count(),
+            'scored' => $exercises->filter(function($e) {
+                return isset($e->user_answer) && $e->user_answer->status == 'scored';
+            })->count(),
+        ];
+        
+        return view('student.exercises', compact('course', 'sessions', 'exercises', 'stats'));
     }
 
     /**

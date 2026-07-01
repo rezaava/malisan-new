@@ -123,7 +123,6 @@
                     @endif
                     <th>مشخصات</th>
                     <th>پیشرفت درسی</th>
-                    <th>خودآزمایی</th>
                     <th>صفات</th>
                     <th>رویداد</th>
                     <th>اخراج</th>
@@ -145,11 +144,6 @@
                         <td>
                             <a href="{{ route('studentEvaluation', ['courseId' => $course->id, 'userId' => $user->id]) }}" class="action-btn progress-btn" title="پیشرفت درسی">
                                 <i class="fas fa-chart-line"></i>
-                            </a>
-                        </td>
-                        <td>
-                            <a href="/dashboard/quiz/list?course_id={{ $course->id ?? 0 }}&user={{ $user->id }}" class="action-btn self-test-btn" title="خودآزمایی">
-                                <i class="fas fa-brain"></i>
                             </a>
                         </td>
                         <td>

@@ -2,74 +2,100 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Course;
+use App\Models\CourseUser;
 use App\Models\Discussion;
 use App\Models\Exercise;
 use App\Models\ExerciseAnswer;
 use App\Models\Question;
-use App\Models\Score;
+use App\Models\ScoreDiscussion;
+use App\Models\ScoreExercise;
+use App\Models\ScoreQuestion;
 use App\Models\Session;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Log;
 
 class JudgmentController extends Controller
 {
     /**
-     * صفحه اصلی داوری
+     * صفحه اصلی داوری (برای دانشجویان)
      */
     public function index()
     {
         $user = Auth::user();
+        
+        // فقط دانشجویان می‌توانند داوری کنند
+        if (!$user->hasRole('student')) {
+            return redirect()->back()->with('error', 'فقط دانشجویان می‌توانند داوری کنند.');
+        }
 
-        // دریافت آیتم‌های نیازمند داوری
+        // دریافت آیتم‌های نیازمند داوری (که خودش نفرستاده)
         $items = $this->getPendingItems($user->id);
 
-        // آمار سریع (تغییر از ۵ به ۳)
         $stats = [
             'total' => count($items),
             'pending' => count(array_filter($items, function($item) {
-                return $item['score_count'] < 3;  // تغییر از 5 به 3
+                return $item['score_count'] < 3;
             })),
             'done' => count(array_filter($items, function($item) {
-                return $item['score_count'] >= 3; // تغییر از 5 به 3
+                return $item['score_count'] >= 3;
             })),
+            'my_judgments' => $this->getMyJudgmentsCount($user->id),
         ];
 
-        return view('teacher.judgment.index', compact('items', 'stats'));
+        return view('student.judgment.index', compact('items', 'stats'));
     }
-
-    /**
-     * دریافت آیتم‌های نیازمند داوری
-     */
     private function getPendingItems($userId)
     {
         $items = [];
 
-        // 1. سوالات نیازمند داوری
-        $questions = Question::whereNull('status')
+        // دریافت آی‌دی درس‌هایی که کاربر در آنها ثبت نام کرده
+        $courseIds = CourseUser::where('user_id', $userId)
+            ->pluck('course_id')
+            ->toArray();
+
+        if (empty($courseIds)) {
+            return $items; // اگر کاربر در هیچ درسی ثبت نام نکرده
+        }
+
+        // دریافت آی‌دی جلسات این درس‌ها
+        $sessionIds = Session::whereIn('course_id', $courseIds)
+            ->pluck('id')
+            ->toArray();
+
+        if (empty($sessionIds)) {
+            return $items; // اگر هیچ جلسه‌ای وجود ندارد
+        }
+
+        // ==========================================
+        // 1. سوالات نیازمند داوری (به جز سوالات خودش)
+        // فقط از جلسات درس‌هایی که کاربر ثبت نام کرده
+        // ==========================================
+        $questions = Question::whereIn('session_id', $sessionIds)
+            ->whereNull('status')
             ->where('user_id', '!=', $userId)
-            ->with('user')
+            ->with(['user', 'session.course'])
             ->get();
 
         foreach ($questions as $question) {
-            $scoreCount = Score::where('sub_id', $question->id)
-                ->where('type', Score::TYPE_QUESTION)
+            $scoreCount = ScoreQuestion::where('question_id', $question->id)
+                ->where('status', ScoreQuestion::STATUS_APPROVED)
                 ->count();
 
-            $hasJudged = Score::where('sub_id', $question->id)
-                ->where('type', Score::TYPE_QUESTION)
+            $hasJudged = ScoreQuestion::where('question_id', $question->id)
                 ->where('user_id', $userId)
                 ->exists();
 
-            if (!$hasJudged) {
+            if (!$hasJudged && $scoreCount < 3) {
                 $items[] = [
                     'id' => $question->id,
                     'type' => 'question',
-                    'type_code' => Score::TYPE_QUESTION,
                     'type_label' => 'سوال',
                     'title' => $question->question,
                     'user' => $question->user,
+                    'course_name' => $question->session->course->name ?? 'نامشخص',
+                    'session_name' => $question->session->name ?? 'نامشخص',
                     'created_at' => $question->created_at,
                     'data' => $question,
                     'answers' => [
@@ -77,7 +103,7 @@ class JudgmentController extends Controller
                         ['label' => 'ب', 'value' => $question->answer2],
                         ['label' => 'ج', 'value' => $question->answer3],
                         ['label' => 'د', 'value' => $question->answer4],
-                    ],
+                    ],  
                     'correct_answer' => $question->answer,
                     'score_count' => $scoreCount,
                     'has_judged' => $hasJudged,
@@ -85,31 +111,35 @@ class JudgmentController extends Controller
             }
         }
 
+        // ==========================================
         // 2. گزارش‌ها (بحث‌ها) نیازمند داوری
-        $discussions = Discussion::whereNull('status')
+        // فقط از جلسات درس‌هایی که کاربر ثبت نام کرده
+        // ==========================================
+        $discussions = Discussion::whereIn('session_id', $sessionIds)
+            ->whereNull('status')
             ->where('user_id', '!=', $userId)
-            ->with('user')
+            ->with(['user', 'session.course'])
             ->get();
 
         foreach ($discussions as $discussion) {
-            $scoreCount = Score::where('sub_id', $discussion->id)
-                ->where('type', Score::TYPE_DISCUSSION)
+            $scoreCount = ScoreDiscussion::where('discussion_id', $discussion->id)
+                ->where('status', 'approved')
                 ->count();
 
-            $hasJudged = Score::where('sub_id', $discussion->id)
-                ->where('type', Score::TYPE_DISCUSSION)
+            $hasJudged = ScoreDiscussion::where('discussion_id', $discussion->id)
                 ->where('user_id', $userId)
                 ->exists();
 
-            if (!$hasJudged) {
+            if (!$hasJudged && $scoreCount < 3) {
                 $items[] = [
                     'id' => $discussion->id,
                     'type' => 'discussion',
-                    'type_code' => Score::TYPE_DISCUSSION,
                     'type_label' => 'گزارش',
-                    'title' => $discussion->title ?? 'بدون عنوان',
+                    'title' => $discussion->session->name,
                     'text' => $discussion->text,
                     'user' => $discussion->user,
+                    'course_name' => $discussion->session->course->name ?? 'نامشخص',
+                    'session_name' => $discussion->session->name ?? 'نامشخص',
                     'created_at' => $discussion->created_at,
                     'data' => $discussion,
                     'score_count' => $scoreCount,
@@ -117,40 +147,6 @@ class JudgmentController extends Controller
                 ];
             }
         }
-
-        // 3. تکالیف نیازمند داوری
-        $exerciseAnswers = ExerciseAnswer::whereNull('status')
-            ->where('user_id', '!=', $userId)
-            ->with(['user', 'exercise'])
-            ->get();
-
-        foreach ($exerciseAnswers as $answer) {
-            $scoreCount = Score::where('sub_id', $answer->id)
-                ->where('type', Score::TYPE_EXERCISE)
-                ->count();
-
-            $hasJudged = Score::where('sub_id', $answer->id)
-                ->where('type', Score::TYPE_EXERCISE)
-                ->where('user_id', $userId)
-                ->exists();
-
-            if (!$hasJudged) {
-                $items[] = [
-                    'id' => $answer->id,
-                    'type' => 'exercise',
-                    'type_code' => Score::TYPE_EXERCISE,
-                    'type_label' => 'تکلیف',
-                    'title' => $answer->exercise->text ?? 'بدون عنوان',
-                    'answer_text' => $answer->answer,
-                    'user' => $answer->user,
-                    'created_at' => $answer->created_at,
-                    'data' => $answer,
-                    'score_count' => $scoreCount,
-                    'has_judged' => $hasJudged,
-                ];
-            }
-        }
-
         // مرتب‌سازی بر اساس تاریخ (جدیدترین اول)
         usort($items, function ($a, $b) {
             return $b['created_at'] <=> $a['created_at'];
@@ -160,117 +156,266 @@ class JudgmentController extends Controller
     }
 
     /**
-     * ثبت داوری
+     * تعداد داوری‌های من
+     */
+    private function getMyJudgmentsCount($userId)
+    {
+        $count = ScoreQuestion::where('user_id', $userId)->count();
+        $count += ScoreDiscussion::where('user_id', $userId)->count();
+        $count += ScoreExercise::where('user_id', $userId)->count();
+        return $count;
+    }
+
+    /**
+     * ثبت داوری دانشجو
      */
     public function store(Request $request)
     {
         $request->validate([
             'item_id' => 'required|integer',
             'type' => 'required|in:question,discussion,exercise',
-            'score' => 'required|integer|min:1|max:5',
+            'score' => 'nullable|integer|min:1|max:3',
+            'negaresh' => 'nullable|boolean',
+            'gozine' => 'nullable|boolean',
+            'dark' => 'nullable|boolean',
             'comment' => 'nullable|string|max:500',
+            'action' => 'required|in:approve,reject',
         ]);
 
         $user = Auth::user();
 
-        // دریافت کد نوع
-        $typeCode = $this->getTypeCode($request->type);
+        // بررسی اینکه کاربر نمی‌تواند سوال خودش را داوری کند
+        if ($this->isOwnItem($request->item_id, $request->type, $user->id)) {
+            return redirect()->back()->with('error', 'شما نمی‌توانید سوال/گزارش/تکلیف خودتان را داوری کنید.');
+        }
+
+        // بررسی اینکه کاربر قبلاً این آیتم را داوری نکرده باشد
+        if ($this->hasAlreadyJudged($request->item_id, $request->type, $user->id)) {
+            return redirect()->back()->with('error', 'شما قبلاً این آیتم را داوری کرده‌اید.');
+        }
 
         // ذخیره داوری
-        $score = new Score();
-        $score->user_id = $user->id;
-        $score->sub_id = $request->item_id;
-        $score->type = $typeCode;
-        $score->score1 = $request->score;
-        $score->score2 = 0;
-        $score->score3 = 0;
-        $score->comment1 = $request->comment;
-        $score->comment2 = null;
-        $score->comment3 = null;
-        $score->description = null;
-        $score->save();
+        $result = $this->saveJudgment($request, $user);
 
-        // بروزرسانی وضعیت آیتم بعد از ۵ داوری
+        if (!$result) {
+            return redirect()->back()->with('error', 'خطا در ثبت داوری');
+        }
+
+        // بروزرسانی وضعیت آیتم بعد از ۳ داوری تایید شده
         $this->updateItemStatus($request->item_id, $request->type);
+
+        // اگر کاربر رد کرده باشد، آیتم را به کاربر برگشت بده
+        if ($request->action === 'reject') {
+            $this->returnItemToUser($request->item_id, $request->type, $request->comment);
+        }
 
         return redirect()->back()->with('success', 'داوری با موفقیت ثبت شد.');
     }
 
     /**
-     * دریافت کد نوع
+     * بررسی اینکه آیا آیتم متعلق به خود کاربر است
      */
-    private function getTypeCode($type)
+    private function isOwnItem($itemId, $type, $userId)
     {
-        return match ($type) {
-            'question' => Score::TYPE_QUESTION,
-            'discussion' => Score::TYPE_DISCUSSION,
-            'exercise' => Score::TYPE_EXERCISE,
-            default => Score::TYPE_QUESTION,
-        };
+        switch ($type) {
+            case 'question':
+                $item = Question::find($itemId);
+                return $item && $item->user_id == $userId;
+            case 'discussion':
+                $item = Discussion::find($itemId);
+                return $item && $item->user_id == $userId;
+            case 'exercise':
+                $item = ExerciseAnswer::find($itemId);
+                return $item && $item->user_id == $userId;
+            default:
+                return false;
+        }
     }
 
     /**
-     * بروزرسانی وضعیت آیتم بعد از ۳ داوری
+     * بررسی اینکه کاربر قبلاً این آیتم را داوری کرده است
+     */
+    private function hasAlreadyJudged($itemId, $type, $userId)
+    {
+        switch ($type) {
+            case 'question':
+                return ScoreQuestion::where('question_id', $itemId)
+                    ->where('user_id', $userId)
+                    ->exists();
+            case 'discussion':
+                return ScoreDiscussion::where('discussion_id', $itemId)
+                    ->where('user_id', $userId)
+                    ->exists();
+            case 'exercise':
+                return ScoreExercise::where('exercise_answer_id', $itemId)
+                    ->where('user_id', $userId)
+                    ->exists();
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * ذخیره داوری در جدول مناسب
+     */
+    private function saveJudgment($request, $user)
+    {
+        // تبدیل action به status معتبر
+        $status = match ($request->action) {
+            'approve' => 'approved',
+            'reject' => 'rejected',
+            'return' => 'returned',
+            default => 'pending',
+        };
+
+        $data = [
+            'user_id' => $user->id,
+            'comment' => $request->comment,
+            'negaresh' => $request->negaresh ?? 0,
+            'gozine' => $request->gozine ?? 0,
+            'dark' => $request->dark ?? 0,
+            'status' => $status,  // استفاده از مقدار معتبر
+        ];
+
+        if ($request->action === 'approve') {
+            $data['score'] = $request->score;
+        }
+
+        switch ($request->type) {
+            case 'question':
+                $data['question_id'] = $request->item_id;
+                return ScoreQuestion::create($data);
+                
+            case 'discussion':
+                $data['discussion_id'] = $request->item_id;
+                return ScoreDiscussion::create($data);
+                
+            case 'exercise':
+                $data['exercise_answer_id'] = $request->item_id;
+                return ScoreExercise::create($data);
+                
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * برگشت آیتم به کاربر (برای اصلاح)
+     */
+
+    private function returnItemToUser($itemId, $type, $comment)
+    {
+        switch ($type) {
+            case 'question':
+                Question::where('id', $itemId)->update([
+                    'status' => 0,  // 0 به معنی برگشت خورده
+                    'comment' => $comment,
+                ]);
+                break;
+            case 'discussion':
+                Discussion::where('id', $itemId)->update([
+                    'status' => 0,  // 0 به معنی برگشت خورده
+                    'comment' => $comment,
+                ]);
+                break;
+            case 'exercise':
+                ExerciseAnswer::where('id', $itemId)->update([
+                    'status' => 'returned',  // در exercise_answers از string استفاده می‌شود
+                    'comment' => $comment,
+                ]);
+                break;
+        }
+    }
+
+    /**
+     * بروزرسانی وضعیت آیتم بعد از ۳ داوری تایید شده
      */
     private function updateItemStatus($itemId, $type)
     {
-        $typeCode = $this->getTypeCode($type);
+        $scores = [];
 
-        $scoreCount = Score::where('sub_id', $itemId)
-            ->where('type', $typeCode)
-            ->count();
+        switch ($type) {
+            case 'question':
+                $scores = ScoreQuestion::where('question_id', $itemId)
+                    ->where('status', ScoreQuestion::STATUS_APPROVED)  // استفاده از ثابت
+                    ->pluck('score')
+                    ->toArray();
+                break;
+                
+            case 'discussion':
+                $scores = ScoreDiscussion::where('discussion_id', $itemId)
+                    ->where('status', ScoreDiscussion::STATUS_APPROVED)
+                    ->pluck('score')
+                    ->toArray();
+                break;
+                
+            case 'exercise':
+                $scores = ScoreExercise::where('exercise_answer_id', $itemId)
+                    ->where('status', ScoreExercise::STATUS_APPROVED)
+                    ->pluck('score')
+                    ->toArray();
+                break;
+        }
 
-        // بعد از ۳ داوری، وضعیت مشخص می‌شود
-        if ($scoreCount >= 3) {
-            $scores = Score::where('sub_id', $itemId)
-                ->where('type', $typeCode)
-                ->pluck('score1');
 
-            $average = $scores->avg();
 
+        // اگر ۳ داور تایید کرده باشند
+        if (count($scores) >= 3) {
+            $average = array_sum($scores) / count($scores);
+            
             $status = match (true) {
-                $average >= 4.5 => 1,
-                $average >= 3.5 => 2,
                 $average >= 2.5 => 3,
+                $average >= 1.6 => 2,
+                $average >= 1 => 1, 
                 default => 4,
             };
 
-            if ($type == 'question') {
-                Question::where('id', $itemId)->update([
-                    'status' => $status,
-                    'score' => round($average, 2)
-                ]);
-            } elseif ($type == 'discussion') {
-                Discussion::where('id', $itemId)->update([
-                    'status' => $status,
-                    'score' => round($average, 2)
-                ]);
-            } elseif ($type == 'exercise') {
-                ExerciseAnswer::where('id', $itemId)->update([
-                    'status' => 'scored',
-                    'rate' => $this->getRateLabel($status)
-                ]);
+            switch ($type) {
+                case 'question':
+                    Question::where('id', $itemId)->update([
+                        'status' => $status,
+                        'score' => round($average, 2)
+                    ]);
+                    break;
+                    
+                case 'discussion':
+                    Discussion::where('id', $itemId)->update([
+                        'status' => $status,
+                        'score' => round($average, 2)
+                    ]);
+                    break;
+                    
+                case 'exercise':
+                    ExerciseAnswer::where('id', $itemId)->update([
+                        'status' => 'scored',
+                        'rate' => $this->getRateLabel($status)
+                    ]);
+                    break;
             }
         }
     }
+
     /**
      * دریافت برچسب نمره بر اساس وضعیت
      */
     private function getRateLabel($status)
     {
         return match ($status) {
-            1 => 'excellent', // عالی
-            2 => 'good',      // خوب
-            3 => 'medium',    // متوسط
-            4 => 'weak',      // بد
+            1 => 'excellent',
+            2 => 'good',
+            3 => 'medium',
+            4 => 'weak',
             default => 'pending',
         };
     }
+
     /**
-     * نمایش آمار داوری
+     * نمایش آمار داوری (برای دانشجو)
      */
     public function stats()
     {
+        $user = Auth::user();
+        
         // آمار سوالات
         $questionStats = [
             'total' => Question::count(),
@@ -288,14 +433,20 @@ class JudgmentController extends Controller
         ];
 
         // آمار تکالیف
-        $exerciseIds = Exercise::pluck('id');
         $exerciseStats = [
-            'total' => ExerciseAnswer::whereIn('exercise_id', $exerciseIds)->count(),
-            'pending' => ExerciseAnswer::whereIn('exercise_id', $exerciseIds)->whereNull('status')->count(),
-            'scored' => ExerciseAnswer::whereIn('exercise_id', $exerciseIds)->where('status', 'scored')->count(),
+            'total' => ExerciseAnswer::count(),
+            'pending' => ExerciseAnswer::whereNull('status')->count(),
+            'scored' => ExerciseAnswer::where('status', 'scored')->count(),
         ];
 
-        return view('teacher.judgment.stats', compact('questionStats', 'discussionStats', 'exerciseStats'));
+        // آمار داوری‌های من
+        $myStats = [
+            'questions' => ScoreQuestion::where('user_id', $user->id)->count(),
+            'discussions' => ScoreDiscussion::where('user_id', $user->id)->count(),
+            'exercises' => ScoreExercise::where('user_id', $user->id)->count(),
+        ];
+
+        return view('student.judgment.stats', compact('questionStats', 'discussionStats', 'exerciseStats', 'myStats'));
     }
 
     /**
@@ -303,9 +454,92 @@ class JudgmentController extends Controller
      */
     public function destroy($id)
     {
-        $score = Score::findOrFail($id);
-        $score->delete();
+        $score = ScoreQuestion::find($id) 
+            ?? ScoreDiscussion::find($id) 
+            ?? ScoreExercise::find($id);
+            
+        if ($score) {
+            $score->delete();
+            return redirect()->back()->with('success', 'داوری با موفقیت حذف شد.');
+        }
 
-        return redirect()->back()->with('success', 'داوری با موفقیت حذف شد.');
+        return redirect()->back()->with('error', 'داوری یافت نشد.');
+    }
+
+    /**
+     * مشاهده آیتم‌های برگشت خورده (برای دانشجو)
+     */
+    public function returnedItems()
+    {
+        $user = Auth::user();
+        
+        $returnedQuestions = Question::where('user_id', $user->id)
+            ->where('status', 0)  // 0 = برگشت خورده
+            ->get();
+            
+        $returnedDiscussions = Discussion::where('user_id', $user->id)
+            ->where('status', 0)  // 0 = برگشت خورده
+            ->get();
+            
+        $returnedExercises = ExerciseAnswer::where('user_id', $user->id)
+            ->where('status', 'returned')  // در exercise_answers
+            ->get();
+
+        return view('student.judgment.returned', compact(
+            'returnedQuestions',
+            'returnedDiscussions',
+            'returnedExercises'
+        ));
+    }
+
+    /**
+     * اصلاح و ارسال مجدد آیتم برگشت خورده
+     */
+    public function resubmit(Request $request)
+    {
+        $request->validate([
+            'item_id' => 'required|integer',
+            'type' => 'required|in:question,discussion,exercise',
+            'text' => 'required|string|min:5',
+        ]);
+
+        $user = Auth::user();
+
+        switch ($request->type) {
+            case 'question':
+                $item = Question::where('id', $request->item_id)
+                    ->where('user_id', $user->id)
+                    ->where('status', 0)  // 0 = برگشت خورده
+                    ->firstOrFail();
+                $item->question = $request->text;
+                $item->status = null;  // برگشت به حالت انتظار داوری
+                $item->comment = null; // پاک کردن کامنت برگشت
+                $item->save();
+                break;
+                
+            case 'discussion':
+                $item = Discussion::where('id', $request->item_id)
+                    ->where('user_id', $user->id)
+                    ->where('status', 0)  // 0 = برگشت خورده
+                    ->firstOrFail();
+                $item->text = $request->text;
+                $item->status = null;
+                $item->comment = null;
+                $item->save();
+                break;
+                
+            case 'exercise':
+                $item = ExerciseAnswer::where('id', $request->item_id)
+                    ->where('user_id', $user->id)
+                    ->where('status', 'returned')
+                    ->firstOrFail();
+                $item->answer = $request->text;
+                $item->status = null;
+                $item->comment = null;
+                $item->save();
+                break;
+        }
+
+        return redirect()->back()->with('success', 'آیتم با موفقیت اصلاح و ارسال شد.');
     }
 }

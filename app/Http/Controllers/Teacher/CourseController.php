@@ -8,6 +8,7 @@ use App\Models\Answer;
 use App\Models\Azmon;
 use App\Models\Course;
 use App\Models\ExerciseAnswer;
+use App\Models\QuestionReport;
 use App\Models\Quiz;
 use App\Models\Role;
 use App\Models\Score;
@@ -313,6 +314,12 @@ class CourseController extends Controller
             ? $course->users()->where('role_id', $studentRole->id)->take(5)->get()
             : collect();
 
+        $sessionIds = Session::where('course_id', $id)->pluck('id');
+        $questionIds = Question::whereIn('session_id', $sessionIds)->pluck('id');
+        $reportCount = QuestionReport::whereIn('question_id', $questionIds)
+            ->where('status', 'pending')
+            ->count();
+
         return view('teacher.course', compact(
             'setting',
             'khodazmaii',
@@ -320,6 +327,7 @@ class CourseController extends Controller
             'course',
             'isJudment',
             'member',
+            'reportCount',
             'paid'
         ))->with([
             'pageTitle' => 'صفحه مدیریت درس',

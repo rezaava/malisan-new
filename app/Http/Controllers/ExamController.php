@@ -8,6 +8,7 @@ use App\Models\Azmon;
 use App\Models\Course;
 use App\Models\Question;
 use App\Models\Quiz;
+use App\Models\ScoreQuestion;
 use App\Models\Session;
 use App\Models\Setting;
 use App\Models\User;
@@ -169,13 +170,95 @@ class ExamController extends Controller
      */
     public function show($id)
     {
-        $question = Question::with('user')->findOrFail($id);
+        $question = Question::with(['user', 'session.course'])
+            ->findOrFail($id);
 
-        return view('teacher.question-show', compact('question'))->with([
+        // دریافت نظرات (داوری‌ها)
+        $scores = ScoreQuestion::where('question_id', $id)
+            ->with('user')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // محاسبه میانگین نمرات
+        $approvedScores = ScoreQuestion::where('question_id', $id)
+            ->where('status', 'approved')
+            ->pluck('score')
+            ->toArray();
+
+        $averageScore = count($approvedScores) > 0 
+            ? round(array_sum($approvedScores) / count($approvedScores), 2) 
+            : null;
+
+        // وضعیت‌های مجاز برای تغییر
+        $statusOptions = [
+            null => 'در انتظار داوری',
+            0 => 'برگشت خورده',
+            1 => 'عالی',
+            2 => 'خوب',
+            3 => 'متوسط',
+            4 => 'بد',
+        ];
+
+        // اطلاعات طراح
+        $designer = $question->user;
+        $designerName = $designer ? $designer->name . ' ' . $designer->family : 'نامشخص';
+
+        return view('teacher.question-show', compact(
+            'question',
+            'scores',
+            'averageScore',
+            'statusOptions',
+            'designerName'
+        ))->with([
             'pageTitle' => 'نمایش سوال',
             'pageName' => 'سوال',
             'pageDescription' => 'مشاهده جزئیات سوال',
         ]);
+    }
+
+    /**
+     * به‌روزرسانی وضعیت سوال
+     */
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'nullable|in:0,1,2,3,4',
+        ]);
+
+        $question = Question::findOrFail($id);
+        $question->status = $request->status;
+        $question->save();
+
+        $statusLabels = [
+            null => 'در انتظار داوری',
+            0 => 'برگشت خورده',
+            1 => 'عالی',
+            2 => 'خوب',
+            3 => 'متوسط',
+            4 => 'بد',
+        ];
+
+        return response()->json([
+            'success' => true,
+            'message' => 'وضعیت سوال با موفقیت تغییر یافت.',
+            'status' => $request->status,
+            'status_label' => $statusLabels[$request->status] ?? 'نامشخص'
+        ]);
+    }
+
+    /**
+     * حذف سوال
+     */
+    public function destroy($id)
+    {
+        $question = Question::findOrFail($id);
+        
+        // حذف داوری‌های مرتبط
+        ScoreQuestion::where('question_id', $id)->delete();
+        
+        $question->delete();
+
+        return redirect()->back()->with('success', 'سوال با موفقیت حذف شد.');
     }
 
     /**
@@ -683,5 +766,55 @@ class ExamController extends Controller
         ];
         
         return array_search($question->answer, $options); // 0,1,2,3
+    }
+    /**
+     * دریافت داده‌های سوال برای ویرایش (AJAX)
+     */
+    public function getQuestionData($id)
+    {
+        $question = Question::findOrFail($id);
+        
+        return response()->json([
+            'success' => true,
+            'data' => $question
+        ]);
+    }
+    /**
+     * به‌روزرسانی وضعیت سوال (استاد)
+     */
+    public function updateStatusTe(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'question' => 'required|string|min:5',
+            'answer1' => 'required|string',
+            'answer2' => 'required|string',
+            'answer3' => 'required|string',
+            'answer4' => 'required|string',
+            'correct_answer' => 'required|integer|min:1|max:4',
+            'status' => 'nullable|integer|min:0|max:4',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $question = Question::findOrFail($id);
+        $question->question = $request->question;
+        $question->answer1 = $request->answer1;
+        $question->answer2 = $request->answer2;
+        $question->answer3 = $request->answer3;
+        $question->answer4 = $request->answer4;
+        $question->answer = $request->correct_answer;
+        $question->status = $request->status;
+        $question->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'سوال با موفقیت بروزرسانی شد.',
+            'data' => $question
+        ]);
     }
 }

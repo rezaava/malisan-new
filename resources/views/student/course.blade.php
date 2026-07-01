@@ -76,12 +76,12 @@
             <i class="fas fa-star"></i>
             خودآزمایی
         </a>
-        <a href="/dashboard/courses/bank?course_id={{ $course->id }}" class="chip-item">
+        <a href="{{ route('student.my.activities',$course->id) }}" class="chip-item">
             <i class="fas fa-database"></i>
             فعالیت های من 
         </a>
-        <a href="/dashboard/azmon?id={{ $course->id }}" class="chip-item">
-            <i class="fas fa-pencil-alt"></i>
+        <a href="{{ route('student.progress', $course->id) }}" class="chip-item">
+            <i class="fas fa-chart-line"></i>
             پیشرفت درسی
         </a>
     </div>

@@ -1,92 +1,153 @@
 @extends('layout.master')
 
 @section('title')
-ملیسان | تکالیف من
+ملیسان | تکالیف {{ $course->name }}
 @endsection
 
 @section('head')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jodit@4.0.12/build/jodit.min.css">
+{{-- اضافه کردن استایل Jodit --}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.css">
+
 <style>
-    .exercise-container {
-        max-width: 1000px;
+    .exercises-container {
+        max-width: 1100px;
         margin: 30px auto;
         padding: 0 20px;
     }
 
-    .exercise-header {
+    .exercises-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
         gap: 15px;
-        margin-bottom: 30px;
+        margin-bottom: 25px;
     }
 
-    .exercise-header h2 {
+    .exercises-header h2 {
         font-size: 22px;
         font-weight: 700;
         color: #1a2332;
         margin: 0;
     }
 
-    .exercise-header h2 i {
+    .exercises-header h2 i {
         color: #1e6f9f;
         margin-left: 10px;
     }
 
-    .exercise-header .subtitle {
+    .exercises-header .subtitle {
         font-size: 14px;
         color: #6b7a8f;
         margin-top: 4px;
     }
 
     .btn-back {
-        padding: 10px 24px;
+        padding: 8px 20px;
         background: #f0f4f9;
-        color: #1a2332;
-        border: none;
         border-radius: 10px;
-        font-weight: 600;
-        font-size: 14px;
-        cursor: pointer;
-        transition: all 0.3s ease;
+        text-decoration: none;
+        color: #1a2332;
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
     }
 
     .btn-back:hover {
         background: #e3e8ef;
-        transform: translateY(-2px);
     }
 
-    .exercise-card {
+    /* ===== STATS ===== */
+    .stats-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 25px;
+    }
+
+    .stat-box {
+        flex: 1;
+        min-width: 120px;
         background: #fff;
-        border-radius: 20px;
-        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.06);
-        padding: 28px 30px;
-        margin-bottom: 24px;
-        transition: all 0.3s ease;
+        border-radius: 16px;
+        padding: 16px 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        text-align: center;
         border-right: 4px solid #1e6f9f;
     }
 
-    .exercise-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 30px rgba(0, 0, 0, 0.1);
+    .stat-box .number {
+        font-size: 26px;
+        font-weight: 800;
+        color: #1a2332;
     }
 
-    .exercise-card .card-header {
+    .stat-box .label {
+        font-size: 12px;
+        color: #6b7a8f;
+    }
+
+    .stat-box.total { border-right-color: #1e6f9f; }
+    .stat-box.answered { border-right-color: #4caf50; }
+    .stat-box.pending { border-right-color: #ff9800; }
+    .stat-box.scored { border-right-color: #9c27b0; }
+
+    /* ===== SESSIONS ===== */
+    .session-section {
+        margin-bottom: 30px;
+    }
+
+    .session-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1a2332;
+        padding: 12px 20px;
+        background: #f8fafc;
+        border-radius: 12px;
+        border-right: 4px solid #1e6f9f;
+        margin-bottom: 16px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
         gap: 10px;
-        margin-bottom: 12px;
     }
 
-    .exercise-card .card-header .exercise-number {
+    .session-title .badge-count {
+        font-size: 13px;
+        font-weight: 600;
+        color: #6b7a8f;
+    }
+
+    /* ===== EXERCISE CARDS ===== */
+    .exercise-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.04);
+        padding: 20px 24px;
+        margin-bottom: 14px;
+        border-right: 4px solid #e8edf3;
+        transition: all 0.3s ease;
+    }
+
+    .exercise-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(0,0,0,0.08);
+    }
+
+    .exercise-card .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .exercise-card .exercise-number {
         font-size: 13px;
         font-weight: 600;
         color: #6b7a8f;
@@ -96,109 +157,137 @@
         font-size: 15px;
         color: #1a2332;
         line-height: 1.8;
-        margin-bottom: 12px;
         padding: 12px 16px;
         background: #f8fafc;
         border-radius: 10px;
+        margin-bottom: 12px;
     }
 
     .exercise-card .exercise-file {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        padding: 8px 18px;
-        background: #f0f4f9;
-        border-radius: 10px;
+        padding: 6px 16px;
+        background: #e3f2fd;
+        border-radius: 8px;
         color: #1e6f9f;
         text-decoration: none;
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 500;
         transition: all 0.2s ease;
     }
 
     .exercise-card .exercise-file:hover {
-        background: #e3f2fd;
-        transform: translateY(-2px);
+        background: #1e6f9f;
+        color: #fff;
     }
 
-    .answer-status {
+    /* ===== STATUS BADGES ===== */
+    .status-badge {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: 4px;
         padding: 4px 14px;
         border-radius: 20px;
         font-size: 12px;
         font-weight: 600;
     }
 
-    .answer-status.submitted {
+    .status-badge.answered {
         background: #e8f5e9;
         color: #2e7d32;
     }
-    .answer-status.not-submitted {
+
+    .status-badge.not-answered {
         background: #ffebee;
         color: #c62828;
     }
-    .answer-status.scored {
+
+    .status-badge.scored {
         background: #e3f2fd;
         color: #1e6f9f;
     }
 
+    .status-badge.returned {
+        background: #fff3cd;
+        color: #e65100;
+    }
+
+    /* ===== ANSWER FORM ===== */
+    .answer-form {
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 2px solid #f0f4f9;
+    }
+
     .form-group {
-        margin-bottom: 18px;
+        margin-bottom: 14px;
     }
 
     .form-group label {
         display: block;
         font-weight: 600;
-        font-size: 14px;
+        font-size: 13px;
         color: #1a2332;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
     }
 
-    .btn-submit {
-        padding: 12px 40px;
-        border-radius: 12px;
-        font-weight: 700;
-        font-size: 15px;
-        border: none;
-        cursor: pointer;
+    .form-group textarea {
+        width: 100%;
+        padding: 10px 14px;
+        border: 2px solid #e8edf3;
+        border-radius: 10px;
+        font-size: 14px;
+        font-family: inherit;
+        background: #fafbfc;
         transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: linear-gradient(135deg, #1e6f9f, #155a82);
-        color: #fff;
+        min-height: 80px;
+        resize: vertical;
     }
 
-    .btn-submit:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(30, 111, 159, 0.3);
+    .form-group textarea:focus {
+        border-color: #1e6f9f;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(30,111,159,0.1);
+        background: #fff;
     }
 
-    .btn-submit-success {
-        background: linear-gradient(135deg, #4caf50, #388e3c);
-    }
-
-    .btn-submit-success:hover {
-        box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
-    }
-
-    .btn-submit-danger {
-        background: linear-gradient(135deg, #f44336, #c62828);
-    }
-
-    .btn-submit-danger:hover {
-        box-shadow: 0 6px 20px rgba(244, 67, 54, 0.3);
-    }
-
-    .file-input-wrapper {
-        position: relative;
+    /* ===== JODIT EDITOR ===== */
+    .jodit-container {
+        border-radius: 12px !important;
         overflow: hidden;
+        border: 2px solid #e8edf3 !important;
+        transition: all 0.3s ease;
+    }
+
+    .jodit-container:focus-within {
+        border-color: #1e6f9f !important;
+        box-shadow: 0 0 0 4px rgba(30,111,159,0.1);
+    }
+
+    .jodit-container .jodit-toolbar {
+        background: #f8fafc !important;
+        border-bottom: 1px solid #e8edf3 !important;
+    }
+
+    .jodit-container .jodit-workplace {
+        min-height: 150px;
+    }
+
+    .jodit-container .jodit-wysiwyg {
+        padding: 12px 16px !important;
+        font-family: 'Vazir', Tahoma, Arial, sans-serif !important;
+        font-size: 14px !important;
+        direction: rtl !important;
+        min-height: 150px !important;
+    }
+
+    .file-upload-wrapper {
+        position: relative;
         display: inline-block;
     }
 
-    .file-input-wrapper input[type="file"] {
+    .file-upload-wrapper input[type="file"] {
         position: absolute;
         left: 0;
         top: 0;
@@ -208,43 +297,67 @@
         cursor: pointer;
     }
 
-    .file-input-wrapper .file-label {
+    .file-upload-label {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        padding: 10px 20px;
+        padding: 8px 18px;
         background: #f0f4f9;
         border: 2px dashed #c5cdd8;
         border-radius: 10px;
         cursor: pointer;
-        transition: all 0.3s ease;
         font-weight: 500;
         color: #4a5a6e;
+        font-size: 13px;
+        transition: all 0.2s ease;
     }
 
-    .file-input-wrapper .file-label:hover {
+    .file-upload-label:hover {
         border-color: #1e6f9f;
         background: #e3f2fd;
     }
 
-    .file-name {
-        font-size: 13px;
-        color: #6b7a8f;
-        margin-top: 4px;
+    .btn-submit {
+        padding: 10px 28px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 14px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: linear-gradient(135deg, #1e6f9f, #155a82);
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
     }
 
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(30,111,159,0.3);
+    }
+
+    .btn-submit-success {
+        background: linear-gradient(135deg, #4caf50, #388e3c);
+    }
+
+    .btn-submit-success:hover {
+        box-shadow: 0 4px 15px rgba(76,175,80,0.3);
+    }
+
+    /* ===== EMPTY ===== */
     .empty-state {
         text-align: center;
         padding: 60px 20px;
         background: #f8fafc;
-        border-radius: 20px;
+        border-radius: 16px;
     }
 
     .empty-state .empty-icon {
         font-size: 60px;
         color: #d0d7e2;
-        margin-bottom: 20px;
         display: block;
+        margin-bottom: 16px;
     }
 
     .empty-state h4 {
@@ -258,40 +371,44 @@
         font-size: 14px;
     }
 
-    .jodit-container {
-        border-radius: 12px !important;
-        overflow: hidden;
-    }
-
-    .jodit-container .jodit-wysiwyg {
-        padding: 12px 16px !important;
-        font-family: 'Vazir', Tahoma, Arial, sans-serif !important;
-        font-size: 14px !important;
-        direction: rtl !important;
-    }
-
-    .answer-box {
-        margin-top: 16px;
-        padding-top: 16px;
-        border-top: 2px solid #f0f4f9;
-    }
-
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
         .exercise-card {
-            padding: 18px 16px;
+            padding: 16px;
+        }
+
+        .exercise-card .card-header {
+            flex-direction: column;
+        }
+
+        .stats-row {
+            flex-direction: column;
+        }
+
+        .stat-box {
+            min-width: auto;
+        }
+
+        .session-title {
+            font-size: 16px;
+            padding: 10px 16px;
+        }
+
+        .jodit-container .jodit-toolbar {
+            flex-wrap: wrap !important;
         }
     }
 </style>
 @endsection
 
 @section('mohtava')
-<div class="exercise-container">
+<div class="exercises-container">
     {{-- HEADER --}}
-    <div class="exercise-header">
+    <div class="exercises-header">
         <div>
             <h2>
                 <i class="fas fa-tasks"></i>
-                تکالیف من - {{ $session->name }}
+                تکالیف
             </h2>
             <div class="subtitle">
                 <i class="fas fa-book-open" style="margin-left:6px;color:#1e6f9f;"></i>
@@ -304,173 +421,280 @@
         </a>
     </div>
 
-    {{-- EXERCISES LIST --}}
+    {{-- STATS --}}
+    <div class="stats-row">
+        <div class="stat-box total">
+            <div class="number">{{ $stats['total'] }}</div>
+            <div class="label">کل تکالیف</div>
+        </div>
+        <div class="stat-box answered">
+            <div class="number">{{ $stats['answered'] }}</div>
+            <div class="label">پاسخ داده شده</div>
+        </div>
+        <div class="stat-box pending">
+            <div class="number">{{ $stats['not_answered'] }}</div>
+            <div class="label">پاسخ داده نشده</div>
+        </div>
+        <div class="stat-box scored">
+            <div class="number">{{ $stats['scored'] }}</div>
+            <div class="label">ارزیابی شده</div>
+        </div>
+    </div>
+
+    {{-- EXERCISES BY SESSION --}}
     @if($exercises->count() > 0)
-        @foreach($exercises as $key => $exercise)
-            <div class="exercise-card">
-                <div class="card-header">
-                    <span class="exercise-number">
-                        <i class="fas fa-hashtag" style="color:#6b7a8f;"></i>
-                        تمرین {{ $key + 1 }}
-                    </span>
-                    @if(isset($exercise->user_answer))
-                        @if($exercise->user_answer->status == 'scored')
-                            <span class="answer-status scored">
-                                <i class="fas fa-check-circle"></i> نمره: {{ $exercise->user_answer->score }}
-                            </span>
-                        @else
-                            <span class="answer-status submitted">
-                                <i class="fas fa-check-circle"></i> پاسخ ارسال شده
-                            </span>
-                        @endif
-                    @else
-                        <span class="answer-status not-submitted">
-                            <i class="fas fa-clock"></i> پاسخ داده نشده
+        @foreach($sessions as $session)
+            @php
+                $sessionExercises = $exercises->filter(function($e) use ($session) {
+                    return $e->session_id == $session->id;
+                });
+            @endphp
+            @if($sessionExercises->count() > 0)
+                <div class="session-section">
+                    <div class="session-title">
+                        <span>
+                            <i class="fas fa-video" style="color:#1e6f9f;"></i>
+                            {{ $session->name }}
                         </span>
-                    @endif
-                </div>
+                        <span class="badge-count">
+                            {{ $sessionExercises->count() }} تکلیف
+                        </span>
+                    </div>
 
-                <div class="exercise-text">
-                    {!! $exercise->text !!}
-                </div>
-
-                @if($exercise->file)
-                    <a href="{{ asset($exercise->file) }}" class="exercise-file" target="_blank">
-                        <i class="fas fa-paperclip"></i>
-                        دانلود فایل پیوست
-                    </a>
-                @endif
-
-                {{-- Answer Form --}}
-                <div class="answer-box">
-                    <form method="POST" action="{{ route('student.exercise.answer') }}" enctype="multipart/form-data">
-                        @csrf
-                        <input type="hidden" name="exercise_id" value="{{ $exercise->id }}">
-
-                        <div class="form-group">
-                            <label>پاسخ شما</label>
-                            <textarea class="jodit-editor" name="text" id="answerEditor{{ $key }}" 
-                                      placeholder="پاسخ خود را وارد کنید...">{{ isset($exercise->user_answer) ? $exercise->user_answer->answer : '' }}</textarea>
-                        </div>
-
-                        <div class="form-group">
-                            <label>فایل پیوست (اختیاری)</label>
-                            <div class="file-input-wrapper">
-                                <span class="file-label">
-                                    <i class="fas fa-upload"></i>
-                                    انتخاب فایل
+                    @foreach($sessionExercises as $key => $exercise)
+                        <div class="exercise-card">
+                            <div class="card-header">
+                                <span class="exercise-number">
+                                    <i class="fas fa-hashtag" style="color:#6b7a8f;"></i>
+                                    تکلیف {{ $key + 1 }}
                                 </span>
-                                <input type="file" name="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip">
-                            </div>
-                            @if(isset($exercise->user_answer) && $exercise->user_answer->file)
-                                <div class="file-name">
-                                    <i class="fas fa-check-circle" style="color:#4caf50;"></i>
-                                    فایل قبلی: <a href="{{ asset($exercise->user_answer->file) }}" target="_blank" style="color:#1e6f9f;">دانلود</a>
+                                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                                    @if(isset($exercise->user_answer))
+                                        @if($exercise->user_answer->status == 'scored')
+                                            <span class="status-badge scored">
+                                                <i class="fas fa-check-circle"></i> ارزیابی شده
+                                            </span>
+                                        @elseif($exercise->user_answer->status == 'returned')
+                                            <span class="status-badge returned">
+                                                <i class="fas fa-undo"></i> برگشت خورده
+                                            </span>
+                                        @else
+                                            <span class="status-badge answered">
+                                                <i class="fas fa-check-circle"></i> پاسخ ارسال شده
+                                            </span>
+                                        @endif
+                                    @else
+                                        <span class="status-badge not-answered">
+                                            <i class="fas fa-clock"></i> پاسخ داده نشده
+                                        </span>
+                                    @endif
                                 </div>
-                            @endif
-                        </div>
+                            </div>
 
-                        <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                            @if(isset($exercise->user_answer) && $exercise->user_answer->status != 'scored')
-                                <button type="submit" class="btn-submit btn-submit-success">
-                                    <i class="fas fa-edit"></i>
-                                    بروزرسانی پاسخ
-                                </button>
-                            @elseif(!isset($exercise->user_answer))
-                                <button type="submit" class="btn-submit">
-                                    <i class="fas fa-paper-plane"></i>
-                                    ارسال پاسخ
-                                </button>
-                            @endif
+                            <div class="exercise-text">
+                                {!! $exercise->text !!}
+                            </div>
 
-                            @if(isset($exercise->user_answer) && $exercise->user_answer->status != 'scored')
-                                <a href="{{ route('student.exercise.answer.delete', $exercise->user_answer->id) }}" 
-                                   class="btn-submit btn-submit-danger"
-                                   onclick="return confirm('آیا مطمئن هستید که می‌خواهید این پاسخ را حذف کنید؟')">
-                                    <i class="fas fa-trash-alt"></i>
-                                    حذف پاسخ
+                            @if($exercise->file)
+                                <a href="{{ asset($exercise->file) }}" class="exercise-file" target="_blank">
+                                    <i class="fas fa-paperclip"></i>
+                                    دانلود فایل پیوست
                                 </a>
                             @endif
-                        </div>
 
-                        @if(isset($exercise->user_answer) && $exercise->user_answer->status == 'scored')
-                            <div style="margin-top:12px;padding:12px 16px;background:#e3f2fd;border-radius:10px;">
-                                <strong style="color:#1e6f9f;">نمره: {{ $exercise->user_answer->score }}</strong>
-                                @if($exercise->user_answer->comment)
-                                    <p style="margin:4px 0 0;color:#4a5a6e;font-size:14px;">
-                                        <i class="fas fa-comment"></i> {{ $exercise->user_answer->comment }}
-                                    </p>
-                                @endif
+                            {{-- ANSWER FORM --}}
+                            <div class="answer-form">
+                                <form method="POST" action="{{ route('student.exercise.answer') }}" enctype="multipart/form-data">
+                                    @csrf
+                                    <input type="hidden" name="exercise_id" value="{{ $exercise->id }}">
+
+                                    <div class="form-group">
+                                        <label>پاسخ شما</label>
+                                        {{-- تبدیل به Jodit Editor --}}
+                                        <textarea class="jodit-editor" name="text" id="answerEditor{{ $exercise->id }}" 
+                                                  placeholder="پاسخ خود را وارد کنید...">{{ isset($exercise->user_answer) ? $exercise->user_answer->answer : '' }}</textarea>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>فایل پیوست (اختیاری)</label>
+                                        <div class="file-upload-wrapper">
+                                            <span class="file-upload-label">
+                                                <i class="fas fa-upload"></i>
+                                                انتخاب فایل
+                                            </span>
+                                            <input type="file" name="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip">
+                                        </div>
+                                        @if(isset($exercise->user_answer) && $exercise->user_answer->file)
+                                            <div style="font-size:13px;color:#6b7a8f;margin-top:4px;">
+                                                <i class="fas fa-check-circle" style="color:#4caf50;"></i>
+                                                فایل قبلی: <a href="{{ asset($exercise->user_answer->file) }}" target="_blank" style="color:#1e6f9f;">دانلود</a>
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                    @if(isset($exercise->user_answer) && $exercise->user_answer->status == 'scored')
+                                        <div style="padding:12px 16px;background:#e3f2fd;border-radius:10px;margin-bottom:12px;">
+                                            <strong style="color:#1e6f9f;">نمره: 
+                                                @if($exercise->user_answer->rate == 'excellent') عالی
+                                                @elseif($exercise->user_answer->rate == 'good') خوب
+                                                @elseif($exercise->user_answer->rate == 'medium') متوسط
+                                                @elseif($exercise->user_answer->rate == 'weak') بد
+                                                @endif
+                                            </strong>
+                                            @if($exercise->user_answer->comment)
+                                                <p style="margin:4px 0 0;color:#4a5a6e;font-size:14px;">
+                                                    <i class="fas fa-comment"></i> {{ $exercise->user_answer->comment }}
+                                                </p>
+                                            @endif
+                                        </div>
+                                    @elseif(isset($exercise->user_answer) && $exercise->user_answer->status != 'scored')
+                                        <button type="submit" class="btn-submit btn-submit-success">
+                                            <i class="fas fa-edit"></i>
+                                            بروزرسانی پاسخ
+                                        </button>
+                                    @elseif(!isset($exercise->user_answer))
+                                        <button type="submit" class="btn-submit">
+                                            <i class="fas fa-paper-plane"></i>
+                                            ارسال پاسخ
+                                        </button>
+                                    @endif
+                                </form>
                             </div>
-                        @endif
-                    </form>
+                        </div>
+                    @endforeach
                 </div>
-            </div>
+            @endif
         @endforeach
     @else
         <div class="empty-state">
-            <span class="empty-icon">
-                <i class="fas fa-file-alt"></i>
-            </span>
-            <h4>هیچ تمرینی برای این جلسه ثبت نشده است</h4>
-            <p>هنوز تمرینی برای این جلسه ایجاد نشده است.</p>
+            <span class="empty-icon"><i class="fas fa-inbox"></i></span>
+            <h4>هیچ تکلیفی ثبت نشده است</h4>
+            <p>هنوز هیچ تکلیفی برای این درس ایجاد نشده است.</p>
         </div>
     @endif
 </div>
 @endsection
 
-@section('script')
-<script src="https://cdn.jsdelivr.net/npm/jodit@4.0.12/build/jodit.min.js"></script>
+@section('js')
+{{-- اضافه کردن Jodit --}}
+<script src="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.js"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const baseConfig = {
-            width: '100%',
-            height: 200,
-            direction: 'rtl',
-            language: 'fa',
-            defaultFont: 'Vazir, Tahoma, Arial, sans-serif',
-            defaultFontSize: '14px',
-            fonts: ['Vazir', 'Tahoma', 'Arial', 'Courier New'],
-            buttons: [
-                'source', '|',
-                'undo', 'redo', '|',
-                'bold', 'italic', 'underline', 'strikethrough', '|',
-                'font', 'fontsize', 'brush', 'paragraph', '|',
-                'ul', 'ol', 'outdent', 'indent', '|',
-                'align', 'hr', 'table', '|',
-                'link', 'unlink', 'image', '|',
-                'fullsize', 'preview', '|', 'about'
-            ],
-            uploader: {
-                url: '{{ route("upload.image") }}',
-                format: 'json',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                filesVariableName: 'file',
-                insertImageAsBase64URI: false,
-                process: function (resp) {
-                    if (resp.files && resp.files[0] && resp.files[0].url) {
-                        return {
-                            files: [{
-                                url: resp.files[0].url,
-                                name: resp.files[0].name || 'image',
-                                size: resp.files[0].size || 0
-                            }],
-                            error: null
-                        };
-                    }
-                    return { error: 'خطا در آپلود فایل' };
-                }
+        // مقداردهی تمام ادیتورهای موجود در صفحه
+        document.querySelectorAll('.jodit-editor').forEach(function(element) {
+            const editorId = element.id || 'editor-' + Math.random().toString(36).substr(2, 9);
+            if (!element.id) {
+                element.id = editorId;
             }
-        };
+            
+            new Jodit('#' + editorId, {
+                width: '100%',
+                height: 200,
+                allowResize: true,
+                allowResizeImages: true,
+                direction: 'rtl',
+                buttons: [
+                    'source', '|',
+                    'undo', 'redo', '|',
+                    'bold', 'italic', 'underline', 'strikethrough', '|',
+                    'font', 'fontsize', 'brush', 'paragraph', '|',
+                    'ul', 'ol', 'outdent', 'indent', '|',
+                    'align', 'hr', 'table', '|',
+                    'link', 'unlink',
+                    {
+                        name: 'uploadImage',
+                        iconURL: 'https://cdn-icons-png.flaticon.com/512/1829/1829586.png',
+                        tooltip: 'آپلود تصویر',
+                        exec: (editor) => {
+                            let input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'image/*';
+                            input.onchange = () => {
+                                let file = input.files[0];
+                                if (!file) return;
 
-        document.querySelectorAll('.jodit-editor').forEach(function(editor) {
-            const value = editor.value;
-            const jodit = new Jodit(editor, baseConfig);
-            if (value) {
-                jodit.value = value;
-            }
+                                let formData = new FormData();
+                                formData.append('file', file);
+
+                                fetch('{{ route("upload.image") }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                    },
+                                    body: formData
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.files && data.files[0].url) {
+                                        let img = document.createElement('img');
+                                        img.src = data.files[0].url;
+                                        img.style.maxWidth = '100%';
+                                        editor.s.insertNode(img);
+                                    } else {
+                                        alert('خطا در آپلود تصویر');
+                                    }
+                                })
+                                .catch(err => alert('Upload error: ' + err));
+                            };
+                            input.click();
+                        }
+                    },
+                    {
+                        name: 'uploadVideo',
+                        iconURL: 'https://cdn-icons-png.flaticon.com/512/727/727245.png',
+                        tooltip: 'آپلود ویدیو',
+                        exec: (editor) => {
+                            let input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'video/*';
+                            input.onchange = () => {
+                                let file = input.files[0];
+                                if (!file) return;
+
+                                let formData = new FormData();
+                                formData.append('file', file);
+
+                                fetch('{{ route("upload.video") }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                    },
+                                    body: formData
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.files && data.files[0].url) {
+                                        let wrapper = document.createElement('div');
+                                        wrapper.classList.add('video-wrapper');
+
+                                        let video = document.createElement('video');
+                                        video.setAttribute('controls', '');
+                                        video.src = data.files[0].url;
+                                        video.style.maxWidth = '100%';
+
+                                        wrapper.appendChild(video);
+                                        editor.s.insertNode(wrapper);
+                                    } else {
+                                        alert('خطا در آپلود ویدیو');
+                                    }
+                                })
+                                .catch(err => alert('Upload error: ' + err));
+                            };
+                            input.click();
+                        }
+                    },
+                    '|', 'symbols', 'emoticons', '|',
+                    'print', 'fullsize', 'preview'
+                ],
+                colors: {
+                    text: ['#000000', '#ff0000', '#00ff00', '#0000ff', '#ff00ff', '#00ffff'],
+                    background: ['#ffffff', '#ffff00', '#00ffff', '#ffcc99']
+                },
+                defaultFont: 'Vazir, Tahoma, Arial, sans-serif',
+                defaultFontSize: '14px',
+                fonts: ['Vazir', 'Tahoma', 'Arial', 'Courier New']
+            });
         });
     });
 </script>

@@ -8,9 +8,9 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/persian-datepicker@latest/dist/css/persian-datepicker.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.css">
 
 <style>
-    /* ... استایل‌های قبلی ... */
     .azmon-form-container {
         max-width: 850px;
         margin: 30px auto;
@@ -353,6 +353,24 @@
         color: #1e6f9f;
         margin-left: 6px;
     }
+
+    /* استایل‌های Jodit */
+    .jodit-container {
+        border-radius: 12px !important;
+        overflow: hidden;
+    }
+
+    .jodit-container .jodit-toolbar {
+        background: #f8fafc !important;
+        border-bottom: 1px solid #e8edf3 !important;
+    }
+
+    .jodit-container .jodit-wysiwyg {
+        padding: 12px 16px !important;
+        font-family: 'Vazir', Tahoma, Arial, sans-serif !important;
+        font-size: 14px !important;
+        direction: rtl !important;
+    }
 </style>
 @endsection
 
@@ -422,10 +440,10 @@
                 @endif
             </div>
 
-            {{-- Description --}}
+            {{-- Description with Jodit Editor --}}
             <div class="form-group">
                 <label>توضیحات (اختیاری)</label>
-                <textarea class="form-control" name="description" id="description"
+                <textarea class="jodit-editor" id="descriptionEditor" name="description" 
                           placeholder="توضیحات آزمون را وارد کنید...">{{ old('description', isset($azmon) ? $azmon->description : '') }}</textarea>
             </div>
 
@@ -492,7 +510,6 @@
                 <label>تاریخ و زمان شروع و پایان <span class="required">*</span></label>
                 
                 @php
-                    // دریافت مقادیر old
                     $oldStartDate = old('start_date', '');
                     $oldStartH = old('start_h', '');
                     $oldStartM = old('start_m', '');
@@ -500,7 +517,6 @@
                     $oldEndH = old('end_h', '');
                     $oldEndM = old('end_m', '');
                     
-                    // اگر در حالت ویرایش هستیم
                     if (!$oldStartDate && isset($azmon) && $azmon->start) {
                         $startParts = explode(' ', $azmon->start);
                         $oldStartDate = $startParts[0] ?? '';
@@ -629,14 +645,16 @@
 </div>
 @endsection
 
-@section('script')
+@section('js')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://unpkg.com/persian-date@latest/dist/persian-date.js"></script>
 <script src="https://unpkg.com/persian-datepicker@latest/dist/js/persian-datepicker.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.js"></script>
 
 <script>
     $(document).ready(function() {
+        // Select2
         $('#sessionsSelect').select2({
             placeholder: 'جلسات را انتخاب کنید',
             allowClear: true,
@@ -645,6 +663,7 @@
             language: 'fa'
         });
 
+        // Persian Datepicker
         $('.jalali-date').persianDatepicker({
             format: 'YYYY/MM/DD',
             responsive: true,
@@ -657,7 +676,125 @@
         });
     });
 
-    // قبل از ارسال فرم، اعتبارسنجی کنید
+    // مقداردهی Jodit Editor
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.jodit-editor').forEach(function(element) {
+            const editorId = element.id || 'editor-' + Math.random().toString(36).substr(2, 9);
+            if (!element.id) {
+                element.id = editorId;
+            }
+            
+            new Jodit('#' + editorId, {
+                width: '100%',
+                height: 250,
+                allowResize: true,
+                allowResizeImages: true,
+                direction: 'rtl',
+                buttons: [
+                    'source', '|',
+                    'undo', 'redo', '|',
+                    'bold', 'italic', 'underline', 'strikethrough', '|',
+                    'font', 'fontsize', 'brush', 'paragraph', '|',
+                    'ul', 'ol', 'outdent', 'indent', '|',
+                    'align', 'hr', 'table', '|',
+                    'link', 'unlink',
+                    {
+                        name: 'uploadImage',
+                        iconURL: 'https://cdn-icons-png.flaticon.com/512/1829/1829586.png',
+                        tooltip: 'آپلود تصویر',
+                        exec: (editor) => {
+                            let input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'image/*';
+                            input.onchange = () => {
+                                let file = input.files[0];
+                                if (!file) return;
+
+                                let formData = new FormData();
+                                formData.append('file', file);
+
+                                fetch('{{ route("upload.image") }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                    },
+                                    body: formData
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.files && data.files[0].url) {
+                                        let img = document.createElement('img');
+                                        img.src = data.files[0].url;
+                                        img.style.maxWidth = '100%';
+                                        editor.s.insertNode(img);
+                                    } else {
+                                        alert('خطا در آپلود تصویر');
+                                    }
+                                })
+                                .catch(err => alert('Upload error: ' + err));
+                            };
+                            input.click();
+                        }
+                    },
+                    {
+                        name: 'uploadVideo',
+                        iconURL: 'https://cdn-icons-png.flaticon.com/512/727/727245.png',
+                        tooltip: 'آپلود ویدیو',
+                        exec: (editor) => {
+                            let input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'video/*';
+                            input.onchange = () => {
+                                let file = input.files[0];
+                                if (!file) return;
+
+                                let formData = new FormData();
+                                formData.append('file', file);
+
+                                fetch('{{ route("upload.video") }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                    },
+                                    body: formData
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.files && data.files[0].url) {
+                                        let wrapper = document.createElement('div');
+                                        wrapper.classList.add('video-wrapper');
+
+                                        let video = document.createElement('video');
+                                        video.setAttribute('controls', '');
+                                        video.src = data.files[0].url;
+                                        video.style.maxWidth = '100%';
+
+                                        wrapper.appendChild(video);
+                                        editor.s.insertNode(wrapper);
+                                    } else {
+                                        alert('خطا در آپلود ویدیو');
+                                    }
+                                })
+                                .catch(err => alert('Upload error: ' + err));
+                            };
+                            input.click();
+                        }
+                    },
+                    '|', 'symbols', 'emoticons', '|',
+                    'print', 'fullsize', 'preview'
+                ],
+                colors: {
+                    text: ['#000000', '#ff0000', '#00ff00', '#0000ff', '#ff00ff', '#00ffff'],
+                    background: ['#ffffff', '#ffff00', '#00ffff', '#ffcc99']
+                },
+                defaultFont: 'Vazir, Tahoma, Arial, sans-serif',
+                defaultFontSize: '14px',
+                fonts: ['Vazir', 'Tahoma', 'Arial', 'Courier New']
+            });
+        });
+    });
+
+    // قبل از ارسال فرم، اعتبارسنجی
     document.getElementById('azmonForm').addEventListener('submit', function(e) {
         var startDate = document.getElementById('start-date').value.trim();
         var endDate = document.getElementById('end-date').value.trim();

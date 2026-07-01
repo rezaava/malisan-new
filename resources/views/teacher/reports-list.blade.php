@@ -362,6 +362,7 @@
     }
 </style>
 @endsection
+
 @section('mohtava')
 <div class="reports-container">
     {{-- HEADER --}}
