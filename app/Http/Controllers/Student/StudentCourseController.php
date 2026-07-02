@@ -180,7 +180,6 @@ class StudentCourseController extends Controller
         }
 
         DB::beginTransaction();
-
         try {
             $user = Auth::user();
             $studentRole = Role::where('name', 'student')->first();
@@ -195,9 +194,24 @@ class StudentCourseController extends Controller
                 ], 404);
             }
 
+            // بررسی خصوصی بودن دوره
+            if ($course->private == 1) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'این دوره خصوصی است و امکان عضویت با کد وجود ندارد'
+                ], 403);
+            }
+
+            // بررسی آرشیو بودن دوره
+            if ($course->archive == 1) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'این دوره آرشیو شده و امکان عضویت در آن وجود ندارد'
+                ], 403);
+            }
+
             // بررسی تکراری بودن عضویت
             $exists = $user->courses()->where('course_id', $course->id)->exists();
-
             if ($exists) {
                 return response()->json([
                     'success' => false,
@@ -208,22 +222,16 @@ class StudentCourseController extends Controller
             // عضویت دانشجو در دوره
             $course->users()->attach($user, ['role_id' => $studentRole->id]);
 
-            // تراکنش مالی (در صورت نیاز)
-            // $this->anetoTrans($user, 2000, 5, 'ورود درس ' . $course->name);
-
             DB::commit();
-
             return response()->json([
                 'success' => true,
                 'message' => 'عضویت با موفقیت انجام شد',
                 'course_name' => $course->name,
                 'redirect' => route('view.coure.St', $course->id)
             ]);
-
         } catch (\Exception $exception) {
             DB::rollBack();
             \Log::error('Join course failed: ' . $exception->getMessage());
-            
             return response()->json([
                 'success' => false,
                 'message' => 'خطایی در سرور رخ داده است: ' . $exception->getMessage()
