@@ -9,7 +9,9 @@ use App\Models\Discussion;
 use App\Models\Exercise;
 use App\Models\Question;
 use App\Models\Role;
+use App\Models\Scoring;
 use App\Models\session;
+use App\Models\Setting;
 use App\Models\User;
 use Auth;
 use Carbon\Carbon;
@@ -222,13 +224,45 @@ class StudentCourseController extends Controller
             // عضویت دانشجو در دوره
             $course->users()->attach($user, ['role_id' => $studentRole->id]);
 
+            // ==========================================
+            // ایجاد Scoring برای دانشجو با مقادیر پیش‌فرض ۰
+            // ==========================================
+            $scoring = Scoring::create([
+                'course_id' => $course->id,
+                'user_id' => $user->id,
+                'q_1' => 0,
+                'q_2' => 0,
+                'q_3' => 0,
+                'q_4' => 0,
+                'd_1' => 0,
+                'd_2' => 0,
+                'd_3' => 0,
+                'd_4' => 0,
+                'e_1' => 0,
+                'e_2' => 0,
+                'e_3' => 0,
+                'e_4' => 0,
+                's_1' => 0,
+                's_2' => 0,
+                's_3' => 0,
+                's_4' => 0,
+            ]);
+
+            // همچنین اطمینان از وجود Setting برای دوره (اگر وجود نداشت)
+            Setting::firstOrCreate(
+                ['course_id' => $course->id],
+                ['course_id' => $course->id]
+            );
+
             DB::commit();
+            
             return response()->json([
                 'success' => true,
                 'message' => 'عضویت با موفقیت انجام شد',
                 'course_name' => $course->name,
                 'redirect' => route('view.coure.St', $course->id)
             ]);
+            
         } catch (\Exception $exception) {
             DB::rollBack();
             \Log::error('Join course failed: ' . $exception->getMessage());

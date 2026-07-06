@@ -600,3 +600,208 @@
     border-radius: 20px;
     font-size: 12px;
 }
+
+
+/* استایل مودال آرشیو */
+#archivedModalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    padding: 20px;
+}
+
+#archivedModalOverlay.active {
+    display: flex;
+}
+
+#archivedModalOverlay .modal-container {
+    background: white;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 700px;
+    max-height: 90vh; /* مهم: محدود کردن ارتفاع به 90% از viewport */
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: modalSlideDown 0.3s ease;
+}
+
+#archivedModalOverlay .modal-header {
+    padding: 20px 24px;
+    border-radius: 16px 16px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0; /* مهم: جلوگیری از کوچک شدن هدر */
+}
+
+#archivedModalOverlay .modal-header h4 {
+    color: white;
+    margin: 0;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#archivedModalOverlay .modal-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+}
+
+#archivedModalOverlay .modal-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+#archivedModalOverlay .modal-body {
+    padding: 20px 24px;
+    overflow-y: auto; /* مهم: اسکرول برای محتوای داخل */
+    flex: 1; /* مهم: پر کردن فضای باقی‌مانده */
+    min-height: 0; /* مهم: اجازه دادن به flex برای کوچک شدن */
+}
+
+/* استایل لیست آیتم‌های آرشیو */
+.archived-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    border-right: 3px solid #6c757d;
+    transition: all 0.2s;
+}
+
+.archived-list-item:hover {
+    background: #e9ecef;
+    transform: translateX(-4px);
+}
+
+.archived-list-item .course-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.archived-list-item .course-name {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 15px;
+}
+
+.archived-list-item .course-code {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.archived-list-item .archived-date {
+    font-size: 11px;
+    color: #adb5bd;
+    margin-top: 2px;
+}
+
+.restore-btn {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.restore-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.restore-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.empty-archived {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+}
+
+.empty-archived i {
+    font-size: 48px;
+    color: #adb5bd;
+    margin-bottom: 16px;
+}
+
+.empty-archived p {
+    font-size: 16px;
+    margin: 0;
+}
+
+/* انیمیشن برای مودال */
+@keyframes modalSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* انیمیشن برای تواست */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* استایل اسکرول برای مرورگرهای مختلف */
+#archivedModalOverlay .modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+#archivedModalOverlay .modal-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+#archivedModalOverlay .modal-body::-webkit-scrollbar-thumb {
+    background: #c1c7cd;
+    border-radius: 10px;
+}
+
+#archivedModalOverlay .modal-body::-webkit-scrollbar-thumb:hover {
+    background: #a8b0b8;
+}

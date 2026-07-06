@@ -59,7 +59,7 @@
         <div class="course-card">
             <a href="{{ route('view.coure.St',$cours->id)}}" class="course-link">
                 <div class="course-image">
-                    <img src="{{ asset('images/course-default.jpg') }}" alt="{{ $cours->name }}">
+                    <img src="{{ asset('/files/icons/' . $cours->header . '.jpg') }}" alt="{{ $cours->name }}">
                     <div class="course-badge">
                         @if ($cours->archieve == 1)
                             غیر فعال

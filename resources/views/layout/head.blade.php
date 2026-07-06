@@ -10,6 +10,7 @@
     <script src="{{ asset('bootstrap/bootstrap.min.js') }}"></script>
 
     <link rel="stylesheet" href="{{asset('css/style-layout.css')}}">
-
+    <script src="{{ asset('alert/alert.js') }}"></script>
+    <script src="{{ asset('js/alert.js') }}"></script>
     @yield('head')
 </head>

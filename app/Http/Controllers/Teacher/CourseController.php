@@ -491,6 +491,7 @@ class CourseController extends Controller
             $course->majazi = $this->cleanUrl($request->majazi);
             $course->max_session = 16;
             $course->code = $code;
+            $course->header = rand(0, 30);
             $course->save();
             
             $this->createCourseAssociations($course);
@@ -1779,6 +1780,109 @@ class CourseController extends Controller
             return redirect()->back()->with('success', 'سوال با موفقیت حذف شد');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'خطا در حذف سوال: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * به‌روزرسانی درس
+     */
+    public function update(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'majazi' => 'nullable|url|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در اعتبارسنجی داده‌ها',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $course = Course::findOrFail($id);
+            
+            // بررسی دسترسی
+            $user = Auth::user();
+            $teacherRole = Role::where('name', 'teacher')->first();
+            $isOwner = DB::table('course_user')
+                ->where('user_id', $user->id)
+                ->where('course_id', $course->id)
+                ->where('role_id', $teacherRole->id)
+                ->exists();
+                
+            if (!$isOwner) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'شما دسترسی به ویرایش این درس ندارید'
+                ], 403);
+            }
+            
+            $course->name = $request->name;
+            $course->majazi = $this->cleanUrl($request->majazi);
+            $course->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'درس با موفقیت ویرایش شد',
+                'course' => $course
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Update course failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در ویرایش درس: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * حذف درس
+     */
+    public function destroy($id)
+    {
+        try {
+            $course = Course::findOrFail($id);
+            
+            // بررسی دسترسی
+            $user = Auth::user();
+            $teacherRole = Role::where('name', 'teacher')->first();
+            $isOwner = DB::table('course_user')
+                ->where('user_id', $user->id)
+                ->where('course_id', $course->id)
+                ->where('role_id', $teacherRole->id)
+                ->exists();
+                
+            if (!$isOwner) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'شما دسترسی به حذف این درس ندارید'
+                ], 403);
+            }
+            
+            // حذف وابسته‌ها
+            $course->sessions()->delete();
+            $course->settings()->delete();
+            $course->scorings()->delete();
+            $course->users()->detach();
+            
+            // حذف درس
+            $course->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'درس با موفقیت حذف شد'
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Delete course failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در حذف درس: ' . $e->getMessage()
+            ], 500);
         }
     }
 

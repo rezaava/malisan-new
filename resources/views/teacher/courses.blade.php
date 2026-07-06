@@ -32,7 +32,7 @@
         <div class="course-card" data-course-id="{{ $cours->id }}">
             <a href="{{ route('view.coure',$cours->id)}}" class="course-link">
                 <div class="course-image">
-                    <img src="{{ asset('images/course-default.jpg') }}" alt="{{ $cours->name }}">
+                    <img src="{{ asset('/files/icons/' . $cours->header . '.jpg') }}" alt="{{ $cours->name }}">
                     <div class="course-badge" style="background: {{ $cours->private == 1 ? 'rgba(76, 175, 80, 0.9)' : 'rgba(0, 0, 0, 0.7)' }};">
                         @if ($cours->private == 1)
                             خصوصی
@@ -141,6 +141,47 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
+<!-- ==========================================
+     مودال ویرایش درس
+     ========================================== -->
+<div class="modal-overlay" id="editCourseModal">
+    <div class="modal-container" style="max-width: 550px;">
+        <div class="modal-header" style="background: linear-gradient(135deg, #ff9800, #e65100);">
+            <h3 style="color:#fff;"><i class="fas fa-edit"></i> ویرایش درس</h3>
+            <button class="modal-close" onclick="closeEditModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <form id="editCourseForm" method="POST">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="course_id" id="editCourseId" value="">
+            
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="edit_name">عنوان درس <span class="required">*</span></label>
+                    <input type="text" id="edit_name" name="name" required class="form-control" 
+                           placeholder="مثال: ریاضیات پایه">
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit_majazi">لینک کلاس مجازی (اختیاری)</label>
+                    <input type="url" id="edit_majazi" name="majazi" class="form-control" 
+                           placeholder="https://example.com/class">
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeEditModal()">انصراف</button>
+                <button type="submit" class="btn-submit" style="background: linear-gradient(135deg, #ff9800, #e65100);">
+                    <i class="fas fa-save"></i>
+                    <span>ذخیره تغییرات</span>
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 @endsection
@@ -417,31 +458,346 @@
         openCreateModal(courseId);
     }
 
-    function deleteCourse(courseId) {
-        event.preventDefault();
-        event.stopPropagation();
-        if (confirm('آیا از حذف این درس اطمینان دارید؟')) {
-            showToast('در حال حذف درس...', 'info');
-        }
-    }
+    // ============================================
+    // ویرایش درس - با مودال
+    // ============================================
 
     function editCourse(courseId) {
         event.preventDefault();
         event.stopPropagation();
-        showToast('در حال ویرایش درس...', 'info');
+        
+        // پیدا کردن کارت مربوط به درس
+        const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
+        if (!card) {
+            showToast('خطا: اطلاعات درس پیدا نشد', 'error');
+            return;
+        }
+        
+        // استخراج اطلاعات از کارت
+        const courseName = card.querySelector('.course-title')?.textContent || '';
+        const courseCode = card.querySelector('.course-code')?.textContent?.replace('کد: ', '') || '';
+        
+        // تنظیم فرم ویرایش
+        const modal = document.getElementById('editCourseModal');
+        const form = document.getElementById('editCourseForm');
+        const nameInput = document.getElementById('edit_name');
+        const majaziInput = document.getElementById('edit_majazi');
+        const courseIdInput = document.getElementById('editCourseId');
+        
+        // تنظیم اطلاعات در فرم
+        nameInput.value = courseName;
+        courseIdInput.value = courseId;
+        
+        // تنظیم action فرم (با استفاده از route helper)
+        form.action = `/teacher/courses/${courseId}`;
+        
+        // اگر نیاز به دریافت لینک مجازی از سرور دارید، می‌توانید از fetch استفاده کنید
+        // اما برای سادگی، از داده‌های موجود در صفحه استفاده می‌کنیم
+        // اگر لینک مجازی در کارت وجود ندارد، می‌توانید از یک fetch ساده استفاده کنید
+        
+        // نمایش مودال
+        modal.classList.add('active');
     }
+
+    function closeEditModal() {
+        const modal = document.getElementById('editCourseModal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+    }
+
+    // بستن مودال با کلیک روی پس‌زمینه
+    document.getElementById('editCourseModal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeEditModal();
+        }
+    });
+
+    // ============================================
+    // حذف درس - با SweetAlert2
+    // ============================================
+
+    function deleteCourse(courseId) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        // استفاده از SweetAlert2 برای حذف
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'آیا از حذف این درس اطمینان دارید؟',
+                text: 'این اقدام غیرقابل بازگشت است!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'بله، حذف شود',
+                cancelButtonText: 'انصراف',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    performDeleteCourse(courseId);
+                }
+            });
+        } else {
+            // Fallback به confirm معمولی
+            if (confirm('آیا از حذف این درس اطمینان دارید؟ این اقدام غیرقابل بازگشت است!')) {
+                performDeleteCourse(courseId);
+            }
+        }
+    }
+
+    function performDeleteCourse(courseId) {
+        // نمایش لودینگ در دکمه
+        const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
+        const deleteBtn = card?.querySelector('.action-item[data-action="حذف"]');
+        if (deleteBtn) {
+            deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            deleteBtn.style.pointerEvents = 'none';
+        }
+        
+        // ارسال درخواست حذف
+        fetch(`/teacher/courses/${courseId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.message || 'خطا در حذف درس');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showToast(data.message || 'درس با موفقیت حذف شد', 'success');
+                
+                // حذف کارت از صفحه با انیمیشن
+                if (card) {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.transform = 'scale(0.8)';
+                    card.style.opacity = '0';
+                    setTimeout(() => {
+                        card.remove();
+                    }, 500);
+                }
+                
+                // به‌روزرسانی تعداد دوره‌ها (اگر نمایش داده می‌شود)
+                updateCourseCount();
+            } else {
+                showToast(data.message || 'خطا در حذف درس', 'error');
+                if (deleteBtn) {
+                    deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i><span class="action-tooltip">حذف</span>';
+                    deleteBtn.style.pointerEvents = 'auto';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast(error.message || 'خطا در ارتباط با سرور', 'error');
+            if (deleteBtn) {
+                deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i><span class="action-tooltip">حذف</span>';
+                deleteBtn.style.pointerEvents = 'auto';
+            }
+        });
+    }
+
+    // ============================================
+    // تابع کمکی برای بروزرسانی تعداد دوره‌ها
+    // ============================================
+
+    function updateCourseCount() {
+        // اگر المنت نمایش تعداد دوره‌ها وجود دارد
+        const countElement = document.querySelector('.courses-count');
+        if (countElement) {
+            const currentCount = parseInt(countElement.textContent) || 0;
+            countElement.textContent = currentCount - 1;
+        }
+    }
+
+    // ============================================
+    // ارسال فرم ویرایش با AJAX (اختیاری)
+    // ============================================
+
+    document.getElementById('editCourseForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const form = this;
+        const formData = new FormData(form);
+        const courseId = document.getElementById('editCourseId').value;
+        const submitBtn = form.querySelector('.btn-submit');
+        const originalText = submitBtn.innerHTML;
+        
+        // غیرفعال کردن دکمه و نمایش لودینگ
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال ذخیره...';
+        submitBtn.disabled = true;
+        
+        fetch(`/teacher/courses/${courseId}`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getContent() || '{{ csrf_token() }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.message || 'خطا در ذخیره تغییرات');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showToast(data.message || 'تغییرات با موفقیت ذخیره شد', 'success');
+                
+                // به‌روزرسانی اطلاعات در کارت
+                const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
+                if (card) {
+                    const titleElement = card.querySelector('.course-title');
+                    if (titleElement) {
+                        titleElement.textContent = document.getElementById('edit_name').value;
+                    }
+                }
+                
+                // بستن مودال
+                closeEditModal();
+                
+                // بازگرداندن دکمه
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            } else {
+                showToast(data.message || 'خطا در ذخیره تغییرات', 'error');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast(error.message || 'خطا در ارتباط با سرور', 'error');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+    });
 
     function shareCourse(courseId) {
         event.preventDefault();
         event.stopPropagation();
-        const courseCode = prompt('کد درس را برای اشتراک گذاری کپی کنید:');
-        if (courseCode) {
-            navigator.clipboard.writeText(courseCode).then(() => {
-                showToast('کد درس کپی شد!', 'success');
-            }).catch(() => {
-                showToast('خطا در کپی کردن کد', 'error');
-            });
+        
+        // پیدا کردن کارت مربوط به درس
+        const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
+        if (!card) {
+            showToast('خطا: اطلاعات درس پیدا نشد', 'error');
+            return;
         }
+        
+        // استخراج اطلاعات از کارت
+        const courseName = card.querySelector('.course-title')?.textContent || '';
+        const courseCode = card.querySelector('.course-code')?.textContent?.replace('کد: ', '') || '';
+        
+        // ساخت پیام
+        const message = `دانشجوی عزیز، برای دسترسی به درس ${courseName} ابتدا از طریق سایت WWW.MALISAN.IR در سامانه آموزشی ملیسان با هویت واقعی ثبت نام کنید، سپس با استفاده از شناسه ${courseCode} در درس ذکر شده عضو شوید.`;
+        
+        // استفاده از SweetAlert2 (که قبلاً در صفحه لود شده است)
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'اشتراک گذاری درس',
+                html: `
+                    <div style="text-align: right; direction: rtl;">
+                        <p style="color: #6c757d; font-size: 14px; margin-bottom: 16px;">
+                            برای دعوت دانشجویان خود به کلاس می‌توانید آن را از طریق شبکه‌های اجتماعی یا پیامک برایشان ارسال کنید.
+                        </p>
+                        <div style="background: #f8f9fa; padding: 16px; border-radius: 10px; border-right: 4px solid #6f42c1; text-align: right;">
+                            <p style="margin: 0; font-size: 14px; line-height: 2; color: #212529;">
+                                ${message}
+                            </p>
+                        </div>
+                        <div style="margin-top: 16px; display: flex; gap: 12px; justify-content: center;">
+                            <button onclick="copyText('${message.replace(/'/g, "\\'")}')" class="swal2-confirm swal2-styled" style="background: #6f42c1;">
+                                <i class="fas fa-copy"></i> کپی پیام
+                            </button>
+                            <button onclick="copyText('https://www.malisan.ir/join/${courseCode}')" class="swal2-confirm swal2-styled" style="background: #0d6efd;">
+                                <i class="fas fa-link"></i> کپی لینک
+                            </button>
+                        </div>
+                    </div>
+                `,
+                showConfirmButton: false,
+                showCancelButton: true,
+                cancelButtonText: 'بستن',
+                cancelButtonColor: '#6c757d',
+                width: 600,
+                customClass: {
+                    popup: 'swal-rtl'
+                }
+            });
+        } else {
+            // اگر SweetAlert2 وجود نداشت، از روش جایگزین استفاده کن
+            showToast(message, 'info');
+            
+            // بعد از 2 ثانیه، گزینه کپی را به کاربر بده
+            setTimeout(() => {
+                if (confirm('آیا می‌خواهید پیام را کپی کنید؟')) {
+                    copyText(message);
+                }
+            }, 2000);
+        }
+    }
+
+    // تابع کمکی برای کپی متن
+    function copyText(text) {
+        // اگر Clipboard API در دسترس است
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('✅ متن با موفقیت کپی شد!', 'success');
+            }).catch(() => {
+                // Fallback برای مرورگرهای قدیمی
+                fallbackCopy(text);
+            });
+        } else {
+            // Fallback برای مرورگرهای قدیمی
+            fallbackCopy(text);
+        }
+    }
+
+    function fallbackCopy(text) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        textArea.style.left = '-9999px';
+        textArea.style.top = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+        
+        try {
+            document.execCommand('copy');
+            showToast('✅ متن با موفقیت کپی شد!', 'success');
+        } catch (err) {
+            showToast('❌ خطا در کپی کردن متن', 'error');
+            console.error('Fallback copy failed:', err);
+        }
+        
+        document.body.removeChild(textArea);
+    }
+    // تابع کمکی برای کپی متن
+    function copyText(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('✅ متن با موفقیت کپی شد!', 'success');
+        }).catch(() => {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            showToast('✅ متن با موفقیت کپی شد!', 'success');
+        });
     }
 
     function archiveCourse(courseId) {
