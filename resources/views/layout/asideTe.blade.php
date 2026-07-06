@@ -1,44 +1,37 @@
 <aside class="sidebar-right" id="sidebarRight">
     <div class="sidebar-menu">
+        @php
+            $user = auth()->user();
+            $userRole = $user->role ?? 'student'; // یا از session استفاده کنید
+            $isTeacher = ($userRole === 'teacher' || $userRole === 'admin');
+            $isStudent = ($userRole === 'student');
+            
+            // تشخیص مسیر فعلی
+            $isTeacherRoute = request()->is('teacher*') || request()->routeIs('index_teacher');
+            $isStudentRoute = request()->is('student*') || request()->routeIs('index_student');
+        @endphp
+
         {{-- میز کار --}}
-        <a href="{{ route('index_teacher') }}" class="menu-item {{ request()->routeIs('index_teacher') || request()->is('teacher') ? 'active-menu' : '' }}">
-            <i class="fas fa-tachometer-alt"></i> <span>میز کار</span>
-        </a>
+        @if($isTeacher)
+            <a href="{{ route('index_teacher') }}" class="menu-item {{ request()->routeIs('index_teacher') || request()->is('teacher') ? 'active-menu' : '' }}">
+                <i class="fas fa-tachometer-alt"></i> <span>میز کار</span>
+            </a>
+        @else
+            <a href="{{ route('index_student') }}" class="menu-item {{ request()->routeIs('index_student') || request()->is('student') ? 'active-menu' : '' }}">
+                <i class="fas fa-tachometer-alt"></i> <span>میز کار</span>
+            </a>
+        @endif
         
         {{-- درس های من --}}
-        <a href="{{ route('courses') }}" class="menu-item {{ request()->routeIs('courses') || request()->is('teacher/courses*') ? 'active-menu' : '' }}">
-            <i class="fas fa-book-open"></i> <span>درس های من</span>
-        </a>
-        
-        {{-- دوره های ملیسان --}}
-        {{-- <a href="{{ route('publics') }}" class="menu-item {{ request()->routeIs('publics') || request()->is('publics') ? 'active-menu' : '' }}">
-            <i class="fas fa-university"></i> <span>دوره های ملیسان</span>
-        </a> --}}
-        
-        {{-- آزمون ها --}}
-        {{-- <a href="{{ route('exams') }}" class="menu-item {{ request()->routeIs('exams') || request()->is('exams') ? 'active-menu' : '' }}">
-            <i class="fas fa-pen-alt"></i> <span>آزمون ها</span>
-        </a> --}}
-        
-        {{-- نظرسنجی --}}
-        {{-- <a href="{{ route('surveys') }}" class="menu-item {{ request()->routeIs('surveys') || request()->is('surveys') ? 'active-menu' : '' }}">
-            <i class="fas fa-chart-simple"></i> <span>نظرسنجی</span>
-        </a> --}}
-        
-        {{-- تولید محتوا
-        <a href="{{ route('content') }}" class="menu-item {{ request()->routeIs('content') || request()->is('content') ? 'active-menu' : '' }}">
-            <i class="fas fa-edit"></i> <span>تولید محتوا</span>
-        </a> --}}
-        
-        {{-- ساخت مسابقه
-        <a href="{{ route('createQuiz') }}" class="menu-item {{ request()->routeIs('createQuiz') || request()->is('create-quiz') ? 'active-menu' : '' }}">
-            <i class="fas fa-trophy"></i> <span>ساخت مسابقه</span>
-        </a> --}}
-        
-        {{-- مسابقات
-        <a href="{{ route('quizzes') }}" class="menu-item {{ request()->routeIs('quizzes') || request()->is('quizzes') ? 'active-menu' : '' }}">
-            <i class="fas fa-medal"></i> <span>مسابقات</span>
-        </a> --}}
+        @if($isTeacher)
+            <a href="{{ route('courses') }}" class="menu-item {{ request()->routeIs('courses') || request()->is('teacher/courses*') ? 'active-menu' : '' }}">
+                <i class="fas fa-book-open"></i> <span>درس های من</span>
+            </a>
+        @else
+            <a href="{{ route('courses.st') }}" class="menu-item {{ request()->routeIs('courses.st') || request()->is('student/courses*') ? 'active-menu' : '' }}">
+                <i class="fas fa-book-open"></i> <span>درس های من</span>
+            </a>
+        @endif
         
         {{-- مکالمات --}}
         <a href="{{ route('chat.index') }}" class="menu-item {{ request()->is('conversations*') ? 'active-menu' : '' }}">
@@ -46,6 +39,30 @@
         </a>
         
         <div class="menu-divider"></div>
+        
+        {{-- تغییر نقش بر اساس مسیر فعلی --}}
+        @if($isTeacherRoute)
+            {{-- در نقش استاد --}}
+            <a href="{{ route('index_student') }}" class="menu-item">
+                <i class="fas fa-user-graduate"></i> <span>در نقش دانشجو</span>
+            </a>
+        @elseif($isStudentRoute)
+            {{-- در نقش دانشجو --}}
+            <a href="{{ route('index_teacher') }}" class="menu-item">
+                <i class="fas fa-chalkboard-teacher"></i> <span>بازگشت به نقش استاد</span>
+            </a>
+        @else
+            {{-- در صورتی که در هیچکدام نبود، بر اساس نقش کاربر --}}
+            @if($isTeacher)
+                <a href="{{ route('index_student') }}" class="menu-item">
+                    <i class="fas fa-user-graduate"></i> <span>در نقش دانشجو</span>
+                </a>
+            @else
+                <a href="{{ route('index_teacher') }}" class="menu-item">
+                    <i class="fas fa-chalkboard-teacher"></i> <span>در نقش استاد</span>
+                </a>
+            @endif
+        @endif
         
         {{-- خروج از حساب --}}
         <a href="/logout" class="menu-item">

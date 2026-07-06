@@ -186,7 +186,7 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
 // ==========================================
 // Student Routes
 // ==========================================
-Route::prefix('/student')->middleware(['role:student|admin'])->group(function () {
+Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(function () {
     Route::get('/', [StudentSiteController::class, 'index'])->name('index_student');
 
     Route::prefix('/courses')->group(function () {
