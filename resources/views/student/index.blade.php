@@ -127,7 +127,7 @@
     }
 
     /* ===== CARD DASH ===== */
-    .card-dash {
+    .card-dash shadow {
         display: block;
         background: #fff;
         border-radius: 16px;
@@ -141,38 +141,38 @@
         overflow: hidden;
     }
 
-    .card-dash:hover {
+    .card-dash shadow:hover {
         transform: translateY(-5px);
         box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
         text-decoration: none;
         color: inherit;
     }
 
-    .card-dash .card-icon {
+    .card-dash shadow .card-icon {
         font-size: 32px;
         margin-bottom: 10px;
         color: #1e6f9f;
     }
 
-    .card-dash .card-title {
+    .card-dash shadow .card-title {
         font-size: 14px;
         font-weight: 600;
         color: #1a2332;
         margin-bottom: 4px;
     }
 
-    .card-dash .card-count {
+    .card-dash shadow .card-count {
         font-size: 28px;
         font-weight: 800;
         color: #1a2332;
     }
 
-    .card-dash .card-text-sm {
+    .card-dash shadow .card-text-sm {
         font-size: 12px;
         color: #6b7a8f;
     }
 
-    .card-dash .exam-badge {
+    .card-dash shadow .exam-badge {
         position: absolute;
         top: 8px;
         right: 8px;
@@ -196,7 +196,7 @@
 <div class="dashboard-cards">
     <div class="row g-4">
         <div class="col-md-4 col-sm-6">
-            <a href="{{ route('courses.st') }}" class="card-dash">
+            <a href="{{ route('courses.st') }}" class="card-dash shadow">
                 <div class="card-icon"><i class="fas fa-chalkboard"></i></div>
                 <div class="card-title">درس‌ها</div>
                 <div class="card-count">{{ Auth::user()->courses()->count() }}</div>
@@ -204,7 +204,7 @@
             </a>
         </div>
         <div class="col-md-4 col-sm-6">
-            <div class="card-dash">
+            <div class="card-dash shadow">
                 <div class="card-icon"><i class="fas fa-layer-group"></i></div>
                 <div class="card-title">دوره‌ها</div>
                 <div class="card-count">{{ $course_count ?? 0 }}</div>
@@ -212,7 +212,7 @@
             </div>
         </div>
         <div class="col-md-4 col-sm-12">
-            <div class="card-dash">
+            <div class="card-dash shadow">
                 <div class="card-icon"><i class="fas fa-clipboard-list"></i></div>
                 <div class="card-title">آزمون‌ها</div>
                 <div class="card-count">{{ $active_exam_count ?? 0 }}</div>
