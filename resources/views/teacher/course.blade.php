@@ -32,10 +32,6 @@
             <i class="fas fa-flag" style="color:#f44336;"></i>
             ایراد سوال‌ها ({{ $reportCount ?? 0 }})
         </a>
-        {{-- <a href="{{ route('judgment.index') }}" class="chip-item">
-            <i class="fas fa-chart-line"></i>
-            پایش و ارزیابی
-        </a> --}}
         <a href="{{ route('gradesList',$course->id) }}" class="chip-item">
             <i class="fas fa-star"></i>
             نمرات دانشجویان
@@ -77,8 +73,12 @@
             <div class="sessions-list">
                 @forelse($sessions as $session)
                     <a href="#" class="session-item {{ $loop->first ? 'active' : '' }}" 
-                       data-session="{{ $session->id }}" 
-                       onclick="changeSession(this, '{{ $session->id }}', '{{ $session->file ?? '' }}', '{{ addslashes($session->name) }}', 'جلسه {{ $session->number }}')">
+                       data-session="{{ $session->id }}"
+                       data-pdf="{{ $session->file ?? '' }}"
+                       data-title="{{ $session->name }}"
+                       data-number="جلسه {{ $session->number }}"
+                       data-description="{{ htmlspecialchars($session->text ?? '', ENT_QUOTES, 'UTF-8') }}"
+                       onclick="changeSessionFromData(this)">
                         <span class="session-check"><i class="fas fa-check-circle"></i></span>
                         <span class="session-title">{{ $session->name }}</span>
                         <small class="session-number">(جلسه {{ $session->number }})</small>
@@ -103,34 +103,34 @@
                         @endif
                     </h5>
                 </div>
-                    <div class="session-action-buttons">
-                        {{-- دکمه تکلیف (برای استاد) --}}
-                        <a href="#" id="homeworkTeacherBtn" class="action-icon-btn" data-position="bottom" data-tooltip="مدیریت تکالیف">
-                            <i class="fas fa-file-alt"></i>
-                        </a>
-                        
-                        {{-- دکمه غیرفعال کردن جلسه --}}
-                        {{-- <a href="#" id="toggleActiveBtn" class="action-icon-btn" data-position="bottom" data-tooltip="غیرفعال کردن">
-                            <i class="fas fa-check-circle"></i>
-                        </a> --}}
-                        
-                        {{-- دکمه مشاهده تکالیف دانشجو --}}
-                        <a href="#" id="homeworkBtn" class="action-icon-btn" data-position="bottom" data-tooltip="تکالیف من">
-                            <i class="fas fa-tasks"></i>
-                        </a>
-                        
-                        {{-- دکمه ویرایش جلسه --}}
-                        {{-- <a href="#" id="editBtn" class="action-icon-btn" data-position="bottom" data-tooltip="ویرایش جلسه">
-                            <i class="fas fa-edit"></i>
-                        </a> --}}
-                        
-                        {{-- دکمه لیست تکالیف (برای استاد) --}}
-                        <a href="#" id="profExBtn" class="action-icon-btn" data-position="bottom" data-tooltip="لیست تکالیف">
-                            <i class="fas fa-list-ul"></i>
-                        </a>
-                    </div>
+                <div class="session-action-buttons">
+                    <a href="#" id="homeworkTeacherBtn" class="action-icon-btn" data-position="bottom" data-tooltip="مدیریت تکالیف">
+                        <i class="fas fa-file-alt"></i>
+                    </a>
+                    <a href="#" id="homeworkBtn" class="action-icon-btn" data-position="bottom" data-tooltip="تکالیف من">
+                        <i class="fas fa-tasks"></i>
+                    </a>
+                    <a href="#" id="profExBtn" class="action-icon-btn" data-position="bottom" data-tooltip="لیست تکالیف">
+                        <i class="fas fa-list-ul"></i>
+                    </a>
+                </div>
             </div>
-
+            <div class="session-description">
+                <div class="collapsible-section">
+                    <div class="collapsible-header">
+                        <i class="fas fa-bell"></i>
+                        طرح درس یا محتوای درس
+                        <i class="fas fa-chevron-down expand-icon"></i>
+                    </div>
+                    <div class="collapsible-body" id="sessionDescription">
+                        @if($sessions->isNotEmpty() && $sessions->first()->text)
+                            {!! $sessions->first()->text !!}
+                        @else
+                            <p class="text-muted">هیچ توضیحی برای این جلسه ثبت نشده است</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
             <div class="session-pdf-container">
                 <div class="pdf-toolbar">
                     <a href="#" id="pdfOpenBtn" class="pdf-open-btn" target="_blank">
@@ -151,50 +151,51 @@
                     @endif
                 </div>
             </div>
-
-            <div class="session-description">
-                <div class="collapsible-section">
-                    <div class="collapsible-header">
-                        <i class="fas fa-bell"></i>
-                        طرح درس یا محتوای درس
-                        <i class="fas fa-chevron-down expand-icon"></i>
-                    </div>
-                    <div class="collapsible-body" id="sessionDescription">
-                        @if($sessions->isNotEmpty() && $sessions->first()->text)
-                            <p>{{ $sessions->first()->text }}</p>
-                        @else
-                            <p class="text-muted">هیچ توضیحی برای این جلسه ثبت نشده است</p>
-                        @endif
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </div>
 
 <script>
-    let currentSessionId = '{{ $sessions->first()->id ?? "" }}';
-    let currentPdfUrl = '{{ $sessions->first()->file ?? "" }}';
-    let currentSessionTitle = '{{ $sessions->first()->name ?? "" }}';
-    let currentSessionNumber = 'جلسه {{ $sessions->first()->number ?? "" }}';
+    // متغیرهای اولیه با استفاده از json_encode
+    let currentSessionId = {!! json_encode($sessions->first()->id ?? '') !!};
+    let currentPdfUrl = {!! json_encode($sessions->first()->file ?? '') !!};
+    let currentSessionTitle = {!! json_encode($sessions->first()->name ?? '') !!};
+    let currentSessionNumber = {!! json_encode('جلسه ' . ($sessions->first()->number ?? '')) !!};
+    let currentDescription = {!! json_encode($sessions->first()->text ?? '') !!};
 
-    function changeSession(element, sessionId, pdfUrl, title, number) {
+    // تابع اصلی برای تغییر جلسه
+    function changeSession(element, sessionId, pdfUrl, title, number, description) {
+        // غیرفعال کردن همه جلسات
         document.querySelectorAll('.session-item').forEach(item => {
             item.classList.remove('active');
         });
         element.classList.add('active');
 
+        // به‌روزرسانی متغیرها
         currentSessionId = sessionId;
         currentPdfUrl = pdfUrl;
         currentSessionTitle = title;
         currentSessionNumber = number;
 
+        // به‌روزرسانی عنوان جلسه
         document.getElementById('sessionTitleDisplay').innerHTML = `<h5>${number} : ${title}</h5>`;
 
+        // به‌روزرسانی توضیحات جلسه
+        const sessionDescription = document.getElementById('sessionDescription');
+        if (description && description.trim() !== '') {
+            sessionDescription.innerHTML = description;
+        } else {
+            sessionDescription.innerHTML = '<p class="text-muted">هیچ توضیحی برای این جلسه ثبت نشده است</p>';
+        }
+
+        // به‌روزرسانی PDF
         const pdfViewer = document.getElementById('pdfViewer');
-        if (pdfUrl) {
-            pdfViewer.setAttribute('data', pdfUrl);
-            pdfViewer.innerHTML = `<object width="100%" height="550" data="https://docs.google.com/gview?embedded=true&url=${pdfUrl}"></object>`;
+        if (pdfUrl && pdfUrl !== '') {
+            const filePath = '/files/session' + pdfUrl;
+            pdfViewer.setAttribute('data', filePath);
+            pdfViewer.innerHTML = `<object width="100%" height="550" data="${filePath}" type="application/pdf">
+                                        <object width="100%" height="550" data="https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(pdfUrl)}"></object>
+                                    </object>`;
         } else {
             pdfViewer.innerHTML = `
                 <div class="text-center p-5">
@@ -204,106 +205,81 @@
             `;
         }
 
+        // به‌روزرسانی دکمه PDF
         const pdfOpenBtn = document.getElementById('pdfOpenBtn');
-        if (pdfUrl) {
-            pdfOpenBtn.setAttribute('href', pdfUrl);
+        if (pdfUrl && pdfUrl !== '') {
+            pdfOpenBtn.setAttribute('href', '/files/session' + pdfUrl);
             pdfOpenBtn.style.display = 'inline-flex';
         } else {
             pdfOpenBtn.style.display = 'none';
         }
 
-        const editBtn = document.getElementById('editBtn');
-        editBtn.setAttribute('href', `/teacher/courses/sessions/edit/${sessionId}`);
-
-        const questionBtn = document.getElementById('questionBtn');
-        questionBtn.setAttribute('href', `/teacher/question/show?session_id=${sessionId}`);
-
+        // به‌روزرسانی دکمه‌ها
         const homeworkTeacherBtn = document.getElementById('homeworkTeacherBtn');
-        homeworkTeacherBtn.setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
+        if (homeworkTeacherBtn) {
+            homeworkTeacherBtn.setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
+        }
 
         const homeworkBtn = document.getElementById('homeworkBtn');
-        homeworkBtn.setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
-
-        const toggleActiveBtn = document.getElementById('toggleActiveBtn');
-        toggleActiveBtn.setAttribute('href', `/teacher/courses/sessions/active/${sessionId}`);
+        if (homeworkBtn) {
+            homeworkBtn.setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
+        }
 
         const profExBtn = document.getElementById('profExBtn');
-        profExBtn.setAttribute('href', `/teacher/courses/sessions/prof-ex/${sessionId}`);
+        if (profExBtn) {
+            profExBtn.setAttribute('href', `/teacher/courses/sessions/prof-ex/${sessionId}`);
+        }
     }
 
-    // Event listener for collapsible
-    document.querySelector('.collapsible-header')?.addEventListener('click', function() {
-        const body = this.nextElementSibling;
-        const icon = this.querySelector('.expand-icon');
-        if (body.style.display === 'none' || body.style.display === '') {
-            body.style.display = 'block';
-            icon.style.transform = 'rotate(180deg)';
-        } else {
-            body.style.display = 'none';
-            icon.style.transform = 'rotate(0deg)';
+    // تابع واسط برای خواندن از data attributes
+    function changeSessionFromData(element) {
+        const sessionId = element.dataset.session;
+        const pdfUrl = element.dataset.pdf;
+        const title = element.dataset.title;
+        const number = element.dataset.number;
+        const description = element.dataset.description;
+        
+        changeSession(element, sessionId, pdfUrl, title, number, description);
+    }
+
+    // Event listener برای collapsible
+    document.addEventListener('DOMContentLoaded', function() {
+        const collapsibleHeader = document.querySelector('.collapsible-header');
+        if (collapsibleHeader) {
+            collapsibleHeader.addEventListener('click', function() {
+                const body = this.nextElementSibling;
+                const icon = this.querySelector('.expand-icon');
+                if (body.style.display === 'none' || body.style.display === '') {
+                    body.style.display = 'block';
+                    icon.style.transform = 'rotate(180deg)';
+                } else {
+                    body.style.display = 'none';
+                    icon.style.transform = 'rotate(0deg)';
+                }
+            });
+        }
+
+        // تنظیم دکمه‌ها برای جلسه اول
+        const firstSession = document.querySelector('.session-item.active');
+        if (firstSession) {
+            const sessionId = firstSession.dataset.session;
+            
+            const homeworkTeacherBtn = document.getElementById('homeworkTeacherBtn');
+            if (homeworkTeacherBtn) {
+                homeworkTeacherBtn.setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
+            }
+            
+            const homeworkBtn = document.getElementById('homeworkBtn');
+            if (homeworkBtn) {
+                homeworkBtn.setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
+            }
+            
+            const profExBtn = document.getElementById('profExBtn');
+            if (profExBtn) {
+                profExBtn.setAttribute('href', `/teacher/courses/sessions/prof-ex/${sessionId}`);
+            }
         }
     });
-
-    // اگر اولین جلسه وجود داشته باشد، لینک‌های اولیه را تنظیم کن
-    @if($sessions->isNotEmpty())
-        document.addEventListener('DOMContentLoaded', function() {
-            const firstSession = document.querySelector('.session-item.active');
-            if (firstSession) {
-                const sessionId = firstSession.dataset.session;
-                
-                // تنظیم لینک‌ها برای جلسه اول
-                const editBtn = document.getElementById('editBtn');
-                if (editBtn) {
-                    editBtn.setAttribute('href', `/teacher/courses/sessions/edit/${sessionId}`);
-                }
-                
-                const questionBtn = document.getElementById('questionBtn');
-                if (questionBtn) {
-                    questionBtn.setAttribute('href', `/teacher/question/show?session_id=${sessionId}`);
-                }
-                
-                const homeworkTeacherBtn = document.getElementById('homeworkTeacherBtn');
-                if (homeworkTeacherBtn) {
-                    homeworkTeacherBtn.setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
-                }
-                
-                const homeworkBtn = document.getElementById('homeworkBtn');
-                if (homeworkBtn) {
-                    homeworkBtn.setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
-                }
-                
-                const toggleActiveBtn = document.getElementById('toggleActiveBtn');
-                if (toggleActiveBtn) {
-                    toggleActiveBtn.setAttribute('href', `/teacher/courses/sessions/active/${sessionId}`);
-                }
-                
-                const profExBtn = document.getElementById('profExBtn');
-                if (profExBtn) {
-                    profExBtn.setAttribute('href', `/teacher/courses/sessions/prof-ex/${sessionId}`);
-                }
-            }
-        });
-    @endif
-
-    @if($sessions->isNotEmpty())
-        document.addEventListener('DOMContentLoaded', function() {
-            const firstSession = document.querySelector('.session-item.active');
-            if (firstSession) {
-                const sessionId = firstSession.dataset.session;
-                const pdfUrl = '{{ $sessions->first()->file ?? "" }}';
-                const title = '{{ addslashes($sessions->first()->name) }}';
-                const number = 'جلسه {{ $sessions->first()->number }}';
-                
-                // تنظیم لینک‌ها برای جلسه اول
-                document.getElementById('editBtn').setAttribute('href', `/teacher/courses/sessions/edit/${sessionId}`);
-                document.getElementById('questionBtn').setAttribute('href', `/teacher/question/show?session_id=${sessionId}`);
-                document.getElementById('homeworkTeacherBtn').setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
-                document.getElementById('homeworkBtn').setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
-                document.getElementById('toggleActiveBtn').setAttribute('href', `/teacher/courses/sessions/active/${sessionId}`);
-                document.getElementById('profExBtn').setAttribute('href', `/teacher/courses/sessions/prof-ex/${sessionId}`);
-            }
-        });
-    @endif
 </script>
 
 <style>

@@ -135,7 +135,22 @@
                     </a>
                 </div>
             </div>
-
+            <div class="session-description">
+                <div class="collapsible-section">
+                    <div class="collapsible-header">
+                        <i class="fas fa-bell"></i>
+                        طرح درس یا محتوای درس
+                        <i class="fas fa-chevron-down expand-icon"></i>
+                    </div>
+                    <div class="collapsible-body" id="sessionDescription">
+                        @if($sessions->isNotEmpty() && $sessions->first()->text)
+                            <p>{!! $sessions->first()->text !!}</p>
+                        @else
+                            <p class="text-muted">هیچ توضیحی برای این جلسه ثبت نشده است</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
             <div class="session-pdf-container">
                 <div class="pdf-toolbar">
                     <a href="#" id="pdfOpenBtn" class="pdf-open-btn" target="_blank">
@@ -154,23 +169,6 @@
                             <p class="text-muted">هیچ فایلی برای این جلسه آپلود نشده است</p>
                         </div>
                     @endif
-                </div>
-            </div>
-
-            <div class="session-description">
-                <div class="collapsible-section">
-                    <div class="collapsible-header">
-                        <i class="fas fa-bell"></i>
-                        طرح درس یا محتوای درس
-                        <i class="fas fa-chevron-down expand-icon"></i>
-                    </div>
-                    <div class="collapsible-body" id="sessionDescription">
-                        @if($sessions->isNotEmpty() && $sessions->first()->text)
-                            <p>{{ $sessions->first()->text }}</p>
-                        @else
-                            <p class="text-muted">هیچ توضیحی برای این جلسه ثبت نشده است</p>
-                        @endif
-                    </div>
                 </div>
             </div>
         </div>

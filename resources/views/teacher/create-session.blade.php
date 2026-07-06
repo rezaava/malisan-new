@@ -6,31 +6,39 @@
 
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-create-session.css')}}">
-<!-- CKEditor CDN -->
-<script src="{{asset('textEditor/text.js')}}"></script>
+{{-- اضافه کردن استایل Jodit --}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.css">
+
 <style>
-    .ck-editor__editable {
-        min-height: 300px;
+    /* ===== JODIT EDITOR ===== */
+    .jodit-container {
         border-radius: 12px !important;
-    }
-
-    .ck-editor__top {
-        border-radius: 12px 12px 0 0 !important;
-    }
-
-    .ck-editor__bottom {
-        border-radius: 0 0 12px 12px !important;
-    }
-
-    .ck.ck-editor {
-        border: 2px solid #e8edf3;
-        border-radius: 12px;
+        overflow: hidden;
+        border: 2px solid #e8edf3 !important;
         transition: all 0.3s ease;
     }
 
-    .ck.ck-editor:focus-within {
-        border-color: #1e6f9f;
-        box-shadow: 0 0 0 4px rgba(30, 111, 159, 0.08);
+    .jodit-container:focus-within {
+        border-color: #1e6f9f !important;
+        box-shadow: 0 0 0 4px rgba(30, 111, 159, 0.08) !important;
+    }
+
+    .jodit-container .jodit-toolbar {
+        background: #f8fafc !important;
+        border-bottom: 1px solid #e8edf3 !important;
+        border-radius: 12px 12px 0 0 !important;
+    }
+
+    .jodit-container .jodit-workplace {
+        min-height: 300px;
+    }
+
+    .jodit-container .jodit-wysiwyg {
+        padding: 12px 16px !important;
+        font-family: 'Vazir', Tahoma, Arial, sans-serif !important;
+        font-size: 14px !important;
+        direction: rtl !important;
+        min-height: 300px !important;
     }
 
     .session-container {
@@ -230,6 +238,8 @@
         border-top: 2px solid #f0f4f9;
         display: flex;
         justify-content: flex-start;
+        gap: 15px;
+        flex-wrap: wrap;
     }
 
     .submit-btn {
@@ -246,24 +256,30 @@
         cursor: pointer;
         transition: all 0.3s ease;
         box-shadow: 0 4px 16px rgba(30, 111, 159, 0.3);
+        text-decoration: none;
     }
 
     .submit-btn:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 24px rgba(30, 111, 159, 0.4);
+        color: #fff;
     }
 
     .submit-btn i {
         font-size: 18px;
     }
 
-    .form-textarea {
-        display: none;
+    .btn-outline {
+        background: transparent;
+        color: #1e6f9f;
+        border: 2px solid #1e6f9f;
+        box-shadow: none;
     }
 
-    .editor-wrapper {
-        border-radius: 12px;
-        overflow: hidden;
+    .btn-outline:hover {
+        background: #1e6f9f;
+        color: #fff;
+        box-shadow: 0 4px 16px rgba(30, 111, 159, 0.3);
     }
 
     /* Responsive */
@@ -289,6 +305,7 @@
 
         .form-actions {
             justify-content: center;
+            flex-direction: column;
         }
 
         .submit-btn {
@@ -299,6 +316,54 @@
         .session-title {
             font-size: 18px;
         }
+
+        .jodit-container .jodit-toolbar {
+            flex-wrap: wrap !important;
+        }
+    }
+
+    /* ===== ERROR STYLES ===== */
+    .form-group.has-error .form-input {
+        border-color: #e74c3c;
+        background: #fff5f5;
+    }
+
+    .form-group.has-error .jodit-container {
+        border-color: #e74c3c !important;
+        background: #fff5f5;
+    }
+
+    .form-group .error-text {
+        color: #e74c3c;
+        font-size: 13px;
+        margin-top: 5px;
+        display: block;
+    }
+
+    .form-group .error-text i {
+        margin-left: 4px;
+    }
+
+    /* ===== ALERT ===== */
+    .alert-danger-custom {
+        background: #ffebee;
+        border: 1px solid #e74c3c;
+        color: #c62828;
+        padding: 12px 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .alert-danger-custom i {
+        font-size: 18px;
+    }
+
+    .alert-danger-custom ul {
+        margin: 4px 0 0 20px;
+        padding: 0;
     }
 </style>
 @endsection
@@ -313,7 +378,22 @@
             </h4>
         </div>
 
-        {{-- اصلاح مسیر فرم --}}
+        {{-- ERRORS --}}
+        @if($errors->any())
+            <div class="alert-danger-custom">
+                <i class="fas fa-exclamation-circle"></i>
+                <div>
+                    <strong>خطا!</strong> لطفاً خطاهای زیر را برطرف کنید:
+                    <ul>
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        @endif
+
+        {{-- FORM --}}
         <form class="session-form" action="{{ route('sessions.store', $course->id) }}" method="post" enctype="multipart/form-data">
             @csrf
 
@@ -325,7 +405,7 @@
                 </div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group {{ $errors->has('name') ? 'has-error' : '' }}">
                 <label class="form-label" for="name">
                     عنوان (موضوع درس در جلسه جاری)
                     <span class="required">*</span>
@@ -336,12 +416,22 @@
                            placeholder="عنوان جلسه را وارد کنید" value="{{ old('name') }}">
                 </div>
                 @error('name')
-                    <small style="color: #e74c3c; font-size: 13px; margin-top: 5px; display: block;">{{ $message }}</small>
+                    <span class="error-text"><i class="fas fa-times-circle"></i> {{ $message }}</span>
+                @enderror
+            </div>
+
+            <div class="form-group {{ $errors->has('text') ? 'has-error' : '' }}">
+                <label class="form-label">طرح درس یا محتوای درس (اختیاری)</label>
+                {{-- جایگزینی CKEditor با Jodit --}}
+                <textarea class="jodit-editor" id="sessionEditor" name="text" 
+                          placeholder="متن جلسه را وارد کنید...">{{ old('text') }}</textarea>
+                @error('text')
+                    <span class="error-text"><i class="fas fa-times-circle"></i> {{ $message }}</span>
                 @enderror
             </div>
 
             <div class="form-row">
-                <div class="form-group">
+                <div class="form-group {{ $errors->has('link') ? 'has-error' : '' }}">
                     <label class="form-label" for="link">لینک درس (اختیاری)</label>
                     <div class="input-wrapper">
                         <i class="fas fa-link input-icon"></i>
@@ -349,10 +439,10 @@
                                placeholder="https://example.com" value="{{ old('link') }}">
                     </div>
                     @error('link')
-                        <small style="color: #e74c3c; font-size: 13px; margin-top: 5px; display: block;">{{ $message }}</small>
+                        <span class="error-text"><i class="fas fa-times-circle"></i> {{ $message }}</span>
                     @enderror
                 </div>
-                <div class="form-group">
+                <div class="form-group {{ $errors->has('majazi') ? 'has-error' : '' }}">
                     <label class="form-label" for="majazi">لینک فیلم ضبط شده کلاس (اختیاری)</label>
                     <div class="input-wrapper">
                         <i class="fas fa-video input-icon"></i>
@@ -360,12 +450,12 @@
                                placeholder="https://example.com" value="{{ old('majazi') }}">
                     </div>
                     @error('majazi')
-                        <small style="color: #e74c3c; font-size: 13px; margin-top: 5px; display: block;">{{ $message }}</small>
+                        <span class="error-text"><i class="fas fa-times-circle"></i> {{ $message }}</span>
                     @enderror
                 </div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group {{ $errors->has('aparat') ? 'has-error' : '' }}">
                 <label class="form-label" for="aparat">لینک آپارات (اختیاری)</label>
                 <div class="input-wrapper">
                     <i class="fas fa-film input-icon"></i>
@@ -373,9 +463,12 @@
                            placeholder="کد اسکریپت آپارات را وارد کنید" value="{{ old('aparat') }}">
                 </div>
                 <small style="color: #6b7a8f; font-size: 12px;">کد اسکریپت آپارات را به همراه iframe یا embed کپی کنید</small>
+                @error('aparat')
+                    <span class="error-text"><i class="fas fa-times-circle"></i> {{ $message }}</span>
+                @enderror
             </div>
 
-            <div class="form-group">
+            <div class="form-group {{ $errors->has('file') ? 'has-error' : '' }}">
                 <label class="form-label">بارگذاری محتوای درس (اختیاری)</label>
                 <div class="file-upload-wrapper">
                     <input type="file" id="file-upload" name="file" class="file-upload-input" accept=".pdf,.doc,.docx,.ppt,.pptx">
@@ -389,15 +482,8 @@
                     فرمت‌های مجاز: PDF، Word، PowerPoint | حداکثر حجم: 20 مگابایت
                 </small>
                 @error('file')
-                    <small style="color: #e74c3c; font-size: 13px; margin-top: 5px; display: block;">{{ $message }}</small>
+                    <span class="error-text"><i class="fas fa-times-circle"></i> {{ $message }}</span>
                 @enderror
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">طرح درس یا محتوای درس (اختیاری)</label>
-                <div class="editor-wrapper">
-                    <textarea class="form-textarea" id="editor" name="text">{{ old('text') }}</textarea>
-                </div>
             </div>
 
             <div class="form-group checkbox-group">
@@ -413,13 +499,20 @@
                     <i class="fas fa-check"></i>
                     تائید و ثبت اطلاعات
                 </button>
+                <a href="{{ route('view.coure', $course->id) }}" class="submit-btn btn-outline">
+                    <i class="fas fa-arrow-right"></i>
+                    بازگشت به درس
+                </a>
             </div>
         </form>
     </div>
 </div>
 @endsection
 
-@section('script')
+@section('js')
+{{-- اضافه کردن Jodit --}}
+<script src="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.js"></script>
+
 <script>
     // نمایش نام فایل انتخاب شده
     document.getElementById('file-upload').addEventListener('change', function(e) {
@@ -427,29 +520,123 @@
         document.getElementById('file-name').textContent = fileName;
     });
 
-    // CKEditor Configuration - اصلاح شده برای اطمینان از اجرا
+    // ===== Jodit Editor Configuration =====
     document.addEventListener('DOMContentLoaded', function() {
-        if (typeof CKEDITOR !== 'undefined') {
-            CKEDITOR.replace('editor', {
-                filebrowserUploadUrl: '/admin/panel/upload-image',
-                filebrowserImageUploadUrl: '/admin/panel/upload-image',
-                contentsLangDirection: 'rtl',
-                toolbar: [
-                    ['Styles', 'Format', 'Font', 'FontSize', 'UploadImage'],
-                    '/',
-                    ['Bold', 'Italic', 'Underline', 'StrikeThrough', '-', 'Undo', 'Redo', '-', 'Cut', 'Copy', 'Paste', 'Find', 'Replace', '-', 'Outdent', 'Indent', '-', 'Print'],
-                    '/',
-                    ['NumberedList', 'BulletedList', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
-                    ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'BidiLtr', 'BidiRtl', 'Language'],
-                    ['Table', '-', 'Link', 'Smiley', 'TextColor', 'BGColor']
-                ],
+        document.querySelectorAll('.jodit-editor').forEach(function(element) {
+            const editorId = element.id || 'editor-' + Math.random().toString(36).substr(2, 9);
+            if (!element.id) {
+                element.id = editorId;
+            }
+            
+            new Jodit('#' + editorId, {
+                width: '100%',
                 height: 350,
-                removePlugins: 'elementspath',
-                resize_enabled: true
+                allowResize: true,
+                allowResizeImages: true,
+                direction: 'rtl',
+                language: 'fa',
+                buttons: [
+                    'source', '|',
+                    'undo', 'redo', '|',
+                    'bold', 'italic', 'underline', 'strikethrough', '|',
+                    'font', 'fontsize', 'brush', 'paragraph', '|',
+                    'ul', 'ol', 'outdent', 'indent', '|',
+                    'align', 'hr', 'table', '|',
+                    'link', 'unlink',
+                    {
+                        name: 'uploadImage',
+                        iconURL: 'https://cdn-icons-png.flaticon.com/512/1829/1829586.png',
+                        tooltip: 'آپلود تصویر',
+                        exec: (editor) => {
+                            let input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'image/*';
+                            input.onchange = () => {
+                                let file = input.files[0];
+                                if (!file) return;
+
+                                let formData = new FormData();
+                                formData.append('file', file);
+
+                                fetch('{{ route("upload.image") }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                    },
+                                    body: formData
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.files && data.files[0].url) {
+                                        let img = document.createElement('img');
+                                        img.src = data.files[0].url;
+                                        img.style.maxWidth = '100%';
+                                        editor.s.insertNode(img);
+                                    } else {
+                                        alert('خطا در آپلود تصویر');
+                                    }
+                                })
+                                .catch(err => alert('Upload error: ' + err));
+                            };
+                            input.click();
+                        }
+                    },
+                    {
+                        name: 'uploadVideo',
+                        iconURL: 'https://cdn-icons-png.flaticon.com/512/727/727245.png',
+                        tooltip: 'آپلود ویدیو',
+                        exec: (editor) => {
+                            let input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'video/*';
+                            input.onchange = () => {
+                                let file = input.files[0];
+                                if (!file) return;
+
+                                let formData = new FormData();
+                                formData.append('file', file);
+
+                                fetch('{{ route("upload.video") }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                    },
+                                    body: formData
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.files && data.files[0].url) {
+                                        let wrapper = document.createElement('div');
+                                        wrapper.classList.add('video-wrapper');
+
+                                        let video = document.createElement('video');
+                                        video.setAttribute('controls', '');
+                                        video.src = data.files[0].url;
+                                        video.style.maxWidth = '100%';
+
+                                        wrapper.appendChild(video);
+                                        editor.s.insertNode(wrapper);
+                                    } else {
+                                        alert('خطا در آپلود ویدیو');
+                                    }
+                                })
+                                .catch(err => alert('Upload error: ' + err));
+                            };
+                            input.click();
+                        }
+                    },
+                    '|', 'symbols', 'emoticons', '|',
+                    'print', 'fullsize', 'preview'
+                ],
+                colors: {
+                    text: ['#000000', '#ff0000', '#00ff00', '#0000ff', '#ff00ff', '#00ffff'],
+                    background: ['#ffffff', '#ffff00', '#00ffff', '#ffcc99']
+                },
+                defaultFont: 'Vazir, Tahoma, Arial, sans-serif',
+                defaultFontSize: '14px',
+                fonts: ['Vazir', 'Tahoma', 'Arial', 'Courier New']
             });
-        } else {
-            console.error('CKEditor not loaded');
-        }
+        });
     });
 </script>
 @endsection
