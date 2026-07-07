@@ -1887,6 +1887,108 @@ class CourseController extends Controller
     }
 
     /**
+     * صفحه تصحیح تکالیف
+     */
+    public function exerciseCorrection($courseId)
+    {
+        $course = Course::findOrFail($courseId);
+        
+        // دریافت تمام جلسات درس به همراه تکالیف آنها
+        $sessions = Session::where('course_id', $courseId)
+            ->with(['exercises' => function($query) {
+                $query->withCount('exerciseAnswers'); // تعداد پاسخ‌ها - استفاده از نام صحیح رابطه
+            }])
+            ->orderBy('number', 'asc')
+            ->get();
+        
+        // فقط جلساتی که تکلیف دارند
+        $sessionsWithExercises = $sessions->filter(function($session) {
+            return $session->exercises->count() > 0;
+        });
+        
+        return view('teacher.exercise-correction', compact('course', 'sessionsWithExercises'))->with([
+            'pageTitle' => 'تصحیح تکالیف',
+            'pageName' => 'تصحیح تکالیف',
+            'pageDescription' => 'مشاهده و تصحیح تکالیف دانشجویان',
+        ]);
+    }
+
+
+    /**
+     * دریافت پاسخ‌های یک تکلیف خاص
+     */
+    public function getExerciseAnswers($exerciseId)
+    {
+        try {
+            $exercise = Exercise::with(['session.course'])->findOrFail($exerciseId);
+            
+            // دریافت تمام پاسخ‌های این تکلیف به همراه اطلاعات دانشجو
+            $answers = ExerciseAnswer::where('exercise_id', $exerciseId)
+                ->with(['user' => function($query) {
+                    $query->select('id', 'name', 'family', 'email');
+                }])
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            return response()->json([
+                'success' => true,
+                'exercise' => $exercise,
+                'answers' => $answers,
+                'total' => $answers->count()
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Get exercise answers failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در دریافت پاسخ‌ها: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    /**
+     * ثبت نمره برای پاسخ تکلیف
+     */
+    public function scoreExerciseAnswer(Request $request, $answerId)
+    {
+        try {
+            $answer = ExerciseAnswer::findOrFail($answerId);
+            
+            $validator = Validator::make($request->all(), [
+                'status' => 'required|in:1,2,3,4'
+            ]);
+            
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لطفاً یک مقدار معتبر انتخاب کنید'
+                ], 422);
+            }
+            
+            $answer->status = $request->status;
+            $answer->comment = $request->comment ?? null;
+            $answer->save();
+            
+            // دریافت اطلاعات برای نمایش
+            $statusText = ['', 'عالی', 'خوب', 'متوسط', 'بد'][$request->status] ?? 'نامشخص';
+            
+            return response()->json([
+                'success' => true,
+                'message' => "نمره با موفقیت ثبت شد: {$statusText}",
+                'status' => $request->status,
+                'status_text' => $statusText
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Score exercise answer failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در ثبت نمره: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * به‌روزرسانی تنظیمات همه دوره‌ها (برای course_id = 99999)
      */
     private function updateAllSettings($request)

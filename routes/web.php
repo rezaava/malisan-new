@@ -151,7 +151,11 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
             Route::get('/delete/{id}', [ExerciseController::class, 'delete'])->name('exercise.delete');
             Route::get('/answers/{exercise_id}', [ExerciseController::class, 'answersList'])->name('exercise.answers');
             Route::post('/score', [ExerciseController::class, 'score'])->name('exercise.score');
+            Route::get('/correction/{courseId}', [CourseController::class, 'exerciseCorrection'])->name('exercises.correction');
+            Route::get('/answers2/{exerciseId}', [CourseController::class, 'getExerciseAnswers'])->name('exercises.answers');
+            Route::post('/score/{answerId}', [CourseController::class, 'scoreExerciseAnswer'])->name('exercises.score');
         });
+
 
         // ===== آپلود فایل =====
         Route::post('/upload/image', [FileController::class, 'uploadImage'])->name('upload.image');

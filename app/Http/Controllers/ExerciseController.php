@@ -22,16 +22,23 @@ class ExerciseController extends Controller
     {
         $user = Auth::user();
         
+        $course = Session::with('course')->findOrFail($courseId);
+        
+        $courseId = $course->course_id;
+        if (!$courseId) {
+            return redirect()->back()->with('error', 'دوره‌ای یافت نشد.');
+        }
+        
         $course = Course::findOrFail($courseId);
         
         $isEnrolled = CourseUser::where('user_id', $user->id)
             ->where('course_id', $courseId)
             ->exists();
-
+            
         if (!$isEnrolled) {
             return redirect()->back()->with('error', 'شما در این درس ثبت نام نکرده‌اید.');
         }
-        
+
         // دریافت تمام جلسات این درس
         $sessions = Session::where('course_id', $courseId)
             ->orderBy('number', 'asc')

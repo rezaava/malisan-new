@@ -60,6 +60,10 @@
             <i class="fas fa-tasks"></i>
             فعالیت های دانشجویان
         </a>
+        <a href="{{ route('exercises.correction', $course->id) }}" class="chip-item">
+            <i class="fas fa-check-double"></i>
+            تصحیح تکالیف
+        </a>
     </div>
 
     <div class="sessions-section">

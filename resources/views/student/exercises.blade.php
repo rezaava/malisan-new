@@ -6,7 +6,6 @@
 
 @section('head')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-{{-- اضافه کردن استایل Jodit --}}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.css">
 
 <style>
@@ -60,7 +59,6 @@
         background: #e3e8ef;
     }
 
-    /* ===== STATS ===== */
     .stats-row {
         display: flex;
         gap: 12px;
@@ -95,7 +93,6 @@
     .stat-box.pending { border-right-color: #ff9800; }
     .stat-box.scored { border-right-color: #9c27b0; }
 
-    /* ===== SESSIONS ===== */
     .session-section {
         margin-bottom: 30px;
     }
@@ -122,7 +119,6 @@
         color: #6b7a8f;
     }
 
-    /* ===== EXERCISE CARDS ===== */
     .exercise-card {
         background: #fff;
         border-radius: 16px;
@@ -182,7 +178,6 @@
         color: #fff;
     }
 
-    /* ===== STATUS BADGES ===== */
     .status-badge {
         display: inline-flex;
         align-items: center;
@@ -213,7 +208,6 @@
         color: #e65100;
     }
 
-    /* ===== ANSWER FORM ===== */
     .answer-form {
         margin-top: 16px;
         padding-top: 16px;
@@ -252,7 +246,6 @@
         background: #fff;
     }
 
-    /* ===== JODIT EDITOR ===== */
     .jodit-container {
         border-radius: 12px !important;
         overflow: hidden;
@@ -345,7 +338,56 @@
         box-shadow: 0 4px 15px rgba(76,175,80,0.3);
     }
 
-    /* ===== EMPTY ===== */
+    /* ===== LOCKED ANSWER ===== */
+    .locked-answer {
+        padding: 12px 16px;
+        background: #f5f5f5;
+        border-radius: 10px;
+        border-right: 4px solid #9e9e9e;
+        margin-bottom: 12px;
+    }
+
+    .locked-answer .answer-content {
+        font-size: 14px;
+        color: #1a2332;
+        line-height: 1.8;
+        background: #fff;
+        padding: 10px 14px;
+        border-radius: 8px;
+        border: 1px solid #e8edf3;
+        margin-top: 6px;
+    }
+
+    .locked-answer .lock-icon {
+        color: #9e9e9e;
+        margin-left: 6px;
+    }
+
+    .locked-answer .score-display {
+        display: inline-block;
+        padding: 4px 14px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 600;
+        margin-top: 6px;
+    }
+
+    .score-excellent { background: #e8f5e9; color: #2e7d32; }
+    .score-good { background: #e3f2fd; color: #0d47a1; }
+    .score-medium { background: #fff3e0; color: #e65100; }
+    .score-weak { background: #fbe9e7; color: #c62828; }
+
+    .btn-disabled {
+        opacity: 0.5;
+        cursor: not-allowed !important;
+        pointer-events: none;
+    }
+
+    .btn-disabled:hover {
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
     .empty-state {
         text-align: center;
         padding: 60px 20px;
@@ -371,29 +413,23 @@
         font-size: 14px;
     }
 
-    /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
         .exercise-card {
             padding: 16px;
         }
-
         .exercise-card .card-header {
             flex-direction: column;
         }
-
         .stats-row {
             flex-direction: column;
         }
-
         .stat-box {
             min-width: auto;
         }
-
         .session-title {
             font-size: 16px;
             padding: 10px 16px;
         }
-
         .jodit-container .jodit-toolbar {
             flex-wrap: wrap !important;
         }
@@ -403,7 +439,6 @@
 
 @section('mohtava')
 <div class="exercises-container">
-    {{-- HEADER --}}
     <div class="exercises-header">
         <div>
             <h2>
@@ -421,7 +456,6 @@
         </a>
     </div>
 
-    {{-- STATS --}}
     <div class="stats-row">
         <div class="stat-box total">
             <div class="number">{{ $stats['total'] }}</div>
@@ -441,7 +475,6 @@
         </div>
     </div>
 
-    {{-- EXERCISES BY SESSION --}}
     @if($exercises->count() > 0)
         @foreach($sessions as $session)
             @php
@@ -462,6 +495,33 @@
                     </div>
 
                     @foreach($sessionExercises as $key => $exercise)
+                        @php
+                            $hasAnswer = isset($exercise->user_answer);
+                            $isScored = $hasAnswer && !is_null($exercise->user_answer->status);
+                            $statusText = '';
+                            $statusClass = '';
+                            $scoreClass = '';
+                            $scoreText = '';
+                            
+                            if ($hasAnswer) {
+                                if ($isScored) {
+                                    $statusText = 'ارزیابی شده';
+                                    $statusClass = 'scored';
+                                    $scoreText = ['', 'عالی', 'خوب', 'متوسط', 'بد'][$exercise->user_answer->status] ?? 'نامشخص';
+                                    $scoreClass = ['', 'score-excellent', 'score-good', 'score-medium', 'score-weak'][$exercise->user_answer->status] ?? '';
+                                } elseif ($exercise->user_answer->status === 'returned') {
+                                    $statusText = 'برگشت خورده';
+                                    $statusClass = 'returned';
+                                } else {
+                                    $statusText = 'پاسخ ارسال شده';
+                                    $statusClass = 'answered';
+                                }
+                            } else {
+                                $statusText = 'پاسخ داده نشده';
+                                $statusClass = 'not-answered';
+                            }
+                        @endphp
+                        
                         <div class="exercise-card">
                             <div class="card-header">
                                 <span class="exercise-number">
@@ -469,25 +529,18 @@
                                     تکلیف {{ $key + 1 }}
                                 </span>
                                 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                                    @if(isset($exercise->user_answer))
-                                        @if($exercise->user_answer->status == 'scored')
-                                            <span class="status-badge scored">
-                                                <i class="fas fa-check-circle"></i> ارزیابی شده
-                                            </span>
-                                        @elseif($exercise->user_answer->status == 'returned')
-                                            <span class="status-badge returned">
-                                                <i class="fas fa-undo"></i> برگشت خورده
-                                            </span>
+                                    <span class="status-badge {{ $statusClass }}">
+                                        @if($statusClass == 'scored')
+                                            <i class="fas fa-check-circle"></i>
+                                        @elseif($statusClass == 'returned')
+                                            <i class="fas fa-undo"></i>
+                                        @elseif($statusClass == 'answered')
+                                            <i class="fas fa-check-circle"></i>
                                         @else
-                                            <span class="status-badge answered">
-                                                <i class="fas fa-check-circle"></i> پاسخ ارسال شده
-                                            </span>
+                                            <i class="fas fa-clock"></i>
                                         @endif
-                                    @else
-                                        <span class="status-badge not-answered">
-                                            <i class="fas fa-clock"></i> پاسخ داده نشده
-                                        </span>
-                                    @endif
+                                        {{ $statusText }}
+                                    </span>
                                 </div>
                             </div>
 
@@ -502,63 +555,96 @@
                                 </a>
                             @endif
 
-                            {{-- ANSWER FORM --}}
                             <div class="answer-form">
-                                <form method="POST" action="{{ route('student.exercise.answer') }}" enctype="multipart/form-data">
-                                    @csrf
-                                    <input type="hidden" name="exercise_id" value="{{ $exercise->id }}">
-
-                                    <div class="form-group">
-                                        <label>پاسخ شما</label>
-                                        {{-- تبدیل به Jodit Editor --}}
-                                        <textarea class="jodit-editor" name="text" id="answerEditor{{ $exercise->id }}" 
-                                                  placeholder="پاسخ خود را وارد کنید...">{{ isset($exercise->user_answer) ? $exercise->user_answer->answer : '' }}</textarea>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label>فایل پیوست (اختیاری)</label>
-                                        <div class="file-upload-wrapper">
-                                            <span class="file-upload-label">
-                                                <i class="fas fa-upload"></i>
-                                                انتخاب فایل
+                                @if($hasAnswer && $isScored)
+                                    {{-- پاسخ قفل شده - نمره ثبت شده --}}
+                                    <div class="locked-answer">
+                                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                                            <strong style="color:#1a2332;">
+                                                <i class="fas fa-lock lock-icon"></i>
+                                                پاسخ شما
+                                            </strong>
+                                            <span class="score-display {{ $scoreClass }}">
+                                                <i class="fas fa-star" style="color:#ff9800;"></i>
+                                                نمره: {{ $scoreText }}
                                             </span>
-                                            <input type="file" name="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip">
                                         </div>
-                                        @if(isset($exercise->user_answer) && $exercise->user_answer->file)
-                                            <div style="font-size:13px;color:#6b7a8f;margin-top:4px;">
-                                                <i class="fas fa-check-circle" style="color:#4caf50;"></i>
-                                                فایل قبلی: <a href="{{ asset($exercise->user_answer->file) }}" target="_blank" style="color:#1e6f9f;">دانلود</a>
+                                        <div class="answer-content">
+                                            {!! $exercise->user_answer->answer ?? '<span style="color:#6b7a8f;">(پاسخ متنی ارسال نشده)</span>' !!}
+                                        </div>
+                                        @if($exercise->user_answer->comment)
+                                            <div style="margin-top:8px;padding:8px 12px;background:#e3f2fd;border-radius:8px;font-size:13px;color:#1a2332;">
+                                                <i class="fas fa-comment" style="color:#1e6f9f;"></i>
+                                                {{ $exercise->user_answer->comment }}
                                             </div>
                                         @endif
+                                        @if($exercise->user_answer->file)
+                                            <div style="margin-top:8px;">
+                                                <a href="{{ asset($exercise->user_answer->file) }}" target="_blank" style="color:#1e6f9f;font-size:13px;">
+                                                    <i class="fas fa-paperclip"></i>
+                                                    دانلود فایل ارسال شده
+                                                </a>
+                                            </div>
+                                        @endif
+                                        <div style="margin-top:10px;padding:8px 12px;background:#f5f5f5;border-radius:8px;font-size:12px;color:#9e9e9e;">
+                                            <i class="fas fa-info-circle"></i>
+                                            این پاسخ قبلاً ارزیابی شده است و قابل ویرایش نمی‌باشد.
+                                        </div>
                                     </div>
+                                    
+                                    {{-- دکمه غیرفعال --}}
+                                    <button class="btn-submit btn-disabled" disabled>
+                                        <i class="fas fa-lock"></i>
+                                        غیرقابل ویرایش
+                                    </button>
+                                    
+                                @else
+                                    {{-- فرم پاسخگویی --}}
+                                    <form method="POST" action="{{ route('student.exercise.answer') }}" enctype="multipart/form-data">
+                                        @csrf
+                                        <input type="hidden" name="exercise_id" value="{{ $exercise->id }}">
 
-                                    @if(isset($exercise->user_answer) && $exercise->user_answer->status == 'scored')
-                                        <div style="padding:12px 16px;background:#e3f2fd;border-radius:10px;margin-bottom:12px;">
-                                            <strong style="color:#1e6f9f;">نمره: 
-                                                @if($exercise->user_answer->rate == 'excellent') عالی
-                                                @elseif($exercise->user_answer->rate == 'good') خوب
-                                                @elseif($exercise->user_answer->rate == 'medium') متوسط
-                                                @elseif($exercise->user_answer->rate == 'weak') بد
-                                                @endif
-                                            </strong>
-                                            @if($exercise->user_answer->comment)
-                                                <p style="margin:4px 0 0;color:#4a5a6e;font-size:14px;">
-                                                    <i class="fas fa-comment"></i> {{ $exercise->user_answer->comment }}
-                                                </p>
+                                        <div class="form-group">
+                                            <label>پاسخ شما</label>
+                                            <textarea class="jodit-editor" name="text" id="answerEditor{{ $exercise->id }}" 
+                                                      placeholder="پاسخ خود را وارد کنید...">{{ $hasAnswer ? $exercise->user_answer->answer : '' }}</textarea>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label>فایل پیوست (اختیاری)</label>
+                                            <div class="file-upload-wrapper">
+                                                <span class="file-upload-label">
+                                                    <i class="fas fa-upload"></i>
+                                                    انتخاب فایل
+                                                </span>
+                                                <input type="file" name="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip">
+                                            </div>
+                                            @if($hasAnswer && $exercise->user_answer->file)
+                                                <div style="font-size:13px;color:#6b7a8f;margin-top:4px;">
+                                                    <i class="fas fa-check-circle" style="color:#4caf50;"></i>
+                                                    فایل قبلی: <a href="{{ asset($exercise->user_answer->file) }}" target="_blank" style="color:#1e6f9f;">دانلود</a>
+                                                </div>
                                             @endif
                                         </div>
-                                    @elseif(isset($exercise->user_answer) && $exercise->user_answer->status != 'scored')
-                                        <button type="submit" class="btn-submit btn-submit-success">
-                                            <i class="fas fa-edit"></i>
-                                            بروزرسانی پاسخ
-                                        </button>
-                                    @elseif(!isset($exercise->user_answer))
-                                        <button type="submit" class="btn-submit">
-                                            <i class="fas fa-paper-plane"></i>
-                                            ارسال پاسخ
-                                        </button>
-                                    @endif
-                                </form>
+
+                                        @if($hasAnswer && $exercise->user_answer->status === 'returned')
+                                            <button type="submit" class="btn-submit btn-submit-success">
+                                                <i class="fas fa-edit"></i>
+                                                ویرایش پاسخ
+                                            </button>
+                                        @elseif($hasAnswer)
+                                            <button type="submit" class="btn-submit btn-submit-success">
+                                                <i class="fas fa-edit"></i>
+                                                بروزرسانی پاسخ
+                                            </button>
+                                        @else
+                                            <button type="submit" class="btn-submit">
+                                                <i class="fas fa-paper-plane"></i>
+                                                ارسال پاسخ
+                                            </button>
+                                        @endif
+                                    </form>
+                                @endif
                             </div>
                         </div>
                     @endforeach
@@ -576,12 +662,10 @@
 @endsection
 
 @section('js')
-{{-- اضافه کردن Jodit --}}
 <script src="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // مقداردهی تمام ادیتورهای موجود در صفحه
         document.querySelectorAll('.jodit-editor').forEach(function(element) {
             const editorId = element.id || 'editor-' + Math.random().toString(36).substr(2, 9);
             if (!element.id) {
