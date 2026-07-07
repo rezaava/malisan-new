@@ -323,6 +323,9 @@
 
 @section('mohtava')
 <div class="settings-container">
+    <div class="text-center mb-3">
+        <h4>تنظیمات درس {{ $course->name }}</h4>
+    </div>
     <form class="settings-form" action="{{ route('courses.setting.update') }}" method="post" enctype="multipart/form-data">
         @csrf
         <input name="course_id" value="{{ $course->id }}" hidden>
