@@ -282,6 +282,49 @@
         box-shadow: 0 4px 16px rgba(30, 111, 159, 0.3);
     }
 
+    /* ===== NEW: Educational Content Section ===== */
+    .content-section {
+        background: #f8faff;
+        border: 2px solid #e8edf3;
+        border-radius: 16px;
+        padding: 20px 25px;
+        margin: 30px 0;
+        transition: all 0.3s ease;
+    }
+
+    .content-section:hover {
+        border-color: #c0d0e0;
+    }
+
+    .content-section-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px dashed #dce4ec;
+    }
+
+    .content-section-header h5 {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1a2332;
+        margin: 0;
+    }
+
+    .content-section-header .badge-required {
+        background: #e74c3c;
+        color: white;
+        font-size: 11px;
+        padding: 2px 10px;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+
+    .content-section .form-group:last-child {
+        margin-bottom: 0;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
         .form-row {
@@ -319,6 +362,10 @@
 
         .jodit-container .jodit-toolbar {
             flex-wrap: wrap !important;
+        }
+
+        .content-section {
+            padding: 15px;
         }
     }
 
@@ -394,7 +441,7 @@
         @endif
 
         {{-- FORM --}}
-        <form class="session-form" action="{{ route('sessions.store', $course->id) }}" method="post" enctype="multipart/form-data">
+        <form class="session-form" action="{{ route('sessions.store', $course->id) }}" method="post" enctype="multipart/form-data" id="sessionForm">
             @csrf
 
             <div class="form-group" hidden>
@@ -422,7 +469,6 @@
 
             <div class="form-group {{ $errors->has('text') ? 'has-error' : '' }}">
                 <label class="form-label">طرح درس یا محتوای درس (اختیاری)</label>
-                {{-- جایگزینی CKEditor با Jodit --}}
                 <textarea class="jodit-editor" id="sessionEditor" name="text" 
                           placeholder="متن جلسه را وارد کنید...">{{ old('text') }}</textarea>
                 @error('text')
@@ -430,60 +476,68 @@
                 @enderror
             </div>
 
-            <div class="form-row">
-                <div class="form-group {{ $errors->has('link') ? 'has-error' : '' }}">
-                    <label class="form-label" for="link">لینک درس (اختیاری)</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-link input-icon"></i>
-                        <input class="form-input" id="link" name="link" type="text" 
-                               placeholder="https://example.com" value="{{ old('link') }}">
+            {{-- ===== NEW: EDUCATIONAL CONTENT SECTION ===== --}}
+            <div class="content-section">
+                <div class="content-section-header">
+                    <h5>📚 محتوای آموزشی جلسه</h5>
+                    <span class="badge-required">انتخاب حداقل یک گزینه الزامی است.</span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group {{ $errors->has('link') ? 'has-error' : '' }}">
+                        <label class="form-label" for="link">لینک درس (اختیاری)</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-link input-icon"></i>
+                            <input class="form-input" id="link" name="link" type="text" 
+                                   placeholder="https://example.com" value="{{ old('link') }}">
+                        </div>
+                        @error('link')
+                            <span class="error-text"><i class="fas fa-times-circle"></i> {{ $message }}</span>
+                        @enderror
                     </div>
-                    @error('link')
+                    <div class="form-group {{ $errors->has('majazi') ? 'has-error' : '' }}">
+                        <label class="form-label" for="majazi">لینک فیلم ضبط شده کلاس (اختیاری)</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-video input-icon"></i>
+                            <input class="form-input" id="majazi" name="majazi" type="text" 
+                                   placeholder="https://example.com" value="{{ old('majazi') }}">
+                        </div>
+                        @error('majazi')
+                            <span class="error-text"><i class="fas fa-times-circle"></i> {{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="form-group {{ $errors->has('aparat') ? 'has-error' : '' }}">
+                    <label class="form-label" for="aparat">لینک آپارات (اختیاری)</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-film input-icon"></i>
+                        <input class="form-input" id="aparat" name="aparat" type="text" 
+                               placeholder="کد اسکریپت آپارات را وارد کنید" value="{{ old('aparat') }}">
+                    </div>
+                    <small style="color: #6b7a8f; font-size: 12px;">کد اسکریپت آپارات را به همراه iframe یا embed کپی کنید</small>
+                    @error('aparat')
                         <span class="error-text"><i class="fas fa-times-circle"></i> {{ $message }}</span>
                     @enderror
                 </div>
-                <div class="form-group {{ $errors->has('majazi') ? 'has-error' : '' }}">
-                    <label class="form-label" for="majazi">لینک فیلم ضبط شده کلاس (اختیاری)</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-video input-icon"></i>
-                        <input class="form-input" id="majazi" name="majazi" type="text" 
-                               placeholder="https://example.com" value="{{ old('majazi') }}">
+
+                <div class="form-group {{ $errors->has('file') ? 'has-error' : '' }}">
+                    <label class="form-label">بارگذاری محتوای درس (اختیاری)</label>
+                    <div class="file-upload-wrapper">
+                        <input type="file" id="file-upload" name="file" class="file-upload-input" accept=".pdf,.doc,.docx,.ppt,.pptx">
+                        <label for="file-upload" class="file-upload-label">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>انتخاب فایل</span>
+                        </label>
+                        <span class="file-name" id="file-name">هیچ فایلی انتخاب نشده است</span>
                     </div>
-                    @error('majazi')
+                    <small style="color: #6b7a8f; font-size: 12px; display: block; margin-top: 5px;">
+                        فرمت‌های مجاز: PDF، Word، PowerPoint | حداکثر حجم: 20 مگابایت
+                    </small>
+                    @error('file')
                         <span class="error-text"><i class="fas fa-times-circle"></i> {{ $message }}</span>
                     @enderror
                 </div>
-            </div>
-
-            <div class="form-group {{ $errors->has('aparat') ? 'has-error' : '' }}">
-                <label class="form-label" for="aparat">لینک آپارات (اختیاری)</label>
-                <div class="input-wrapper">
-                    <i class="fas fa-film input-icon"></i>
-                    <input class="form-input" id="aparat" name="aparat" type="text" 
-                           placeholder="کد اسکریپت آپارات را وارد کنید" value="{{ old('aparat') }}">
-                </div>
-                <small style="color: #6b7a8f; font-size: 12px;">کد اسکریپت آپارات را به همراه iframe یا embed کپی کنید</small>
-                @error('aparat')
-                    <span class="error-text"><i class="fas fa-times-circle"></i> {{ $message }}</span>
-                @enderror
-            </div>
-
-            <div class="form-group {{ $errors->has('file') ? 'has-error' : '' }}">
-                <label class="form-label">بارگذاری محتوای درس (اختیاری)</label>
-                <div class="file-upload-wrapper">
-                    <input type="file" id="file-upload" name="file" class="file-upload-input" accept=".pdf,.doc,.docx,.ppt,.pptx">
-                    <label for="file-upload" class="file-upload-label">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <span>انتخاب فایل</span>
-                    </label>
-                    <span class="file-name" id="file-name">هیچ فایلی انتخاب نشده است</span>
-                </div>
-                <small style="color: #6b7a8f; font-size: 12px; display: block; margin-top: 5px;">
-                    فرمت‌های مجاز: PDF، Word، PowerPoint | حداکثر حجم: 20 مگابایت
-                </small>
-                @error('file')
-                    <span class="error-text"><i class="fas fa-times-circle"></i> {{ $message }}</span>
-                @enderror
             </div>
 
             <div class="form-group checkbox-group">
@@ -518,6 +572,26 @@
     document.getElementById('file-upload').addEventListener('change', function(e) {
         var fileName = e.target.files[0] ? e.target.files[0].name : 'هیچ فایلی انتخاب نشده است';
         document.getElementById('file-name').textContent = fileName;
+    });
+
+    // ===== CLIENT-SIDE VALIDATION: At least one content option is required =====
+    document.getElementById('sessionForm').addEventListener('submit', function(e) {
+        var link = document.getElementById('link').value.trim();
+        var majazi = document.getElementById('majazi').value.trim();
+        var aparat = document.getElementById('aparat').value.trim();
+        var file = document.getElementById('file-upload').files.length > 0;
+
+        if (!link && !majazi && !aparat && !file) {
+            e.preventDefault();
+            alert('⚠️ لطفاً حداقل یکی از گزینه‌های محتوای آموزشی (لینک درس، لینک فیلم، لینک آپارات یا بارگذاری فایل) را وارد کنید.');
+            // Highlight the section
+            document.querySelector('.content-section').style.borderColor = '#e74c3c';
+            document.querySelector('.content-section').style.background = '#fff5f5';
+        } else {
+            // Reset style if valid
+            document.querySelector('.content-section').style.borderColor = '#e8edf3';
+            document.querySelector('.content-section').style.background = '#f8faff';
+        }
     });
 
     // ===== Jodit Editor Configuration =====
