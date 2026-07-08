@@ -57,6 +57,17 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
     Route::get('/', [TeacherSiteController::class, 'index'])->name('index_teacher');
 
     Route::prefix('/courses')->group(function () {
+
+        Route::prefix('/sessions')->group(function () {
+            Route::get('/create/{id}', [CourseController::class, 'create'])->name('sessions.create');
+            Route::post('/store/{id}', [CourseController::class, 'store'])->name('sessions.store');
+            Route::get('/edit/{id}', [CourseController::class, 'edit'])->name('sessions.edit');
+            Route::put('/update/{id}', [CourseController::class, 'updateSession'])->name('sessions.update');
+            Route::delete('/delete/{id}', [CourseController::class, 'destroySession'])->name('sessions.delete');
+            Route::post('/toggle-active/{id}', [CourseController::class, 'toggleSessionActive'])->name('sessions.toggle.active');
+            Route::post('/delete-file/{id}', [CourseController::class, 'deleteSessionFile'])->name('sessions.delete.file');
+        });
+
         // مسیر ویرایش (با PUT)
         Route::put('/{id}', [CourseController::class, 'update'])->name('courses.update');
         

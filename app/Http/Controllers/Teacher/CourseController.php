@@ -1989,8 +1989,258 @@ class CourseController extends Controller
     }
 
     /**
-     * به‌روزرسانی تنظیمات همه دوره‌ها (برای course_id = 99999)
+     * نمایش فرم ویرایش جلسه (برای مودال - JSON)
      */
+    public function edit($id)
+    {
+        try {
+            $session = Session::findOrFail($id);
+            
+            // بررسی دسترسی
+            $user = Auth::user();
+            $teacherRole = Role::where('name', 'teacher')->first();
+            $isOwner = DB::table('course_user')
+                ->where('user_id', $user->id)
+                ->where('course_id', $session->course_id)
+                ->where('role_id', $teacherRole->id)
+                ->exists();
+                
+            if (!$isOwner) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'شما دسترسی به ویرایش این جلسه ندارید'
+                ], 403);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $session->id,
+                    'number' => $session->number,
+                    'name' => $session->name,
+                    'text' => $session->text,
+                    'link' => $session->link,
+                    'majazi' => $session->majazi,
+                    'aparat' => $session->aparat,
+                    'file' => $session->file,
+                    'active' => $session->active,
+                    'course_id' => $session->course_id
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در دریافت اطلاعات جلسه: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * به‌روزرسانی جلسه
+     */
+    public function updateSession(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'number' => 'required|numeric|min:1',
+            'file' => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx|max:20480',
+            'link' => 'nullable|url|max:500',
+            'majazi' => 'nullable|url|max:500',
+            'aparat' => 'nullable|string|max:500',
+            'text' => 'nullable|string',
+            'active' => 'nullable|in:on,1',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $session = Session::findOrFail($id);
+            
+            // بررسی دسترسی
+            $user = Auth::user();
+            $teacherRole = Role::where('name', 'teacher')->first();
+            $isOwner = DB::table('course_user')
+                ->where('user_id', $user->id)
+                ->where('course_id', $session->course_id)
+                ->where('role_id', $teacherRole->id)
+                ->exists();
+                
+            if (!$isOwner) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'شما دسترسی به ویرایش این جلسه ندارید'
+                ], 403);
+            }
+
+            $session->name = $request->name;
+            $session->number = $request->number;
+            $session->text = $request->text;
+            $session->link = $this->cleanUrl($request->link);
+            $session->majazi = $this->cleanUrl($request->majazi);
+            $session->aparat = $request->aparat;
+            $session->active = $request->has('active') ? 1 : 0;
+
+            // آپلود فایل جدید
+            if ($request->hasFile('file')) {
+                // حذف فایل قبلی
+                if ($session->file) {
+                    $oldFilePath = public_path('files/session' . $session->file);
+                    if (file_exists($oldFilePath)) {
+                        unlink($oldFilePath);
+                    }
+                }
+                
+                $file = $request->file('file');
+                $fileName = $session->course_id . "_" . time() . "." . $file->getClientOriginalExtension();
+                $destinationPath = public_path('files/session');
+                
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0777, true);
+                }
+                
+                $file->move($destinationPath, $fileName);
+                $session->file = '/' . $fileName;
+            }
+
+            $session->save();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'جلسه با موفقیت به‌روزرسانی شد',
+                'data' => [
+                    'id' => $session->id,
+                    'name' => $session->name,
+                    'number' => $session->number,
+                    'text' => $session->text,
+                    'file' => $session->file,
+                    'active' => $session->active
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Session update failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در به‌روزرسانی جلسه: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * حذف جلسه
+     */
+    public function destroySession($id)
+    {
+        try {
+            $session = Session::findOrFail($id);
+            
+            // بررسی دسترسی
+            $user = Auth::user();
+            $teacherRole = Role::where('name', 'teacher')->first();
+            $isOwner = DB::table('course_user')
+                ->where('user_id', $user->id)
+                ->where('course_id', $session->course_id)
+                ->where('role_id', $teacherRole->id)
+                ->exists();
+                
+            if (!$isOwner) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'شما دسترسی به حذف این جلسه ندارید'
+                ], 403);
+            }
+            
+            // حذف فایل
+            if ($session->file) {
+                $filePath = public_path('files/session' . $session->file);
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
+            }
+            
+            $session->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'جلسه با موفقیت حذف شد'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در حذف جلسه: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * تغییر وضعیت فعال/غیرفعال جلسه
+     */
+    public function toggleSessionActive($id)
+    {
+        try {
+            $session = Session::findOrFail($id);
+            $session->active = $session->active == 1 ? 0 : 1;
+            $session->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'وضعیت جلسه با موفقیت تغییر کرد',
+                'active' => $session->active
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در تغییر وضعیت جلسه: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * حذف فایل جلسه
+     */
+    public function deleteSessionFile($id)
+    {
+        try {
+            $session = Session::findOrFail($id);
+            
+            if ($session->file) {
+                $filePath = public_path('files/session' . $session->file);
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
+                $session->file = null;
+                $session->save();
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'فایل با موفقیت حذف شد'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در حذف فایل: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * به‌روزرسانی تنظیمات همه دوره‌ها (برای course_id = 99999)
+    */
     private function updateAllSettings($request)
     {
         DB::beginTransaction();
