@@ -306,92 +306,6 @@ class AzmonController extends Controller
         ]);
     }
 
-
-    /**
-     * شروع آزمون
-     */
-        public function startExam(Request $request)
-    {
-        $azmon = Azmon::findOrFail($request->azmon_id);
-        $course = Course::findOrFail($azmon->course_id);
-        $user = Auth::user();
-        
-        // بررسی اینکه آزمون فعال است
-        if (Carbon::now() < $azmon->start) {
-            return back()->with('error', 'آزمون هنوز شروع نشده است!');
-        }
-        
-        if (Carbon::now() > $azmon->end) {
-            return back()->with('error', 'آزمون تمام شده است!');
-        }
-        
-        // بررسی اینکه دانشجو قبلاً در این آزمون شرکت نکرده باشد
-        $existingQuiz = Quiz::where('user_id', $user->id)
-            ->where('azmon_id', $azmon->id)
-            ->first();
-            
-        if ($existingQuiz) {
-            return back()->with('error', 'شما قبلاً در این آزمون شرکت کرده‌اید!');
-        }
-        
-        // دریافت جلسات آزمون
-        $sessionIds = explode(",", $azmon->sessions);
-        
-        // دریافت سوالات بر اساس سطح
-        $question = $this->getQuestionForExam($azmon, $sessionIds);
-        
-        if (!$question) {
-            return back()->with('error', 'هنوز سوالی برای این آزمون طرح نشده است.');
-        }
-        
-        // ایجاد Quiz جدید
-        $quiz = new Quiz();
-        $quiz->course_id = $course->id;
-        $quiz->user_id = $user->id;
-        $quiz->azmon_id = $azmon->id;
-        $quiz->start = Carbon::now();
-        $quiz->score = 0; // مقدار اولیه
-        $quiz->save();
-        
-        // ایجاد Answer برای سوال اول
-        $answer = new Answer();
-        $answer->quiz_id = $quiz->id;
-        $answer->question_id = $question->id;
-        $answer->save();
-        
-        // تنظیمات نمایش
-        $settings = [
-            'show_nomre' => $azmon->show_nomre ?? 0,
-            'show_ans' => $azmon->show_ans ?? 0,
-            'changeable' => $azmon->changeable ?? 0,
-            'show_remain' => $azmon->show_remain ?? 0,
-            'show_state' => $azmon->show_state ?? 0,
-        ];
-        
-        // زمان پایان آزمون
-        $endTime = Carbon::now()->addMinutes((int)$azmon->time);
-        
-        $totalQuestions = $azmon->num;
-        $currentNumber = 1;
-        
-        // شافل کردن گزینه‌ها
-        $options = $this->shuffleOptions($question);
-        
-        return view('student.exam', [
-            'azmon' => $azmon,
-            'course' => $course,
-            'quiz' => $quiz,
-            'question' => $question,
-            'answer' => $answer,
-            'settings' => $settings,
-            'endTime' => $endTime,
-            'totalQuestions' => $totalQuestions,
-            'currentNumber' => $currentNumber,
-            'options' => $options,
-        ]);
-    }
-
-
     /**
      * دریافت سوال بعدی آزمون
      */
@@ -618,6 +532,209 @@ class AzmonController extends Controller
         return view('student.exam-history', compact('quizzes'));
     }
 
+    public function getExamInfo($id)
+    {
+        try {
+            $exam = Azmon::with('course')->findOrFail($id);
+            
+            return response()->json([
+                'title' => $exam->title,
+                'description' => $exam->description ?? 'توضیحاتی برای این آزمون وجود ندارد.',
+                'has_code' => !empty($exam->code) && $exam->code !== null,
+                'start_time' => $exam->start ? Carbon::parse($exam->start)->format('Y/m/d H:i') : null,
+                'end_time' => $exam->end ? Carbon::parse($exam->end)->format('Y/m/d H:i') : null,
+                'duration' => $exam->time ?? 0,
+                'question_count' => $exam->num ?? 0,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error getting exam info: ' . $e->getMessage());
+            return response()->json(['error' => 'آزمون یافت نشد'], 404);
+        }
+    }
+
+    /**
+     * بررسی کد آزمون
+     * POST /student/exam/verify-code/{id}
+     */
+    public function verifyExamCode(Request $request, $id)
+    {
+        try {
+            $exam = Azmon::findOrFail($id);
+            
+            // اگر آزمون کد ندارد
+            if (empty($exam->code) || $exam->code === null) {
+                return response()->json(['valid' => true]);
+            }
+            
+            // بررسی کد
+            $enteredCode = trim($request->code);
+            $valid = $enteredCode === $exam->code;
+            
+            return response()->json(['valid' => $valid]);
+        } catch (\Exception $e) {
+            Log::error('Error verifying exam code: ' . $e->getMessage());
+            return response()->json(['error' => 'خطا در بررسی کد'], 500);
+        }
+    }
+
+    /**
+     * شروع آزمون (با بررسی کد در سمت سرور)
+     * POST /student/exam/start
+     */
+    public function startExam(Request $request)
+    {
+        try {
+            $exam = Azmon::findOrFail($request->azmon_id);
+            $course = Course::findOrFail($exam->course_id);
+            $user = Auth::user();
+            
+            // ===== بررسی کد آزمون =====
+            if (!empty($exam->code) && $exam->code !== null) {
+                // اگر کد در ریکوئست نباشد
+                if (!$request->has('exam_code') || empty($request->exam_code)) {
+                    return redirect()->back()->with('error', 'لطفاً کد آزمون را وارد کنید');
+                }
+                
+                // بررسی صحت کد
+                if ($request->exam_code !== $exam->code) {
+                    return redirect()->back()->with('error', 'کد آزمون صحیح نیست');
+                }
+            }
+            
+            // ===== بررسی زمان آزمون =====
+            $now = Carbon::now();
+            
+            if ($now < Carbon::parse($exam->start)) {
+                return redirect()->back()->with('error', 'زمان شروع آزمون فرا نرسیده است.');
+            }
+            
+            if ($now > Carbon::parse($exam->end)) {
+                return redirect()->back()->with('error', 'زمان آزمون به پایان رسیده است.');
+            }
+            
+            // ===== بررسی شرکت قبلی =====
+            $existingQuiz = Quiz::where('user_id', $user->id)
+                ->where('azmon_id', $exam->id)
+                ->first();
+                
+            if ($existingQuiz) {
+                return redirect()->back()->with('error', 'شما قبلاً در این آزمون شرکت کرده‌اید!');
+            }
+            
+            // ===== دریافت جلسات آزمون =====
+            $sessionIds = explode(",", $exam->sessions);
+            
+            // ===== دریافت سوالات بر اساس سطح =====
+            $question = $this->getQuestionForExam($exam, $sessionIds);
+            
+            if (!$question) {
+                return redirect()->back()->with('error', 'هنوز سوالی برای این آزمون طرح نشده است.');
+            }
+            
+            // ===== ایجاد Quiz جدید =====
+            $quiz = new Quiz();
+            $quiz->course_id = $course->id;
+            $quiz->user_id = $user->id;
+            $quiz->azmon_id = $exam->id;
+            $quiz->start = Carbon::now();
+            $quiz->score = 0;
+            $quiz->save();
+            
+            // ===== ایجاد Answer برای سوال اول =====
+            $answer = new Answer();
+            $answer->quiz_id = $quiz->id;
+            $answer->question_id = $question->id;
+            $answer->save();
+            
+            // ===== تنظیمات نمایش =====
+            $settings = [
+                'show_nomre' => $exam->show_nomre ?? 0,
+                'show_ans' => $exam->show_ans ?? 0,
+                'changeable' => $exam->changeable ?? 0,
+                'show_remain' => $exam->show_remain ?? 0,
+                'show_state' => $exam->show_state ?? 0,
+            ];
+            
+            // ===== زمان پایان آزمون =====
+            $endTime = Carbon::now()->addMinutes((int)$exam->time);
+            
+            $totalQuestions = $exam->num;
+            $currentNumber = 1;
+            
+            // ===== شافل کردن گزینه‌ها =====
+            $options = $this->shuffleOptions($question);
+            
+            return view('student.exam', [
+                'azmon' => $exam,
+                'course' => $course,
+                'quiz' => $quiz,
+                'question' => $question,
+                'answer' => $answer,
+                'settings' => $settings,
+                'endTime' => $endTime,
+                'totalQuestions' => $totalQuestions,
+                'currentNumber' => $currentNumber,
+                'options' => $options,
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error starting exam: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+            return redirect()->back()->with('error', 'خطا در شروع آزمون: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * بررسی دسترسی کاربر به آزمون
+     * (متد کمکی برای اعتبارسنجی)
+     */
+    public function checkExamAccess($examId)
+    {
+        try {
+            $exam = Azmon::findOrFail($examId);
+            $user = Auth::user();
+            
+            // بررسی زمان
+            $now = Carbon::now();
+            if ($now < Carbon::parse($exam->start)) {
+                return response()->json([
+                    'accessible' => false,
+                    'message' => 'آزمون هنوز شروع نشده است.'
+                ]);
+            }
+            
+            if ($now > Carbon::parse($exam->end)) {
+                return response()->json([
+                    'accessible' => false,
+                    'message' => 'زمان آزمون به پایان رسیده است.'
+                ]);
+            }
+            
+            // بررسی شرکت قبلی
+            $existingQuiz = Quiz::where('user_id', $user->id)
+                ->where('azmon_id', $exam->id)
+                ->first();
+                
+            if ($existingQuiz) {
+                return response()->json([
+                    'accessible' => false,
+                    'message' => 'شما قبلاً در این آزمون شرکت کرده‌اید.'
+                ]);
+            }
+            
+            return response()->json([
+                'accessible' => true,
+                'message' => 'می‌توانید آزمون را شروع کنید.'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'accessible' => false,
+                'message' => 'خطا در بررسی دسترسی'
+            ], 500);
+        }
+    }
+    
     /**
      * دریافت سوال برای آزمون
      */
@@ -648,8 +765,6 @@ class AzmonController extends Controller
         
         return $query->inRandomOrder()->first();
     }
-
-
     /**
      * دریافت سوال بعدی برای آزمون
      */

@@ -242,10 +242,13 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
     // آزمون رسمی - دانشجو
     // ==========================================
     Route::prefix('/exam')->group(function () {
-        Route::post('/start', [AzmonController::class, 'startExam'])->name('exam.start');
+        Route::get('/info/{id}', [AzmonController::class, 'getExamInfo'])->name('exam.info');
+        Route::post('/verify-code/{id}', [AzmonController::class, 'verifyExamCode'])->name('exam.verify.code');
+        Route::post('/start', [AzmonController::class, 'startExam'])->name('student.exam.start');
         Route::post('/next', [AzmonController::class, 'nextExamQuestion'])->name('exam.next');
         Route::get('/results/{id}', [AzmonController::class, 'examResults'])->name('exam.results');
         Route::get('/history', [AzmonController::class, 'examHistory'])->name('exam.history');
+        Route::get('/check-access/{id}', [AzmonController::class, 'checkExamAccess'])->name('exam.check.access');
     });
 
     // ==========================================
