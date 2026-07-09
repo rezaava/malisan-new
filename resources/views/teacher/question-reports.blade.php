@@ -861,10 +861,7 @@
                 {{ $course->name ?? 'همه درس‌ها' }}
             </div>
         </div>
-        <a href="{{ route('view.coure', $course->id ?? 0) }}" class="btn-back">
-            <i class="fas fa-arrow-right"></i>
-            بازگشت به درس
-        </a>
+        @include('layout.backbtn')
     </div>
 
     {{-- STATS --}}

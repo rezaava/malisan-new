@@ -478,10 +478,13 @@
                 {{ $course->name ?? 'دوره' }}
             </div>
         </div>
-        <a href="{{ route('azmon.create', ['id' => $course->id]) }}" class="btn-create-azmon">
-            <i class="fas fa-plus-circle"></i>
-            آزمون جدید
-        </a>
+        <div>
+            <a href="{{ route('azmon.create', ['id' => $course->id]) }}" class="btn-create-azmon">
+                <i class="fas fa-plus-circle"></i>
+                آزمون جدید
+            </a>
+            @include('layout.backbtn')
+        </div>
     </div>
 
     {{-- ===== AZMON CARDS ===== --}}

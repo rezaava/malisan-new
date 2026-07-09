@@ -32,6 +32,7 @@
                 <i class="fas fa-eye"></i>
                 نمایش فعالیت
             </button>
+            @include('layout.backbtn')
         </div>
     </div>
 

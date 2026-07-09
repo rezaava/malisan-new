@@ -109,6 +109,7 @@
                 دانشجویان اخراج شده
                 <span class="removed-count" id="removedCountBadge">{{ $removedCount ?? 0 }}</span>
             </button>
+            @include('layout.backbtn')
         </div>
     </div>
 

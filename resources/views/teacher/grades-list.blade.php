@@ -271,10 +271,7 @@
 <div class="grades-container">
     <div class="grades-header">
         <h4 class="grades-title">نمرات دانشجویان : <span>{{ $course->name ?? 'عنوان درس' }}</span></h4>
-        <a href="{{ route('studentsList', $course->id) }}" class="students-profile-btn">
-            <i class="fas fa-arrow-left"></i>
-            مشخصات دانشجویان
-        </a>
+        @include('layout.backbtn')
     </div>
 
     <div class="table-wrapper">

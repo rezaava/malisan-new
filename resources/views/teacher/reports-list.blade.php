@@ -371,7 +371,7 @@
             <h2><i class="fas fa-file-alt"></i> لیست گزارش‌ها</h2>
             <div class="subtitle"><i class="fas fa-book-open" style="margin-left:6px;color:#1e6f9f;"></i> {{ $course->name }}</div>
         </div>
-        <a href="{{ route('view.coure', $course->id) }}" class="btn-back"><i class="fas fa-arrow-right"></i> بازگشت به درس</a>
+        @include('layout.backbtn')
     </div>
 
     {{-- STATS --}}

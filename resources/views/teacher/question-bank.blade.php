@@ -530,8 +530,13 @@
 
 @section('mohtava')
 <div class="bank-container">
-    <div class="bank-header">
-        <h4 class="bank-title">بانک سوالات : <span>{{ $course->name ?? 'عنوان درس' }}</span></h4>
+    <div class="bank-header d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
+        <h4 class="bank-title mb-0">
+            بانک سوالات : <span>{{ $course->name ?? 'عنوان درس' }}</span>
+        </h4>
+        <div>
+            @include('layout.backbtn')
+        </div>
     </div>
 
     <!-- آمار -->

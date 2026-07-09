@@ -470,9 +470,7 @@
         <a href="{{ route('courses.setting',$course->id) }}" class="action-btn settings-btn">
             <i class="fas fa-cog"></i>
         </a>
-        <a href="#" class="action-btn back-btn" onclick="history.back()">
-            <i class="fas fa-arrow-right"></i>
-        </a>
+        @include('layout.backbtn')
     </div>
 
     <div class="course-chips">

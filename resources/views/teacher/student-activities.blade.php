@@ -10,8 +10,9 @@
 
 @section('mohtava')
 <div class="activities-container">
-    <div class="activities-header">
+    <div class="activities-header d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
         <h4 class="activities-title">فعالیت دانشجویان</h4>
+        @include('layout.backbtn')
     </div>
 
     <div class="table-wrapper">

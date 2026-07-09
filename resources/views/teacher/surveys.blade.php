@@ -589,8 +589,11 @@
 
 @section('mohtava')
 <div class="surveys-container">
-    <div class="surveys-header">
+    <div class="surveys-header d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
         <h4 class="surveys-title">نظرسنجی : <span>{{ $course->name ?? $category->name ?? 'همه' }}</span></h4>
+        <div>
+            @include('layout.backbtn')
+        </div>
     </div>
 
     <div class="surveys-grid">

@@ -44,15 +44,6 @@
     box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
 }
 
-.back-btn {
-    background: linear-gradient(135deg, #1e6f9f, #0b4a6e);
-}
-
-.back-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(30, 111, 159, 0.4);
-}
-
 .course-chips {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
