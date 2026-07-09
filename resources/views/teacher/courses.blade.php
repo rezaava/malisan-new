@@ -110,20 +110,19 @@
 
 @section('mohtava')
 <div class="content-header">
-    <button class="archive-btn" id="archiveBtn">
-        <i class="fas fa-archive"></i>
-        <span>آرشیوها</span>
-        <span class="archived-count" id="archivedCountBadge">0</span>
-    </button>
-    <button class="courses-btn active">
+    <button class="courses-btn">
         <i class="fas fa-book"></i>
         <span>درس‌ها</span>
     </button>
-    
     <!-- Create Course Button -->
-    <button class="btn-create-course" onclick="openCreateModal()" style="margin-right: auto;">
+    <button class="btn-create-course m-0" onclick="openCreateModal()">
         <i class="fas fa-plus"></i>
         ایجاد درس جدید
+    </button>
+    <button class="archive-btn me-auto" id="archiveBtn">
+        <i class="fas fa-archive"></i>
+        <span>آرشیوها</span>
+        <span class="archived-count" id="archivedCountBadge">0</span>
     </button>
 </div>
 

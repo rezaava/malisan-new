@@ -494,15 +494,15 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td>طراحی سوال</td>
+                                <td>هدایت دانشجو در بخش طراحی سوال</td>
                                 <td>
-                                    <textarea name="tarahi_soal_desc" class="form-textarea" rows="3">{{ $setting->tarahi_soal_desc ?? 'قبل از طرح سوال کلیه سوالاتی که برای این جلسه تا بحال طرح شده است را مشاهده کنید و سوالی طرح کنید که تکراری نباشد' }}</textarea>
+                                    <textarea name="tarahi_soal_desc" class="form-textarea" rows="3">{{ $setting->tarahi_soal_desc ?? 'یک سؤال خلاقانه طراحی کنید که به یادگیری دوستانتان کمک کند و به نام خودتان منتشر شود. قبل از ارسال، حتماً سؤالاتی که دیگران طرح کرده اند را مرور کنید تا از تکراری نبودن سوال خود مطمئن شوید.' }}</textarea>
                                 </td>
                             </tr>
                             <tr>
-                                <td>ارسال گزارش</td>
+                                <td>هدایت دانشجو در بخش ارسال گزارش</td>
                                 <td>
-                                    <textarea name="ersal_gozaresh_desc" class="form-textarea" rows="3">{{ $setting->ersal_gozaresh_desc ?? 'خلاصه ای از آنچه در این جلسه یاد گرفته اید بنویسید یا اگر مطلب جدیدی دارید با ذکر منبع بیان کنید' }}</textarea>
+                                    <textarea name="ersal_gozaresh_desc" class="form-textarea" rows="3">{{ $setting->ersal_gozaresh_desc ?? 'موضوع اصلی این جلسه چه بود و چه هدفی داشت؟ لطفاً یک نکتهٔ آموزنده از مطالب ارائه شده را با بیانی دیگر (به زبان خودتان) بازنویسی کنید.' }}</textarea>
                                 </td>
                             </tr>
                         </tbody>

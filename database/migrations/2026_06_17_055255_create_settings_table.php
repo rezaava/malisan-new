@@ -26,11 +26,13 @@ return new class extends Migration
             $table->integer('payan_term_nomre')->default(6); // پایان ترم با نمره پیش‌فرض 6
             $table->string('payan_term_desc', 191)->nullable()->default('نمره پایان ترم');
             
-            // فیلدهای قدیمی
+            // فیلدهای قدیمی با متن‌های جدید
             $table->integer('tarahi_soal_nomre')->nullable()->default(10);
-            $table->string('tarahi_soal_desc', 191)->nullable()->default('قبل از طرح سوال کلیه سوالاتی که برای این جلسه تا بحال طرح شده است را مشاهده کنید و سوالی طرح کنید که تکراری نباشد');
+            $table->string('tarahi_soal_desc', 191)->nullable()->default('یک سؤال خلاقانه طراحی کنید که به یادگیری دوستانتان کمک کند و به نام خودتان منتشر شود. قبل از ارسال، حتماً سؤالاتی که دیگران طرح کرده اند را مرور کنید تا از تکراری نبودن سوال خود مطمئن شوید.');
+            
             $table->integer('ersal_gozaresh_nomre')->nullable()->default(10);
-            $table->string('ersal_gozaresh_desc', 191)->nullable()->default('خلاصه ای از آنچه در این جلسه یاد گرفته اید بنویسید یا اگر مطلب جدیدی دارید با ذکر منبع بیان کنید');
+            $table->string('ersal_gozaresh_desc', 191)->nullable()->default('موضوع اصلی این جلسه چه بود و چه هدفی داشت؟ لطفاً یک نکتهٔ آموزنده از مطالب ارائه شده را با بیانی دیگر (به زبان خودتان) بازنویسی کنید.');
+            
             $table->integer('taklif_seminar_nomre')->nullable()->default(0);
             $table->string('taklif_seminar_desc', 191)->nullable();
             $table->tinyInteger('taklif_seminar_type')->nullable()->default(1)->comment('1.taklif 2.seminar');
