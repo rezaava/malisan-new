@@ -71,6 +71,23 @@
                 <div class="course-info">
                     <h3 class="course-title">{{ $cours->name }}</h3>
                     <p class="course-code">کد: {{ $cours->code }}</p>
+                    
+                    {{-- نمایش لینک کلاس مجازی --}}
+                    @if(isset($cours->majazi))
+                        @php
+                            $baseUrl = 'https://testnn.malisan.ir/teacher/';
+                            $cleanUrl = str_replace($baseUrl, '', $cours->majazi);
+                        @endphp
+                        <div class="text-center mt-2">
+                            <a href="https://{{ $cleanUrl }}" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            class="btn btn-primary btn-sm">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                کلاس مجازی
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </a>
         </div>

@@ -6,6 +6,95 @@
 
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-courses.css')}}">
+<style>
+    /* استایل برای وضعیت درس */
+    .course-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin-top: 4px;
+    }
+    
+    .course-status-active {
+        background: #e8f5e9;
+        color: #2e7d32;
+        border: 1px solid #a5d6a7;
+    }
+    
+    .course-status-active i {
+        color: #43a047;
+        font-size: 10px;
+    }
+    
+    .course-status-inactive {
+        background: #f5f5f5;
+        color: #757575;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .course-status-inactive i {
+        color: #9e9e9e;
+        font-size: 10px;
+    }
+    
+    /* کارت در حالت غیرفعال (خاتمه یافته) */
+    .course-card.inactive {
+        background: #f8f9fa !important;
+        border-color: #e0e0e0 !important;
+        opacity: 0.85;
+    }
+    
+    .course-card.inactive .course-title {
+        color: #6c757d !important;
+    }
+    
+    .course-card.inactive .course-info {
+        background: #f1f3f5 !important;
+    }
+    
+    .course-card.inactive .course-image {
+        filter: grayscale(0.3);
+    }
+    
+    .course-card.inactive .action-item {
+        opacity: 0.7;
+    }
+    
+    .course-card.inactive .action-item:hover {
+        opacity: 1;
+    }
+    
+    /* استایل badge جدید */
+    .course-card .course-image .course-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #fff;
+        z-index: 2;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    
+    .course-card .course-image .course-badge.badge-active {
+        background: rgba(76, 175, 80, 0.9);
+    }
+    
+    .course-card .course-image .course-badge.badge-inactive {
+        background: rgba(108, 117, 125, 0.9);
+    }
+    
+    .course-card .course-image {
+        position: relative;
+    }
+</style>
 @endsection
 
 @section('mohtava')
@@ -29,21 +118,43 @@
 
 <div class="courses-grid" id="coursesGrid">
     @forelse ($courses as $cours)
-        <div class="course-card" data-course-id="{{ $cours->id }}">
+        @php
+            // تعیین وضعیت بر اساس private: 1 = خاتمه یافته، 0 = در حال برگزاری
+            $isActive = ($cours->private == 0);
+        @endphp
+        <div class="course-card {{ $isActive ? '' : 'inactive' }}" data-course-id="{{ $cours->id }}">
             <a href="{{ route('view.coure',$cours->id)}}" class="course-link">
                 <div class="course-image">
                     <img src="{{ asset('/files/icons/' . $cours->header . '.jpg') }}" alt="{{ $cours->name }}">
-                    <div class="course-badge" style="background: {{ $cours->private == 1 ? 'rgba(76, 175, 80, 0.9)' : 'rgba(0, 0, 0, 0.7)' }};">
-                        @if ($cours->private == 1)
-                            خصوصی
-                        @else
-                            عمومی
-                        @endif
+                    <div class="course-badge {{ $isActive ? 'badge-active' : 'badge-inactive' }}">
+                        <i class="fas {{ $isActive ? 'fa-play-circle' : 'fa-stop-circle' }}"></i>
+                        {{ $isActive ? 'در حال برگزاری' : 'خاتمه یافته' }}
                     </div>
                 </div>
                 <div class="course-info">
                     <h3 class="course-title">{{ $cours->name }}</h3>
                     <p class="course-code">کد: {{ $cours->code }}</p>
+                    
+                    <!-- نمایش وضعیت به صورت متن زیر عنوان -->
+                    <span class="course-status-badge {{ $isActive ? 'course-status-active' : 'course-status-inactive' }}">
+                        <i class="fas fa-circle"></i>
+                        {{ $isActive ? '● در حال برگزاری' : '● خاتمه یافته' }}
+                    </span>
+                    @if(isset($cours->majazi))
+                        @php
+                            $baseUrl = 'https://testnn.malisan.ir/teacher/';
+                            $cleanUrl = str_replace($baseUrl, '', $cours->majazi);
+                        @endphp
+                        <div class="text-center mt-2">
+                            <a href="https://{{ $cleanUrl }}" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            class="btn btn-primary btn-sm">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                کلاس مجازی
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </a>
             <div class="course-actions">
@@ -68,7 +179,7 @@
                     <span class="action-tooltip">آرشیو</span>
                 </div>
                 <div class="action-item" data-action="فعال/غیرفعال" onclick="event.preventDefault(); event.stopPropagation(); toggleCourseStatus({{ $cours->id }})">
-                    <i class="fas {{ $cours->private == 1 ? 'fa-toggle-on' : 'fa-toggle-off' }}"></i>
+                    <i class="fas {{ $isActive ? 'fa-toggle-on' : 'fa-toggle-off' }}"></i>
                     <span class="action-tooltip">فعال/غیرفعال</span>
                 </div>
             </div>
@@ -81,9 +192,11 @@
     @endforelse
 </div>
 
-<!-- ==========================================
-     مودال ایجاد درس
-     ========================================== -->
+<!-- ========================================== -->
+<!-- مودال‌ها (بدون تغییر) -->
+<!-- ========================================== -->
+
+<!-- مودال ایجاد درس -->
 <div class="modal-overlay" id="createCourseModal">
     <div class="modal-container">
         <div class="modal-header" style="background: linear-gradient(135deg, #1e6f9f, #155a82);">
@@ -122,9 +235,7 @@
     </div>
 </div>
 
-<!-- ==========================================
-     مودال نمایش دوره‌های آرشیو شده
-     ========================================== -->
+<!-- مودال آرشیو -->
 <div class="modal-overlay" id="archivedModalOverlay">
     <div class="modal-container" style="max-width: 700px;">
         <div class="modal-header" style="background: linear-gradient(135deg, #6c757d, #495057);">
@@ -143,9 +254,8 @@
         </div>
     </div>
 </div>
-<!-- ==========================================
-     مودال ویرایش درس
-     ========================================== -->
+
+<!-- مودال ویرایش درس -->
 <div class="modal-overlay" id="editCourseModal">
     <div class="modal-container" style="max-width: 550px;">
         <div class="modal-header" style="background: linear-gradient(135deg, #ff9800, #e65100);">
@@ -252,12 +362,10 @@
     });
 
     // ============================================
-    // مودال آرشیو - با EventListener
+    // مودال آرشیو
     // ============================================
     
-    // باز کردن مودال با EventListener
     document.addEventListener('DOMContentLoaded', function() {
-        // دکمه آرشیو
         var archiveBtn = document.getElementById('archiveBtn');
         if (archiveBtn) {
             archiveBtn.addEventListener('click', function(e) {
@@ -266,7 +374,6 @@
             });
         }
 
-        // بستن مودال با کلیک روی پس‌زمینه
         var modal = document.getElementById('archivedModalOverlay');
         if (modal) {
             modal.addEventListener('click', function(e) {
@@ -276,7 +383,6 @@
             });
         }
 
-        // بارگذاری تعداد آرشیوها
         loadArchivedCount();
     });
 
@@ -360,7 +466,6 @@
 
                 container.innerHTML = html;
 
-                // بروزرسانی تعداد Badge
                 var badge = document.getElementById('archivedCountBadge');
                 if (badge) {
                     badge.textContent = data.data.length;
@@ -401,7 +506,6 @@
             return;
         }
         
-        // پیدا کردن دکمه‌ها و غیرفعال کردن
         var btns = document.querySelectorAll('.restore-btn');
         var targetBtn = null;
         btns.forEach(function(btn) {
@@ -459,43 +563,30 @@
     }
 
     // ============================================
-    // ویرایش درس - با مودال
+    // ویرایش درس
     // ============================================
 
     function editCourse(courseId) {
         event.preventDefault();
         event.stopPropagation();
         
-        // پیدا کردن کارت مربوط به درس
         const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
         if (!card) {
             showToast('خطا: اطلاعات درس پیدا نشد', 'error');
             return;
         }
         
-        // استخراج اطلاعات از کارت
         const courseName = card.querySelector('.course-title')?.textContent || '';
-        const courseCode = card.querySelector('.course-code')?.textContent?.replace('کد: ', '') || '';
         
-        // تنظیم فرم ویرایش
         const modal = document.getElementById('editCourseModal');
         const form = document.getElementById('editCourseForm');
         const nameInput = document.getElementById('edit_name');
-        const majaziInput = document.getElementById('edit_majazi');
         const courseIdInput = document.getElementById('editCourseId');
         
-        // تنظیم اطلاعات در فرم
         nameInput.value = courseName;
         courseIdInput.value = courseId;
-        
-        // تنظیم action فرم (با استفاده از route helper)
         form.action = `/teacher/courses/${courseId}`;
         
-        // اگر نیاز به دریافت لینک مجازی از سرور دارید، می‌توانید از fetch استفاده کنید
-        // اما برای سادگی، از داده‌های موجود در صفحه استفاده می‌کنیم
-        // اگر لینک مجازی در کارت وجود ندارد، می‌توانید از یک fetch ساده استفاده کنید
-        
-        // نمایش مودال
         modal.classList.add('active');
     }
 
@@ -506,7 +597,6 @@
         }
     }
 
-    // بستن مودال با کلیک روی پس‌زمینه
     document.getElementById('editCourseModal')?.addEventListener('click', function(e) {
         if (e.target === this) {
             closeEditModal();
@@ -514,14 +604,13 @@
     });
 
     // ============================================
-    // حذف درس - با SweetAlert2
+    // حذف درس
     // ============================================
 
     function deleteCourse(courseId) {
         event.preventDefault();
         event.stopPropagation();
         
-        // استفاده از SweetAlert2 برای حذف
         if (typeof Swal !== 'undefined') {
             Swal.fire({
                 title: 'آیا از حذف این درس اطمینان دارید؟',
@@ -539,7 +628,6 @@
                 }
             });
         } else {
-            // Fallback به confirm معمولی
             if (confirm('آیا از حذف این درس اطمینان دارید؟ این اقدام غیرقابل بازگشت است!')) {
                 performDeleteCourse(courseId);
             }
@@ -547,7 +635,6 @@
     }
 
     function performDeleteCourse(courseId) {
-        // نمایش لودینگ در دکمه
         const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
         const deleteBtn = card?.querySelector('.action-item[data-action="حذف"]');
         if (deleteBtn) {
@@ -555,7 +642,6 @@
             deleteBtn.style.pointerEvents = 'none';
         }
         
-        // ارسال درخواست حذف
         fetch(`/teacher/courses/${courseId}`, {
             method: 'DELETE',
             headers: {
@@ -576,7 +662,6 @@
             if (data.success) {
                 showToast(data.message || 'درس با موفقیت حذف شد', 'success');
                 
-                // حذف کارت از صفحه با انیمیشن
                 if (card) {
                     card.style.transition = 'all 0.5s ease';
                     card.style.transform = 'scale(0.8)';
@@ -585,9 +670,6 @@
                         card.remove();
                     }, 500);
                 }
-                
-                // به‌روزرسانی تعداد دوره‌ها (اگر نمایش داده می‌شود)
-                updateCourseCount();
             } else {
                 showToast(data.message || 'خطا در حذف درس', 'error');
                 if (deleteBtn) {
@@ -607,103 +689,24 @@
     }
 
     // ============================================
-    // تابع کمکی برای بروزرسانی تعداد دوره‌ها
+    // اشتراک گذاری
     // ============================================
-
-    function updateCourseCount() {
-        // اگر المنت نمایش تعداد دوره‌ها وجود دارد
-        const countElement = document.querySelector('.courses-count');
-        if (countElement) {
-            const currentCount = parseInt(countElement.textContent) || 0;
-            countElement.textContent = currentCount - 1;
-        }
-    }
-
-    // ============================================
-    // ارسال فرم ویرایش با AJAX (اختیاری)
-    // ============================================
-
-    document.getElementById('editCourseForm')?.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const form = this;
-        const formData = new FormData(form);
-        const courseId = document.getElementById('editCourseId').value;
-        const submitBtn = form.querySelector('.btn-submit');
-        const originalText = submitBtn.innerHTML;
-        
-        // غیرفعال کردن دکمه و نمایش لودینگ
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال ذخیره...';
-        submitBtn.disabled = true;
-        
-        fetch(`/teacher/courses/${courseId}`, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getContent() || '{{ csrf_token() }}',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(data => {
-                    throw new Error(data.message || 'خطا در ذخیره تغییرات');
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                showToast(data.message || 'تغییرات با موفقیت ذخیره شد', 'success');
-                
-                // به‌روزرسانی اطلاعات در کارت
-                const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
-                if (card) {
-                    const titleElement = card.querySelector('.course-title');
-                    if (titleElement) {
-                        titleElement.textContent = document.getElementById('edit_name').value;
-                    }
-                }
-                
-                // بستن مودال
-                closeEditModal();
-                
-                // بازگرداندن دکمه
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-            } else {
-                showToast(data.message || 'خطا در ذخیره تغییرات', 'error');
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast(error.message || 'خطا در ارتباط با سرور', 'error');
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-        });
-    });
 
     function shareCourse(courseId) {
         event.preventDefault();
         event.stopPropagation();
         
-        // پیدا کردن کارت مربوط به درس
         const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
         if (!card) {
             showToast('خطا: اطلاعات درس پیدا نشد', 'error');
             return;
         }
         
-        // استخراج اطلاعات از کارت
         const courseName = card.querySelector('.course-title')?.textContent || '';
         const courseCode = card.querySelector('.course-code')?.textContent?.replace('کد: ', '') || '';
         
-        // ساخت پیام
         const message = `دانشجوی عزیز، برای دسترسی به درس ${courseName} ابتدا از طریق سایت WWW.MALISAN.IR در سامانه آموزشی ملیسان با هویت واقعی ثبت نام کنید، سپس با استفاده از شناسه ${courseCode} در درس ذکر شده عضو شوید.`;
         
-        // استفاده از SweetAlert2 (که قبلاً در صفحه لود شده است)
         if (typeof Swal !== 'undefined') {
             Swal.fire({
                 title: 'اشتراک گذاری درس',
@@ -737,10 +740,7 @@
                 }
             });
         } else {
-            // اگر SweetAlert2 وجود نداشت، از روش جایگزین استفاده کن
             showToast(message, 'info');
-            
-            // بعد از 2 ثانیه، گزینه کپی را به کاربر بده
             setTimeout(() => {
                 if (confirm('آیا می‌خواهید پیام را کپی کنید؟')) {
                     copyText(message);
@@ -749,18 +749,14 @@
         }
     }
 
-    // تابع کمکی برای کپی متن
     function copyText(text) {
-        // اگر Clipboard API در دسترس است
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(text).then(() => {
                 showToast('✅ متن با موفقیت کپی شد!', 'success');
             }).catch(() => {
-                // Fallback برای مرورگرهای قدیمی
                 fallbackCopy(text);
             });
         } else {
-            // Fallback برای مرورگرهای قدیمی
             fallbackCopy(text);
         }
     }
@@ -785,20 +781,10 @@
         
         document.body.removeChild(textArea);
     }
-    // تابع کمکی برای کپی متن
-    function copyText(text) {
-        navigator.clipboard.writeText(text).then(() => {
-            showToast('✅ متن با موفقیت کپی شد!', 'success');
-        }).catch(() => {
-            const textArea = document.createElement('textarea');
-            textArea.value = text;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-            showToast('✅ متن با موفقیت کپی شد!', 'success');
-        });
-    }
+
+    // ============================================
+    // آرشیو و تغییر وضعیت
+    // ============================================
 
     function archiveCourse(courseId) {
         event.preventDefault();
@@ -808,7 +794,6 @@
             return;
         }
         
-        // نمایش لودینگ
         const targetBtn = event?.currentTarget;
         if (targetBtn) {
             targetBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
@@ -827,7 +812,6 @@
             if (data.success) {
                 showToast(data.message, 'success');
                 
-                // حذف کارت از صفحه
                 const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
                 if (card) {
                     card.style.transition = 'opacity 0.5s';
@@ -837,13 +821,11 @@
                     }, 500);
                 }
                 
-                // بروزرسانی تعداد Badge آرشیو
                 const badge = document.getElementById('archivedCountBadge');
                 if (badge) {
                     const current = parseInt(badge.textContent) || 0;
                     badge.textContent = current + 1;
                 }
-                
             } else {
                 showToast(data.message, 'error');
             }
@@ -891,23 +873,48 @@
                 
                 const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
                 if (card) {
+                    // تعیین وضعیت جدید بر اساس private
+                    const isActive = (data.private === 0);
+                    
+                    // به‌روزرسانی کلاس inactive
+                    if (isActive) {
+                        card.classList.remove('inactive');
+                    } else {
+                        card.classList.add('inactive');
+                    }
+                    
+                    // به‌روزرسانی Badge
                     const badge = card.querySelector('.course-badge');
                     if (badge) {
-                        if (data.private === 1) {
-                            badge.textContent = 'خصوصی';
-                            badge.style.background = 'rgba(76, 175, 80, 0.9)';
+                        if (isActive) {
+                            badge.className = 'course-badge badge-active';
+                            badge.innerHTML = '<i class="fas fa-play-circle"></i> در حال برگزاری';
                         } else {
-                            badge.textContent = 'عمومی';
-                            badge.style.background = 'rgba(0, 0, 0, 0.7)';
+                            badge.className = 'course-badge badge-inactive';
+                            badge.innerHTML = '<i class="fas fa-stop-circle"></i> خاتمه یافته';
+                        }
+                    }
+                    
+                    // به‌روزرسانی status badge زیر عنوان
+                    const statusBadge = card.querySelector('.course-status-badge');
+                    if (statusBadge) {
+                        if (isActive) {
+                            statusBadge.className = 'course-status-badge course-status-active';
+                            statusBadge.innerHTML = '<i class="fas fa-circle"></i> ● در حال برگزاری';
+                        } else {
+                            statusBadge.className = 'course-status-badge course-status-inactive';
+                            statusBadge.innerHTML = '<i class="fas fa-circle"></i> ● خاتمه یافته';
                         }
                     }
                 }
                 
+                // به‌روزرسانی آیکون دکمه toggle
                 const toggleBtns = document.querySelectorAll('.action-item[data-action="فعال/غیرفعال"]');
                 toggleBtns.forEach(btn => {
                     if (btn.closest('.course-card')?.dataset?.courseId == courseId) {
+                        const isActive = (data.private === 0);
                         btn.innerHTML = `
-                            <i class="fas ${data.private === 1 ? 'fa-toggle-on' : 'fa-toggle-off'}"></i>
+                            <i class="fas ${isActive ? 'fa-toggle-on' : 'fa-toggle-off'}"></i>
                             <span class="action-tooltip">فعال/غیرفعال</span>
                         `;
                     }
@@ -916,7 +923,6 @@
                 setTimeout(() => {
                     location.reload();
                 }, 2000);
-                
             } else {
                 showToast(data.message, 'error');
             }
@@ -1016,6 +1022,10 @@
             var archivedModal = document.getElementById('archivedModalOverlay');
             if (archivedModal && archivedModal.classList.contains('active')) {
                 closeArchivedModal();
+            }
+            var editModal = document.getElementById('editCourseModal');
+            if (editModal && editModal.classList.contains('active')) {
+                closeEditModal();
             }
         }
     });
