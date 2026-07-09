@@ -69,13 +69,14 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         });
 
         // مسیر ویرایش (با PUT)
-        Route::put('/{id}', [CourseController::class, 'update'])->name('courses.update');
+        Route::post('/{id}', [CourseController::class, 'update'])->name('courses.update');
         
         // مسیر حذف (با DELETE)
         Route::delete('/{id}', [CourseController::class, 'destroy'])->name('courses.destroy');
 
         Route::get('/', [TeacherSiteController::class, 'courses'])->name('courses');
         Route::get('/copy/{id}', [CourseController::class, 'getCopyData'])->name('courses.copy.data');
+        Route::get('/{id}/edit-data', [CourseController::class, 'getEditData'])->name('courses.edit.data');
         Route::get('/view/{id}', [CourseController::class, 'view'])->name('view.coure');
 
         Route::get('/sessions/create/{id}', [CourseController::class, 'create'])->name('sessions.create');

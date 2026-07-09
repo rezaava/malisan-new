@@ -1805,11 +1805,16 @@ class CourseController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'خطا در اعتبارسنجی داده‌ها',
-                'errors' => $validator->errors()
-            ], 422);
+            // اگر درخواست Ajax باشد، خطاها را به صورت JSON برگردان
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'خطا در اعتبارسنجی داده‌ها',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+            // در غیر این صورت به حالت قبل
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
         try {
@@ -1835,17 +1840,77 @@ class CourseController extends Controller
             $course->majazi = $this->cleanUrl($request->majazi);
             $course->save();
             
-            return response()->json([
-                'success' => true,
-                'message' => 'درس با موفقیت ویرایش شد',
-                'course' => $course
-            ]);
+            // اگر درخواست Ajax باشد، پاسخ JSON برگردان
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'درس با موفقیت ویرایش شد',
+                    'course' => [
+                        'id' => $course->id,
+                        'name' => $course->name,
+                        'majazi' => $course->majazi,
+                        'code' => $course->code,
+                        'private' => $course->private
+                    ]
+                ]);
+            }
+            
+            // در غیر این صورت به حالت قبل (ردایرکت)
+            return redirect()->route('courses')->with('success', 'درس با موفقیت ویرایش شد');
             
         } catch (\Exception $e) {
             \Log::error('Update course failed: ' . $e->getMessage());
+            
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'خطا در ویرایش درس: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->back()->with('error', 'خطا در ویرایش درس');
+        }
+    }
+
+    /**
+     * دریافت اطلاعات درس برای ویرایش (Ajax)
+     */
+    public function getEditData($id)
+    {
+        try {
+            $course = Course::findOrFail($id);
+            
+            // بررسی دسترسی
+            $user = Auth::user();
+            $teacherRole = Role::where('name', 'teacher')->first();
+            $isOwner = DB::table('course_user')
+                ->where('user_id', $user->id)
+                ->where('course_id', $course->id)
+                ->where('role_id', $teacherRole->id)
+                ->exists();
+                
+            if (!$isOwner) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'شما دسترسی به این درس ندارید'
+                ], 403);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'course' => [
+                    'id' => $course->id,
+                    'name' => $course->name,
+                    'majazi' => $course->majazi,
+                    'code' => $course->code
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Get edit data failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در ویرایش درس: ' . $e->getMessage()
+                'message' => 'خطا در دریافت اطلاعات درس: ' . $e->getMessage()
             ], 500);
         }
     }

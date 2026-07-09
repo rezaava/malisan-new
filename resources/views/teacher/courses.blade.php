@@ -94,6 +94,17 @@
     .course-card .course-image {
         position: relative;
     }
+
+    /* انیمیشن برای به‌روزرسانی کارت */
+    @keyframes updatePulse {
+        0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+    }
+    
+    .course-card.updating {
+        animation: updatePulse 0.8s ease;
+    }
 </style>
 @endsection
 
@@ -145,11 +156,11 @@
                             $baseUrl = 'https://testnn.malisan.ir/teacher/';
                             $cleanUrl = str_replace($baseUrl, '', $cours->majazi);
                         @endphp
-                        <div class="text-center mt-2">
+                        <div class="text-center mt-4 virtual-class-container">
                             <a href="https://{{ $cleanUrl }}" 
                             target="_blank" 
                             rel="noopener noreferrer" 
-                            class="btn btn-primary btn-sm">
+                            class="btn btn-primary btn-sm virtual-class-link">
                                 <i class="fas fa-arrow-left me-2"></i>
                                 کلاس مجازی
                             </a>
@@ -193,7 +204,7 @@
 </div>
 
 <!-- ========================================== -->
-<!-- مودال‌ها (بدون تغییر) -->
+<!-- مودال‌ها -->
 <!-- ========================================== -->
 
 <!-- مودال ایجاد درس -->
@@ -265,9 +276,8 @@
             </button>
         </div>
         
-        <form id="editCourseForm" method="POST">
+        <form id="editCourseForm">
             @csrf
-            @method('PUT')
             <input type="hidden" name="course_id" id="editCourseId" value="">
             
             <div class="modal-body">
@@ -288,7 +298,7 @@
                 <button type="button" class="btn-cancel" onclick="closeEditModal()">انصراف</button>
                 <button type="submit" class="btn-submit" style="background: linear-gradient(135deg, #ff9800, #e65100);">
                     <i class="fas fa-save"></i>
-                    <span>ذخیره تغییرات</span>
+                    <span id="editSubmitText">ذخیره تغییرات</span>
                 </button>
             </div>
         </form>
@@ -563,37 +573,59 @@
     }
 
     // ============================================
-    // ویرایش درس
+    // ویرایش درس - نسخه Ajax
     // ============================================
 
     function editCourse(courseId) {
         event.preventDefault();
         event.stopPropagation();
         
-        const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
-        if (!card) {
-            showToast('خطا: اطلاعات درس پیدا نشد', 'error');
-            return;
-        }
+        // نمایش وضعیت بارگذاری
+        showToast('در حال دریافت اطلاعات درس...', 'info');
         
-        const courseName = card.querySelector('.course-title')?.textContent || '';
-        
-        const modal = document.getElementById('editCourseModal');
-        const form = document.getElementById('editCourseForm');
-        const nameInput = document.getElementById('edit_name');
-        const courseIdInput = document.getElementById('editCourseId');
-        
-        nameInput.value = courseName;
-        courseIdInput.value = courseId;
-        form.action = `/teacher/courses/${courseId}`;
-        
-        modal.classList.add('active');
+        // دریافت اطلاعات درس از سرور
+        fetch(`/teacher/courses/${courseId}/edit-data`, {
+            method: 'GET',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.message || 'خطا در دریافت اطلاعات درس');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // پر کردن فرم با اطلاعات دریافتی
+                document.getElementById('edit_name').value = data.course.name;
+                document.getElementById('edit_majazi').value = data.course.majazi || '';
+                document.getElementById('editCourseId').value = courseId;
+                
+                // نمایش مودال
+                const modal = document.getElementById('editCourseModal');
+                modal.classList.add('active');
+                showToast('اطلاعات درس بارگذاری شد', 'success');
+            } else {
+                showToast(data.message || 'خطا در دریافت اطلاعات درس', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast(error.message || 'خطا در ارتباط با سرور', 'error');
+        });
     }
 
     function closeEditModal() {
         const modal = document.getElementById('editCourseModal');
         if (modal) {
             modal.classList.remove('active');
+            document.getElementById('editCourseForm').reset();
         }
     }
 
@@ -602,6 +634,140 @@
             closeEditModal();
         }
     });
+
+    // ============================================
+    // ارسال فرم ویرایش به صورت Ajax
+    // ============================================
+
+    document.getElementById('editCourseForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const form = this;
+        const courseId = document.getElementById('editCourseId').value;
+        const formData = new FormData(form);
+        const submitBtn = form.querySelector('.btn-submit');
+        const originalText = submitBtn.innerHTML;
+        
+        // بررسی اعتبار فرم
+        const name = document.getElementById('edit_name').value.trim();
+        if (!name) {
+            showToast('لطفاً عنوان درس را وارد کنید', 'error');
+            return;
+        }
+        
+        // نمایش وضعیت در حال ارسال
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> در حال ذخیره...';
+        submitBtn.disabled = true;
+        
+        fetch(`/teacher/courses/${courseId}`, {
+            method: 'POST', // استفاده از POST با _method=PUT
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.message || 'خطا در ویرایش درس');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showToast(data.message || 'درس با موفقیت ویرایش شد', 'success');
+                
+                // به‌روزرسانی کارت درس در صفحه
+                updateCourseCard(courseId, data.course);
+                
+                // بستن مودال
+                closeEditModal();
+            } else {
+                // نمایش خطاهای اعتبارسنجی
+                if (data.errors) {
+                    let errorMessages = '';
+                    for (let field in data.errors) {
+                        errorMessages += data.errors[field].join('\n') + '\n';
+                    }
+                    showToast(errorMessages || data.message, 'error');
+                } else {
+                    showToast(data.message || 'خطا در ویرایش درس', 'error');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast(error.message || 'خطا در ارتباط با سرور', 'error');
+        })
+        .finally(() => {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+    });
+
+    // ============================================
+    // تابع به‌روزرسانی کارت درس
+    // ============================================
+
+    function updateCourseCard(courseId, courseData) {
+        const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
+        if (!card) {
+            console.warn('Card not found for course:', courseId);
+            return;
+        }
+        
+        // افزودن انیمیشن به‌روزرسانی
+        card.classList.add('updating');
+        
+        // به‌روزرسانی عنوان درس
+        const title = card.querySelector('.course-title');
+        if (title) title.textContent = courseData.name;
+        
+        // به‌روزرسانی لینک کلاس مجازی
+        const virtualContainer = card.querySelector('.virtual-class-container');
+        const virtualLink = card.querySelector('.virtual-class-link');
+        
+        if (courseData.majazi) {
+            // اگر لینک مجازی وجود دارد
+            const baseUrl = 'https://testnn.malisan.ir/teacher/';
+            const cleanUrl = courseData.majazi.replace(baseUrl, '');
+            
+            if (virtualLink) {
+                virtualLink.href = 'https://' + cleanUrl;
+                if (virtualContainer) virtualContainer.style.display = 'block';
+            } else {
+                // اگر لینک وجود ندارد، یک لینک جدید ایجاد کن
+                const newContainer = document.createElement('div');
+                newContainer.className = 'text-center mt-4 virtual-class-container';
+                newContainer.innerHTML = `
+                    <a href="https://${cleanUrl}" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    class="btn btn-primary btn-sm virtual-class-link">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        کلاس مجازی
+                    </a>
+                `;
+                card.querySelector('.course-info').appendChild(newContainer);
+            }
+        } else {
+            // اگر لینک مجازی وجود ندارد، آن را حذف کن
+            if (virtualContainer) {
+                virtualContainer.style.display = 'none';
+            }
+        }
+        
+        // حذف انیمیشن بعد از 1 ثانیه
+        setTimeout(() => {
+            card.classList.remove('updating');
+        }, 1000);
+        
+        // نمایش پیام موفقیت
+        showToast('✅ درس با موفقیت به‌روزرسانی شد', 'success');
+    }
 
     // ============================================
     // حذف درس
@@ -803,7 +969,7 @@
         fetch(`/teacher/courses/toggle-archive/${courseId}`, {
             method: 'POST',
             headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
                 'Content-Type': 'application/json'
             }
         })
@@ -862,7 +1028,7 @@
         fetch(`/teacher/courses/toggle-status/${courseId}`, {
             method: 'POST',
             headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
                 'Content-Type': 'application/json'
             }
         })
@@ -994,7 +1160,7 @@
     }
 
     // ============================================
-    // FORM SUBMISSION
+    // FORM SUBMISSION (ایجاد درس)
     // ============================================
     
     document.getElementById('createCourseForm')?.addEventListener('submit', function(e) {
