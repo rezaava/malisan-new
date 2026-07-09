@@ -383,10 +383,57 @@
                                 </td>
                                 <td></td>
                             </tr>
+                            <!-- ========== گزینه‌های جدید ========== -->
+                            <tr>
+                                <td>حضور و غیاب</td>
+                                <td>
+                                    <input type="number" name="hozor_ghayab_nomre" id="hozor_ghayab_nomre" value="{{ $setting->hozor_ghayab_nomre ?? 0 }}" class="form-input" onkeyup="jam()" min="0" max="100">
+                                </td>
+                                <td>
+                                    <textarea name="hozor_ghayab_desc" class="form-textarea" rows="2">{{ $setting->hozor_ghayab_desc ?? 'نمره حضور و غیاب' }}</textarea>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>میان ترم</td>
+                                <td>
+                                    <input type="number" name="miyan_term_nomre" id="miyan_term_nomre" value="{{ $setting->miyan_term_nomre ?? 0 }}" class="form-input" onkeyup="jam()" min="0" max="100">
+                                </td>
+                                <td>
+                                    <textarea name="miyan_term_desc" class="form-textarea" rows="2">{{ $setting->miyan_term_desc ?? 'نمره میان ترم' }}</textarea>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>کار عملی (بازدید|آزمایشگاه|کارگاه)</td>
+                                <td>
+                                    <input type="number" name="kar_amali_nomre" id="kar_amali_nomre" value="{{ $setting->kar_amali_nomre ?? 0 }}" class="form-input" onkeyup="jam()" min="0" max="100">
+                                </td>
+                                <td>
+                                    <textarea name="kar_amali_desc" class="form-textarea" rows="2">{{ $setting->kar_amali_desc ?? 'نمره کار عملی' }}</textarea>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>پایان ترم</td>
+                                <td>
+                                    <input type="number" name="payan_term_nomre" id="payan_term_nomre" value="{{ $setting->payan_term_nomre ?? 6 }}" class="form-input" onkeyup="jam()" min="0" max="100">
+                                </td>
+                                <td>
+                                    <textarea name="payan_term_desc" class="form-textarea" rows="2">{{ $setting->payan_term_desc ?? 'نمره پایان ترم' }}</textarea>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                     <div class="total-score">
-                        مجموع نمرات : <span id="majmo">{{ ($setting->mostamar_nomre ?? 12) + ($setting->taklif_seminar_nomre ?? 0) + ($setting->azmon_nomre ?? 0) }}</span>
+                        مجموع نمرات : <span id="majmo">
+                            {{ 
+                                ($setting->mostamar_nomre ?? 12) + 
+                                ($setting->taklif_seminar_nomre ?? 0) + 
+                                ($setting->azmon_nomre ?? 0) +
+                                ($setting->hozor_ghayab_nomre ?? 0) +
+                                ($setting->miyan_term_nomre ?? 0) +
+                                ($setting->kar_amali_nomre ?? 0) +
+                                ($setting->payan_term_nomre ?? 6)
+                            }}
+                        </span>
                     </div>
                     <div class="score-info">
                         <p><i class="fas fa-info-circle"></i> پیشرفت درسی: 70 درصد نمره ارزشیابی مستمر (محاسبه توسط سیستم)</p>
@@ -544,13 +591,20 @@
     </form>
 </div>
 @endsection
+
 @section('js')
 <script>
     function jam() {
         var azmon = parseFloat(document.getElementById('azmon_nomre').value) || 0;
         var taklif = parseFloat(document.getElementById('taklif_nomre').value) || 0;
         var mostamar = parseFloat(document.getElementById('mostamar_nomre').value) || 0;
-        document.getElementById('majmo').textContent = azmon + taklif + mostamar;
+        var hozor = parseFloat(document.getElementById('hozor_ghayab_nomre').value) || 0;
+        var miyan = parseFloat(document.getElementById('miyan_term_nomre').value) || 0;
+        var karAmali = parseFloat(document.getElementById('kar_amali_nomre').value) || 0;
+        var payan = parseFloat(document.getElementById('payan_term_nomre').value) || 0;
+        
+        var total = azmon + taklif + mostamar + hozor + miyan + karAmali + payan;
+        document.getElementById('majmo').textContent = total;
     }
     jam();
 

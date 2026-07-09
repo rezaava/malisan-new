@@ -938,14 +938,25 @@ class CourseController extends Controller
                 'sath_khod' => $request->sath_khod ?? 2,
                 'quiz_num' => $request->quiz_num ?? 10,
                 'sath_quiz' => $request->sath_quiz ?? 2,
+                // فیلدهای جدید - مقدار پیش‌فرض صفر
+                'hozor_ghayab_nomre' => $request->hozor_ghayab_nomre ?? 0,
+                'miyan_term_nomre' => $request->miyan_term_nomre ?? 0,
+                'kar_amali_nomre' => $request->kar_amali_nomre ?? 0,
+                'payan_term_nomre' => $request->payan_term_nomre ?? 6, // پیش‌فرض 6
             ]);
 
             // فیلدهای توضیحی
-            if ($request->has('tarahi_soal_desc')) {
-                $setting->tarahi_soal_desc = $request->tarahi_soal_desc;
+            if ($request->has('hozor_ghayab_desc')) {
+                $setting->hozor_ghayab_desc = $request->hozor_ghayab_desc;
             }
-            if ($request->has('ersal_gozaresh_desc')) {
-                $setting->ersal_gozaresh_desc = $request->ersal_gozaresh_desc;
+            if ($request->has('miyan_term_desc')) {
+                $setting->miyan_term_desc = $request->miyan_term_desc;
+            }
+            if ($request->has('kar_amali_desc')) {
+                $setting->kar_amali_desc = $request->kar_amali_desc;
+            }
+            if ($request->has('payan_term_desc')) {
+                $setting->payan_term_desc = $request->payan_term_desc;
             }
 
             // ==========================================

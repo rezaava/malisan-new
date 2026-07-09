@@ -12,6 +12,21 @@ return new class extends Migration
             $table->id();
             $table->integer('course_id');
             $table->integer('jalasat')->default(16);
+            
+            // فیلدهای جدید برای بارم‌بندی
+            $table->integer('hozor_ghayab_nomre')->default(0); // حضور و غیاب
+            $table->string('hozor_ghayab_desc', 191)->nullable()->default('نمره حضور و غیاب');
+            
+            $table->integer('miyan_term_nomre')->default(0); // میان ترم
+            $table->string('miyan_term_desc', 191)->nullable()->default('نمره میان ترم');
+            
+            $table->integer('kar_amali_nomre')->default(0); // کار عملی (بازدید|آزمایشگاه|کارگاه)
+            $table->string('kar_amali_desc', 191)->nullable()->default('نمره کار عملی');
+            
+            $table->integer('payan_term_nomre')->default(6); // پایان ترم با نمره پیش‌فرض 6
+            $table->string('payan_term_desc', 191)->nullable()->default('نمره پایان ترم');
+            
+            // فیلدهای قدیمی
             $table->integer('tarahi_soal_nomre')->nullable()->default(10);
             $table->string('tarahi_soal_desc', 191)->nullable()->default('قبل از طرح سوال کلیه سوالاتی که برای این جلسه تا بحال طرح شده است را مشاهده کنید و سوالی طرح کنید که تکراری نباشد');
             $table->integer('ersal_gozaresh_nomre')->nullable()->default(10);

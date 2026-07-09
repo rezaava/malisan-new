@@ -21,7 +21,11 @@ class Setting extends Model
         'mostamar_nomre', 'taklif_last', 'max_soal', 'min_soal',
         'min_davari', 'max_taklif', 'max_seminar', 'max_gozaresh',
         'max_gheibat', 'min_w_khod', 'q_num', 'sath_khod', 'show_khod',
-        'quiz_num', 'sath_quiz', 'natije', 'show_quiz', 'azmon_nomre'
+        'quiz_num', 'sath_quiz', 'natije', 'show_quiz', 'azmon_nomre',
+        'hozor_ghayab_nomre', 'hozor_ghayab_desc',
+        'miyan_term_nomre', 'miyan_term_desc',
+        'kar_amali_nomre', 'kar_amali_desc',
+        'payan_term_nomre', 'payan_term_desc'
     ];
 
     public function course()
