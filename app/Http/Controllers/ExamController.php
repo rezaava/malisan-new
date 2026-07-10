@@ -93,6 +93,23 @@ class ExamController extends Controller
         $course = $session->course;
 
         $setting = Setting::where('course_id', $course->id)->first();
+        
+        // بررسی شرط soal_last
+        if ($setting && $setting->soal_last == 1) {
+            // پیدا کردن آخرین جلسه این درس
+            $lastSession = Session::where('course_id', $course->id)
+                ->orderBy('id', 'desc') // یا orderBy('session_number', 'desc') اگر چنین فیلدی دارید
+                ->first();
+                
+            // اگر جلسه فعلی آخرین جلسه نیست، خطا بدهید یا هدایت کنید
+            if (!$lastSession || $session->id != $lastSession->id) {
+                // می‌توانید به صفحه قبلی برگردانید یا خطا نشان دهید
+                return redirect()->back()->with('error', 'شما فقط می‌توانید برای آخرین جلسه این درس سوال طراحی کنید.');
+                // یا می‌توانید کاربر را به صفحه آخرین جلسه هدایت کنید:
+                // return redirect()->route('student.create-question', $lastSession->id);
+            }
+        }
+
         $settingDescription = $setting->tarahi_soal_desc ?? 'یک سؤال خلاقانه طراحی کنید که به یادگیری دوستانتان کمک کند و به نام خودتان منتشر شود. قبل از ارسال، حتماً سؤالاتی که دیگران طرح کرده اند را مرور کنید تا از تکراری نبودن سوال خود مطمئن شوید.';
         $settingScore = $setting->tarahi_soal_nomre ?? 10;
 
@@ -116,6 +133,20 @@ class ExamController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
+        $session = Session::findOrFail($request->session_id);
+        $setting = Setting::where('course_id', $session->course_id)->first();
+        
+        // بررسی مجدد شرط soal_last در زمان ذخیره‌سازی
+        if ($setting && $setting->soal_last == 1) {
+            $lastSession = Session::where('course_id', $session->course_id)
+                ->orderBy('id', 'desc')
+                ->first();
+                
+            if (!$lastSession || $session->id != $lastSession->id) {
+                return redirect()->back()->with('error', 'شما فقط می‌توانید برای آخرین جلسه این درس سوال طراحی کنید.');
+            }
+        }
+    
         try {
             $options = $request->options;
             $correctIndex = (int) $request->correct_answer + 1;

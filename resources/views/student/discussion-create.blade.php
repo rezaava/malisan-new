@@ -289,8 +289,11 @@
             {{-- Text --}}
             <div class="form-group {{ $errors->has('text') ? 'has-error' : '' }}">
                 <label>
-                    متن گزارش <span class="required">*</span>
+                    متن گزارش <span class="required">*</span> 
                 </label>
+                <div class="text-center">
+                    <small>{{$course->settings->ersal_gozaresh_desc}}</small> 
+                </div>
                 <textarea class="jodit-editor" name="text" id="reportEditor" 
                           placeholder="متن گزارش خود را وارد کنید...">{{ old('text') }}</textarea>
                 @if($errors->has('text'))
