@@ -256,6 +256,7 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
     // مسیرهای طرح سوال - دانشجو
     // ==========================================
     Route::prefix('/questions')->group(function () {
+        Route::get('/list/{session_id}', [ExamController::class, 'getSessionQuestions'])->name('student.questions.list');
         Route::get('/create/{session_id}', [ExamController::class, 'studentCreate'])->name('student.question.create');
         Route::post('/store/{session_id}', [ExamController::class, 'studentStore'])->name('student.question.store');
     });
