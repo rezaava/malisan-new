@@ -351,7 +351,7 @@
             </div>
 
             <div class="question-text" id="questionText">
-                {{ $question->question }}
+                {!! $question->question !!}
             </div>
 
             {{-- Options --}}

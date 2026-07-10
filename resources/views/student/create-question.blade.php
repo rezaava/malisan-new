@@ -6,6 +6,8 @@
 
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-create-question.css')}}">
+{{-- اضافه کردن استایل Jodit --}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.css">
 @endsection
 
 @section('mohtava')
@@ -40,16 +42,21 @@
 
         <form class="question-form" action="{{ route('student.question.store', $session->id) }}" method="POST">
             @csrf
+            
+            {{-- ===== متن سوال با Jodit ===== --}}
             <div class="form-group">
-                <label for="question-text">متن سوال</label>
-                <textarea id="question-text" name="question" class="form-textarea" rows="3" placeholder="متن سوال را وارد کنید...">{{ old('question') }}</textarea>
+                <label for="question-text">متن سوال <span style="color:red;">*</span></label>
+                <textarea class="jodit-editor" id="questionEditor" name="question" 
+                          placeholder="متن سوال را وارد کنید...">{{ old('question') }}</textarea>
             </div>
 
+            {{-- ===== گزینه‌ها ===== --}}
             <div class="options-grid">
                 <div class="form-group option-item" data-option="0">
                     <label for="option-0">
                         گزینه ۱ 
                         <span class="badge-correct" style="display: none;">✓ صحیح</span>
+                        <span class="correct-label" style="display: none; color: #4caf50; font-weight: 600; font-size: 13px;">(گزینه صحیح)</span>
                     </label>
                     <div class="option-input-wrapper">
                         <input type="text" id="option-0" name="options[]" class="form-input" placeholder="متن گزینه ۱ را وارد کنید" value="{{ old('options.0') }}">
@@ -63,6 +70,7 @@
                     <label for="option-1">
                         گزینه ۲
                         <span class="badge-correct" style="display: none;">✓ صحیح</span>
+                        <span class="correct-label" style="display: none; color: #4caf50; font-weight: 600; font-size: 13px;">(گزینه صحیح)</span>
                     </label>
                     <div class="option-input-wrapper">
                         <input type="text" id="option-1" name="options[]" class="form-input" placeholder="متن گزینه ۲ را وارد کنید" value="{{ old('options.1') }}">
@@ -76,6 +84,7 @@
                     <label for="option-2">
                         گزینه ۳
                         <span class="badge-correct" style="display: none;">✓ صحیح</span>
+                        <span class="correct-label" style="display: none; color: #4caf50; font-weight: 600; font-size: 13px;">(گزینه صحیح)</span>
                     </label>
                     <div class="option-input-wrapper">
                         <input type="text" id="option-2" name="options[]" class="form-input" placeholder="متن گزینه ۳ را وارد کنید" value="{{ old('options.2') }}">
@@ -89,6 +98,7 @@
                     <label for="option-3">
                         گزینه ۴
                         <span class="badge-correct" style="display: none;">✓ صحیح</span>
+                        <span class="correct-label" style="display: none; color: #4caf50; font-weight: 600; font-size: 13px;">(گزینه صحیح)</span>
                     </label>
                     <div class="option-input-wrapper">
                         <input type="text" id="option-3" name="options[]" class="form-input" placeholder="متن گزینه ۴ را وارد کنید" value="{{ old('options.3') }}">
@@ -132,6 +142,10 @@
         display: inline-block !important;
     }
     
+    .option-item.is-correct .correct-label {
+        display: inline-block !important;
+    }
+    
     .option-item .badge-correct {
         display: none;
         background: #4caf50;
@@ -140,6 +154,10 @@
         border-radius: 12px;
         font-size: 12px;
         margin-right: 5px;
+    }
+    
+    .option-item .correct-label {
+        display: none;
     }
     
     .option-input-wrapper {
@@ -185,9 +203,136 @@
         border-color: #388e3c;
     }
 </style>
+@endsection
+
+@section('js')
+{{-- اضافه کردن اسکریپت Jodit --}}
+<script src="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // ==========================================
+        // مقداردهی Jodit Editor
+        // ==========================================
+        document.querySelectorAll('.jodit-editor').forEach(function(element) {
+            const editorId = element.id || 'editor-' + Math.random().toString(36).substr(2, 9);
+            if (!element.id) {
+                element.id = editorId;
+            }
+            
+            new Jodit('#' + editorId, {
+                width: '100%',
+                height: 200,
+                allowResize: true,
+                allowResizeImages: true,
+                direction: 'rtl',
+                language: 'fa',
+                buttons: [
+                    'source', '|',
+                    'undo', 'redo', '|',
+                    'bold', 'italic', 'underline', 'strikethrough', '|',
+                    'font', 'fontsize', 'brush', 'paragraph', '|',
+                    'ul', 'ol', 'outdent', 'indent', '|',
+                    'align', 'hr', 'table', '|',
+                    'link', 'unlink',
+                    {
+                        name: 'uploadImage',
+                        iconURL: 'https://cdn-icons-png.flaticon.com/512/1829/1829586.png',
+                        tooltip: 'آپلود تصویر',
+                        exec: (editor) => {
+                            let input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'image/*';
+                            input.onchange = () => {
+                                let file = input.files[0];
+                                if (!file) return;
+
+                                let formData = new FormData();
+                                formData.append('file', file);
+
+                                fetch('{{ route("upload.image") }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                    },
+                                    body: formData
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.files && data.files[0].url) {
+                                        let img = document.createElement('img');
+                                        img.src = data.files[0].url;
+                                        img.style.maxWidth = '100%';
+                                        editor.s.insertNode(img);
+                                    } else {
+                                        alert('خطا در آپلود تصویر');
+                                    }
+                                })
+                                .catch(err => alert('Upload error: ' + err));
+                            };
+                            input.click();
+                        }
+                    },
+                    {
+                        name: 'uploadVideo',
+                        iconURL: 'https://cdn-icons-png.flaticon.com/512/727/727245.png',
+                        tooltip: 'آپلود ویدیو',
+                        exec: (editor) => {
+                            let input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'video/*';
+                            input.onchange = () => {
+                                let file = input.files[0];
+                                if (!file) return;
+
+                                let formData = new FormData();
+                                formData.append('file', file);
+
+                                fetch('{{ route("upload.video") }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                    },
+                                    body: formData
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.files && data.files[0].url) {
+                                        let wrapper = document.createElement('div');
+                                        wrapper.classList.add('video-wrapper');
+
+                                        let video = document.createElement('video');
+                                        video.setAttribute('controls', '');
+                                        video.src = data.files[0].url;
+                                        video.style.maxWidth = '100%';
+
+                                        wrapper.appendChild(video);
+                                        editor.s.insertNode(wrapper);
+                                    } else {
+                                        alert('خطا در آپلود ویدیو');
+                                    }
+                                })
+                                .catch(err => alert('Upload error: ' + err));
+                            };
+                            input.click();
+                        }
+                    },
+                    '|', 'symbols', 'emoticons', '|',
+                    'print', 'fullsize', 'preview'
+                ],
+                colors: {
+                    text: ['#000000', '#ff0000', '#00ff00', '#0000ff', '#ff00ff', '#00ffff'],
+                    background: ['#ffffff', '#ffff00', '#00ffff', '#ffcc99']
+                },
+                defaultFont: 'Vazir, Tahoma, Arial, sans-serif',
+                defaultFontSize: '14px',
+                fonts: ['Vazir', 'Tahoma', 'Arial', 'Courier New']
+            });
+        });
+
+        // ==========================================
+        // منطق انتخاب گزینه صحیح
+        // ==========================================
         const optionItems = document.querySelectorAll('.option-item');
         const correctAnswerInput = document.getElementById('correct_answer');
         

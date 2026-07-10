@@ -472,7 +472,7 @@
                 <div class="content">
                     @if($item['type'] == 'question')
                         <strong>سوال:</strong> 
-                        {{ is_array($item['title']) ? ($item['title']['question'] ?? json_encode($item['title'])) : $item['title'] }}
+                        {!! is_array($item['title']) ? ($item['title']['question'] ?? json_encode($item['title'])) : $item['title'] !!}
                         
                         @if(isset($item['answers']) && is_array($item['answers']))
                             <div class="options">
