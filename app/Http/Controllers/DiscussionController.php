@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Discussion;
 use App\Models\Session;
 use App\Models\Course;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -19,6 +20,21 @@ class DiscussionController extends Controller
         $session = Session::with('course')->findOrFail($sessionId);
         $course = $session->course;
         
+        // دریافت تنظیمات درس
+        $setting = Setting::where('course_id', $course->id)->first();
+        
+        // بررسی شرط gozaresh_last برای ارسال گزارش
+        if ($setting && $setting->gozaresh_last == 1) {
+            // پیدا کردن آخرین جلسه این درس
+            $lastSession = Session::where('course_id', $course->id)
+                ->orderBy('id', 'desc') // یا orderBy('number', 'desc') اگر شماره جلسه دارید
+                ->first();
+                
+            // اگر جلسه فعلی آخرین جلسه نیست، خطا بدهید
+            if (!$lastSession || $session->id != $lastSession->id) {
+                return redirect()->back()->with('error', 'شما فقط می‌توانید برای آخرین جلسه این درس گزارش ارسال کنید.');
+            }
+        }        
         return view('student.discussion-create', compact('session', 'course'));
     }
 
