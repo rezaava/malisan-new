@@ -32,7 +32,7 @@ class TeacherSiteController extends Controller
         }
         
         // تعداد کل دوره‌های کاربر
-        $coursesCount = $user->courses()->count();
+        $coursesCount = $user->courses()->where('archieve','0')->where('private','0')->count();
         
         // ==========================================
         // آمار مخصوص معلم
