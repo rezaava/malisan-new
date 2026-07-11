@@ -467,9 +467,6 @@
     </div>
 
     <div class="course-actions-bar">
-        <a href="{{ route('courses.setting',$course->id) }}" class="action-btn settings-btn">
-            <i class="fas fa-cog"></i>
-        </a>
         @include('layout.backbtn')
     </div>
 

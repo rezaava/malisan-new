@@ -168,10 +168,9 @@
                 </div>
             </a>
             <div class="course-actions">
-                <div class="action-item" data-action="حذف" onclick="event.preventDefault(); event.stopPropagation(); deleteCourse({{ $cours->id }})">
-                    <i class="fas fa-trash-alt"></i>
-                    <span class="action-tooltip">حذف</span>
-                </div>
+                <a href="{{ route('courses.setting',$cours->id) }}" class="action-item action-btn settings-btn">
+                    <i class="fas fa-cog"></i>
+                </a>
                 <div class="action-item" data-action="ویرایش" onclick="event.preventDefault(); event.stopPropagation(); editCourse({{ $cours->id }})">
                     <i class="fas fa-edit"></i>
                     <span class="action-tooltip">ویرایش</span>
@@ -191,6 +190,10 @@
                 <div class="action-item" data-action="فعال/غیرفعال" onclick="event.preventDefault(); event.stopPropagation(); toggleCourseStatus({{ $cours->id }})">
                     <i class="fas {{ $isActive ? 'fa-toggle-on' : 'fa-toggle-off' }}"></i>
                     <span class="action-tooltip">فعال/غیرفعال</span>
+                </div>
+                <div class="action-item" data-action="حذف" onclick="event.preventDefault(); event.stopPropagation(); deleteCourse({{ $cours->id }})">
+                    <i class="fas fa-trash-alt"></i>
+                    <span class="action-tooltip">حذف</span>
                 </div>
             </div>
         </div>
