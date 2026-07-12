@@ -443,7 +443,7 @@
         <div>
             <h2>
                 <i class="fas fa-tasks"></i>
-                تکالیف
+                انجام تکلیف برای جلسه {{ $currentSession->number }}: {{ $currentSession->name }}
             </h2>
             <div class="subtitle">
                 <i class="fas fa-book-open" style="margin-left:6px;color:#1e6f9f;"></i>
@@ -455,7 +455,6 @@
             بازگشت به درس
         </a>
     </div>
-
     <div class="stats-row">
         <div class="stat-box total">
             <div class="number">{{ $stats['total'] }}</div>
@@ -487,7 +486,7 @@
                     <div class="session-title">
                         <span>
                             <i class="fas fa-video" style="color:#1e6f9f;"></i>
-                            {{ $session->name }}
+                            جلسه {{ $session->number }}: {{ $session->name }}
                         </span>
                         <span class="badge-count">
                             {{ $sessionExercises->count() }} تکلیف

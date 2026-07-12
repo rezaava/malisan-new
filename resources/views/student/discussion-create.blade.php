@@ -258,7 +258,7 @@
         <div class="report-header">
             <h3>
                 <i class="fas fa-file-alt"></i>
-                ارسال گزارش
+                ارسال گزارش برای جلسه {{ $session->number }}: {{ $session->name }}
             </h3>
             <div class="course-badge">
                 <i class="fas fa-book-open"></i>

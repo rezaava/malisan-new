@@ -18,19 +18,16 @@ class ExerciseController extends Controller
 /**
  * نمایش تکالیف یک درس برای دانشجو (با course_id)
  */
-    public function studentShow($courseId)
+    public function studentShow($id)
     {
         $user = Auth::user();
         
-        $course = Session::with('course')->findOrFail($courseId);
-        
-        $courseId = $course->course_id;
-        if (!$courseId) {
-            return redirect()->back()->with('error', 'دوره‌ای یافت نشد.');
-        }
-        
+        // دریافت جلسه با اطلاعات دوره
+        $session = Session::with('course')->findOrFail($id);
+        $courseId = $session->course_id;
         $course = Course::findOrFail($courseId);
         
+        // بررسی ثبت نام کاربر
         $isEnrolled = CourseUser::where('user_id', $user->id)
             ->where('course_id', $courseId)
             ->exists();
@@ -38,6 +35,9 @@ class ExerciseController extends Controller
         if (!$isEnrolled) {
             return redirect()->back()->with('error', 'شما در این درس ثبت نام نکرده‌اید.');
         }
+
+        // جلسه فعلی
+        $currentSession = $session;
 
         // دریافت تمام جلسات این درس
         $sessions = Session::where('course_id', $courseId)
@@ -74,7 +74,7 @@ class ExerciseController extends Controller
             })->count(),
         ];
         
-        return view('student.exercises', compact('course', 'sessions', 'exercises', 'stats'));
+        return view('student.exercises', compact('course', 'sessions', 'exercises', 'stats', 'currentSession'));
     }
 
     /**
