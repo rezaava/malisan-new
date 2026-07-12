@@ -862,7 +862,7 @@ class CourseController extends Controller
      */
     public function editSetting(Request $request)
     {
-        Log::info($request->all());
+        Log::info('Request data:', $request->all());
         // اعتبارسنجی
         $validator = Validator::make($request->all(), [
             'course_id' => 'required|exists:courses,id',
@@ -887,11 +887,6 @@ class CourseController extends Controller
         DB::beginTransaction();
 
         try {
-            // اگر course_id == 99999 باشد، همه دوره‌ها را به‌روز می‌کند
-            if ($request->course_id == 99999) {
-                return $this->updateAllSettings($request);
-            }
-
             $course = Course::findOrFail($request->course_id);
             
             // ==========================================
@@ -938,11 +933,10 @@ class CourseController extends Controller
                 'sath_khod' => $request->sath_khod ?? 2,
                 'quiz_num' => $request->quiz_num ?? 10,
                 'sath_quiz' => $request->sath_quiz ?? 2,
-                // فیلدهای جدید - مقدار پیش‌فرض صفر
                 'hozor_ghayab_nomre' => $request->hozor_ghayab_nomre ?? 0,
                 'miyan_term_nomre' => $request->miyan_term_nomre ?? 0,
                 'kar_amali_nomre' => $request->kar_amali_nomre ?? 0,
-                'payan_term_nomre' => $request->payan_term_nomre ?? 6, // پیش‌فرض 6
+                'payan_term_nomre' => $request->payan_term_nomre ?? 6,
             ]);
 
             // فیلدهای توضیحی
@@ -958,16 +952,23 @@ class CourseController extends Controller
             if ($request->has('payan_term_desc')) {
                 $setting->payan_term_desc = $request->payan_term_desc;
             }
+            if ($request->has('tarahi_soal_desc')) {
+                $setting->tarahi_soal_desc = $request->tarahi_soal_desc;
+            }
+            if ($request->has('ersal_gozaresh_desc')) {
+                $setting->ersal_gozaresh_desc = $request->ersal_gozaresh_desc;
+            }
 
             // ==========================================
-            // فیلدهای چک‌باکس (boolean)
+            // فیلدهای چک‌باکس (boolean) - اصلاح شده
             // ==========================================
-            $setting->soal_last = in_array($request->soal_last, ['on', '1', true]) ? 1 : 0;
-            $setting->gozaresh_last = in_array($request->gozaresh_last, ['on', '1', true]) ? 1 : 0;
-            $setting->taklif_last = in_array($request->taklif_last, ['on', '1', true]) ? 1 : 0;
-            $setting->show_khod = in_array($request->show_khod, ['on', '1', true]) ? 1 : 0;
-            $setting->natije = in_array($request->natije, ['on', '1', true]) ? 1 : 0;
-            $setting->show_quiz = in_array($request->show_quiz, ['on', '1', true]) ? 1 : 0;
+            // بررسی صحیح چک‌باکس‌ها
+            $setting->soal_last = $request->has('soal_last') ? 1 : 0;
+            $setting->gozaresh_last = $request->has('gozaresh_last') ? 1 : 0;
+            $setting->taklif_last = $request->has('taklif_last') ? 1 : 0;
+            $setting->show_khod = $request->has('show_khod') ? 1 : 0;
+            $setting->natije = $request->has('natije') ? 1 : 0;
+            $setting->show_quiz = $request->has('show_quiz') ? 1 : 0;
 
             $setting->save();
 
@@ -977,7 +978,7 @@ class CourseController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Edit setting failed: ' . $e->getMessage());
+            Log::error('Edit setting failed: ' . $e->getMessage());
             return redirect()->back()->with('error', 'خطا در ذخیره تنظیمات: ' . $e->getMessage());
         }
     }

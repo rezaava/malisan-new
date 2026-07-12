@@ -23,18 +23,15 @@ class DiscussionController extends Controller
         // دریافت تنظیمات درس
         $setting = Setting::where('course_id', $course->id)->first();
         
-        // بررسی شرط gozaresh_last برای ارسال گزارش
         if ($setting && $setting->gozaresh_last == 1) {
-            // پیدا کردن آخرین جلسه این درس
             $lastSession = Session::where('course_id', $course->id)
-                ->orderBy('id', 'desc') // یا orderBy('number', 'desc') اگر شماره جلسه دارید
+                ->orderBy('id', 'desc')
                 ->first();
                 
-            // اگر جلسه فعلی آخرین جلسه نیست، خطا بدهید
             if (!$lastSession || $session->id != $lastSession->id) {
                 return redirect()->back()->with('error', 'شما فقط می‌توانید برای آخرین جلسه این درس گزارش ارسال کنید.');
             }
-        }        
+        }
         return view('student.discussion-create', compact('session', 'course'));
     }
 

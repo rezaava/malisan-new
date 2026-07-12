@@ -8,6 +8,7 @@ use App\Models\Exercise;
 use App\Models\ExerciseAnswer;
 use App\Models\Session;
 use App\Http\Controllers\Controller;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -15,9 +16,6 @@ use Illuminate\Support\Facades\Validator;
 
 class ExerciseController extends Controller
 {
-/**
- * نمایش تکالیف یک درس برای دانشجو (با course_id)
- */
     public function studentShow($id)
     {
         $user = Auth::user();
@@ -36,19 +34,28 @@ class ExerciseController extends Controller
             return redirect()->back()->with('error', 'شما در این درس ثبت نام نکرده‌اید.');
         }
 
+        $setting = Setting::where('course_id', $course->id)->first();
+        
+        if ($setting && $setting->taklif_last == 1) {
+            $lastSession = Session::where('course_id', $course->id)
+                ->orderBy('id', 'desc')
+                ->first();
+                
+            if (!$lastSession || $session->id != $lastSession->id) {
+                return redirect()->back()->with('error', 'شما فقط می‌توانید برای آخرین جلسه این درس تکلیف ارسال کنید.');
+            }
+        }
+
         // جلسه فعلی
         $currentSession = $session;
 
-        // دریافت تمام جلسات این درس
+        // دریافت تمام جلسات این درس (برای ناوبری)
         $sessions = Session::where('course_id', $courseId)
             ->orderBy('number', 'asc')
             ->get();
         
-        // دریافت تمام تکالیف این درس با جلسات
-        $sessionIds = $sessions->pluck('id')->toArray();
-        
-        $exercises = Exercise::whereIn('session_id', $sessionIds)
-            ->with('session')
+        // دریافت فقط تکالیف جلسه فعلی
+        $exercises = Exercise::where('session_id', $id)  // فقط جلسه فعلی
             ->orderBy('created_at', 'desc')
             ->get();
         
