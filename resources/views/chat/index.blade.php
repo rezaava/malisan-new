@@ -576,7 +576,7 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
-        fetch('{{ route("chat.send") }}', {
+        fetch(' route("chat.send")', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

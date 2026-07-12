@@ -29,9 +29,15 @@
         @endif
         
         {{-- مکالمات --}}
-        <a href="{{ route('chat.index') }}" class="menu-item {{ request()->routeIs('chat.index') ? 'active-menu' : '' }}">
-            <i class="fas fa-comments"></i> <span>مکالمات</span>
-        </a>
+        @if($isTeacherRoute)
+            <a href="{{ route('teacher.chat.index') }}" class="menu-item {{ request()->routeIs('teacher.chat.index') ? 'active-menu' : '' }}">
+                <i class="fas fa-comments"></i> <span>مکالمات</span>
+            </a>
+        @else
+            <a href="{{ route('student.chat.index') }}" class="menu-item {{ request()->routeIs('student.chat.index') ? 'active-menu' : '' }}">
+                <i class="fas fa-comments"></i> <span>مکالمات</span>
+            </a>
+        @endif
         
         <div class="menu-divider"></div>
         

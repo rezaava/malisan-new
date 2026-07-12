@@ -196,6 +196,15 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
     Route::prefix('/reports')->group(function () {
         Route::get('/list/{course_id}', [QuestionReportController::class, 'courseReports'])->name('teacher.question.reports.list');
     });
+    
+    // ==========================================
+    // مسیرهای چت
+    // ==========================================
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/chat', [ChatController::class, 'index'])->name('teacher.chat.index');
+        Route::post('/chat/send', [ChatController::class, 'send'])->name('teacher.chat.send');
+        Route::get('/chat/messages/{chatId}', [ChatController::class, 'getMessages'])->name('teacher.chat.messages');
+    });
 });
 
 // ==========================================
@@ -305,13 +314,13 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
     Route::prefix('/question-report')->middleware(['role:student|admin'])->group(function () {
         Route::post('/store', [QuestionReportController::class, 'store'])->name('question.report.store');
     });
-});
-
-// ==========================================
-// مسیرهای چت
-// ==========================================
-Route::middleware(['auth'])->group(function () {
-    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
-    Route::post('/chat/send', [ChatController::class, 'send'])->name('chat.send');
-    Route::get('/chat/messages/{chatId}', [ChatController::class, 'getMessages'])->name('chat.messages');
+    
+    // ==========================================
+    // مسیرهای چت
+    // ==========================================
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/chat', [ChatController::class, 'index'])->name('student.chat.index');
+        Route::post('/chat/send', [ChatController::class, 'send'])->name('student.chat.send');
+        Route::get('/chat/messages/{chatId}', [ChatController::class, 'getMessages'])->name('student.chat.messages');
+    });
 });
