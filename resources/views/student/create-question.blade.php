@@ -30,6 +30,7 @@
         display: flex;
         align-items: center;
         gap: 10px;
+        flex-wrap: wrap;
     }
 
     .question-header .header-left h4 i.fa-question-circle {
@@ -67,6 +68,7 @@
         display: flex;
         gap: 10px;
         align-items: center;
+        flex-wrap: wrap;
     }
 
     .header-btn {
@@ -92,6 +94,17 @@
     .header-btn-secondary:hover {
         background: #e3e8ef;
         transform: translateY(-2px);
+    }
+
+    .header-btn-primary {
+        background: #1e6f9f;
+        color: #fff;
+    }
+
+    .header-btn-primary:hover {
+        background: #155a82;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(30, 111, 159, 0.3);
     }
 
     /* ===== مودال ===== */
@@ -263,6 +276,11 @@
         color: #6b7a8f;
     }
 
+    .badge-returned {
+        background: #ffebee;
+        color: #c62828;
+    }
+
     .empty-state {
         text-align: center;
         padding: 40px 20px;
@@ -297,6 +315,166 @@
         line-height: 1.8;
         color: #1a2332;
         font-size: 14px;
+    }
+
+    /* ===== فرم ===== */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        font-size: 14px;
+        color: #1a2332;
+        margin-bottom: 6px;
+    }
+
+    .options-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .option-item {
+        transition: all 0.3s ease;
+        padding: 10px;
+        border-radius: 8px;
+        border: 2px solid transparent;
+    }
+
+    .option-item.is-correct {
+        background: #e8f5e9;
+        border-color: #4caf50;
+    }
+
+    .option-item.is-correct .badge-correct {
+        display: inline-block !important;
+    }
+
+    .option-item.is-correct .correct-label {
+        display: inline-block !important;
+    }
+
+    .option-item .badge-correct {
+        display: none;
+        background: #4caf50;
+        color: white;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        margin-right: 5px;
+    }
+
+    .option-item .correct-label {
+        display: none;
+    }
+
+    .option-input-wrapper {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .option-input-wrapper .form-input {
+        flex: 1;
+        padding: 10px 14px;
+        border: 2px solid #e8edf3;
+        border-radius: 10px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        background: #fafbfc;
+        color: #1a2332;
+        font-family: inherit;
+    }
+
+    .option-input-wrapper .form-input:focus {
+        border-color: #1e6f9f;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(30, 111, 159, 0.08);
+        background: #fff;
+    }
+
+    .set-correct-btn {
+        background: none;
+        border: 2px solid #ddd;
+        border-radius: 50%;
+        width: 42px;
+        height: 42px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        color: #999;
+        flex-shrink: 0;
+        font-size: 18px;
+    }
+
+    .set-correct-btn:hover {
+        border-color: #4caf50;
+        color: #4caf50;
+        transform: scale(1.1);
+    }
+
+    .set-correct-btn.is-correct-btn {
+        border-color: #4caf50;
+        background: #4caf50;
+        color: white;
+    }
+
+    .set-correct-btn.is-correct-btn:hover {
+        background: #388e3c;
+        border-color: #388e3c;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 2px solid #f0f4f9;
+    }
+
+    .submit-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 32px;
+        background: linear-gradient(135deg, #1e6f9f, #155a82);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(30, 111, 159, 0.3);
+    }
+
+    .reset-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 32px;
+        background: transparent;
+        color: #4a5a6e;
+        border: 2px solid #e8edf3;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+
+    .reset-btn:hover {
+        background: #f0f4f9;
     }
 
     /* ===== انیمیشن‌ها ===== */
@@ -343,7 +521,18 @@
 
         .question-header .header-left h4 {
             font-size: 18px;
-            flex-wrap: wrap;
+        }
+
+        .options-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .submit-btn, .reset-btn {
+            justify-content: center;
         }
     }
 </style>
@@ -356,7 +545,7 @@
         <div class="question-header">
             <div class="header-left">
                 <h4>
-                    طرح سوال
+                    طرح سوال برای جلسه {{ $session->number }}: {{ $session->name }}
                     <button class="help-icon" onclick="openSettingModal()" title="راهنمای طرح سوال">
                         <i class="fas fa-question"></i>
                     </button>
@@ -364,10 +553,15 @@
                 <p>سوال خود را با دقت وارد کنید و گزینه صحیح را مشخص نمایید</p>
             </div>
             <div class="header-actions">
-                {{-- دکمه سوالات قبلی --}}
-                <button class="header-btn header-btn-secondary" onclick="openQuestionsModal()">
-                    <i class="fas fa-list"></i>
-                    سوالات قبلی
+                {{-- دکمه سوالات دوستان --}}
+                <button class="header-btn header-btn-secondary" onclick="openFriendsQuestionsModal()">
+                    <i class="fas fa-users"></i>
+                    سوالات دوستان
+                </button>
+                {{-- دکمه سوالات من --}}
+                <button class="header-btn header-btn-primary" onclick="openMyQuestionsModal()">
+                    <i class="fas fa-user"></i>
+                    سوالات من
                 </button>
             </div>
         </div>
@@ -442,20 +636,20 @@
 </div>
 
 {{-- ========================================== --}}
-{{-- مودال ۱: سوالات قبلی --}}
+{{-- مودال ۱: سوالات دوستان --}}
 {{-- ========================================== --}}
-<div class="modal-overlay" id="questionsModal">
+<div class="modal-overlay" id="friendsQuestionsModal">
     <div class="modal-box">
         <div class="modal-header">
             <h4>
-                <i class="fas fa-list"></i>
-                سوالات طرح شده این جلسه
+                <i class="fas fa-users"></i>
+                سوالات دوستان
             </h4>
-            <button class="modal-close-btn" onclick="closeModal('questionsModal')">
+            <button class="modal-close-btn" onclick="closeModal('friendsQuestionsModal')">
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        <div class="modal-body" id="questionsModalBody">
+        <div class="modal-body" id="friendsQuestionsModalBody">
             {{-- محتوا توسط جاوااسکریپت پر می‌شود --}}
             <div style="text-align:center;padding:20px;">
                 <i class="fas fa-spinner fa-spin fa-2x" style="color:#1e6f9f;"></i>
@@ -466,7 +660,31 @@
 </div>
 
 {{-- ========================================== --}}
-{{-- مودال ۲: توضیحات تنظیمات --}}
+{{-- مودال ۲: سوالات من --}}
+{{-- ========================================== --}}
+<div class="modal-overlay" id="myQuestionsModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h4>
+                <i class="fas fa-user"></i>
+                سوالات من در این جلسه
+            </h4>
+            <button class="modal-close-btn" onclick="closeModal('myQuestionsModal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="myQuestionsModalBody">
+            {{-- محتوا توسط جاوااسکریپت پر می‌شود --}}
+            <div style="text-align:center;padding:20px;">
+                <i class="fas fa-spinner fa-spin fa-2x" style="color:#1e6f9f;"></i>
+                <p style="color:#6b7a8f;margin-top:10px;">در حال بارگذاری...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ========================================== --}}
+{{-- مودال ۳: توضیحات تنظیمات --}}
 {{-- ========================================== --}}
 <div class="modal-overlay" id="settingModal">
     <div class="modal-box">
@@ -492,85 +710,6 @@
         </div>
     </div>
 </div>
-
-<style>
-    .option-item {
-        transition: all 0.3s ease;
-        padding: 10px;
-        border-radius: 8px;
-        border: 2px solid transparent;
-    }
-    
-    .option-item.is-correct {
-        background: #e8f5e9;
-        border-color: #4caf50;
-    }
-    
-    .option-item.is-correct .badge-correct {
-        display: inline-block !important;
-    }
-    
-    .option-item.is-correct .correct-label {
-        display: inline-block !important;
-    }
-    
-    .option-item .badge-correct {
-        display: none;
-        background: #4caf50;
-        color: white;
-        padding: 2px 10px;
-        border-radius: 12px;
-        font-size: 12px;
-        margin-right: 5px;
-    }
-    
-    .option-item .correct-label {
-        display: none;
-    }
-    
-    .option-input-wrapper {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-    }
-    
-    .option-input-wrapper .form-input {
-        flex: 1;
-    }
-    
-    .set-correct-btn {
-        background: none;
-        border: 2px solid #ddd;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-        color: #999;
-        flex-shrink: 0;
-        font-size: 18px;
-    }
-    
-    .set-correct-btn:hover {
-        border-color: #4caf50;
-        color: #4caf50;
-        transform: scale(1.1);
-    }
-    
-    .set-correct-btn.is-correct-btn {
-        border-color: #4caf50;
-        background: #4caf50;
-        color: white;
-    }
-    
-    .set-correct-btn.is-correct-btn:hover {
-        background: #388e3c;
-        border-color: #388e3c;
-    }
-</style>
 @endsection
 
 @section('js')
@@ -778,65 +917,74 @@
     });
 
     // ==========================================
-    // باز کردن مودال سوالات قبلی و بارگذاری داده‌ها
+    // باز کردن مودال سوالات دوستان
     // ==========================================
-    function openQuestionsModal() {
-        openModal('questionsModal');
+    function openFriendsQuestionsModal() {
+        openModal('friendsQuestionsModal');
         
         const sessionId = '{{ $session->id }}';
-        const body = document.getElementById('questionsModalBody');
+        const body = document.getElementById('friendsQuestionsModalBody');
         
-        // نمایش لودینگ
         body.innerHTML = `
             <div style="text-align:center;padding:30px;">
                 <i class="fas fa-spinner fa-spin fa-2x" style="color:#1e6f9f;"></i>
-                <p style="color:#6b7a8f;margin-top:10px;">در حال بارگذاری سوالات...</p>
+                <p style="color:#6b7a8f;margin-top:10px;">در حال بارگذاری سوالات دوستان...</p>
             </div>
         `;
         
-        // دریافت سوالات از سرور
         fetch('/student/questions/list/' + sessionId)
             .then(response => response.json())
             .then(data => {
                 if (data.success && data.questions.length > 0) {
-                    let html = '';
-                    data.questions.forEach((q, index) => {
-                        const options = [
-                            q.answer1,
-                            q.answer2,
-                            q.answer3,
-                            q.answer4
-                        ];
-                        
-                        const statusBadge = getStatusBadge(q.status);
-                        
-                        html += `
-                            <div class="question-list-item">
-                                <div class="q-text">
-                                    <strong>سوال ${index + 1}:</strong> ${q.question}
+                    const userId = {{ Auth::id() }};
+                    const otherQuestions = data.questions.filter(q => q.user_id != userId);
+                    
+                    if (otherQuestions.length > 0) {
+                        let html = '';
+                        otherQuestions.forEach((q, index) => {
+                            const options = [
+                                q.answer1,
+                                q.answer2,
+                                q.answer3,
+                                q.answer4
+                            ];
+                            
+                            const statusBadge = getStatusBadge(q.status);
+                            
+                            html += `
+                                <div class="question-list-item">
+                                    <div class="q-text">
+                                        <strong>سوال ${index + 1}:</strong> ${q.question}
+                                    </div>
+                                    <div class="q-options">
+                                        ${options.map((opt, i) => `
+                                            <span class="${q.answer == (i + 1) ? 'correct' : ''}">
+                                                ${i + 1}. ${opt} ${q.answer == (i + 1) ? '✓' : ''}
+                                            </span>
+                                        `).join('')}
+                                    </div>
+                                    <div class="q-meta">
+                                        <span>تاریخ: ${q.date || ''}</span>
+                                    </div>
                                 </div>
-                                <div class="q-options">
-                                    ${options.map((opt, i) => `
-                                        <span class="${q.answer == (i + 1) ? 'correct' : ''}">
-                                            ${i + 1}. ${opt} ${q.answer == (i + 1) ? '✓' : ''}
-                                        </span>
-                                    `).join('')}
-                                </div>
-                                <div class="q-meta">
-                                    <span>طراح: ${q.user_name || 'نامشخص'}</span>
-                                    <span>${statusBadge}</span>
-                                    <span>تاریخ: ${q.date || ''}</span>
-                                </div>
+                            `;
+                        });
+                        body.innerHTML = html;
+                    } else {
+                        body.innerHTML = `
+                            <div class="empty-state">
+                                <span class="empty-icon"><i class="fas fa-inbox"></i></span>
+                                <h5>هنوز دوستانت سوالی طرح نکرده‌اند</h5>
+                                <p>اولین نفری باش که سوال خود را طراحی می‌کند!</p>
                             </div>
                         `;
-                    });
-                    body.innerHTML = html;
+                    }
                 } else {
                     body.innerHTML = `
                         <div class="empty-state">
                             <span class="empty-icon"><i class="fas fa-inbox"></i></span>
-                            <h5>تاکنون سؤالی برای این جلسه طرح نشده است</h5>
-                            <p>شاید شما اولین نفری باشید که می خواهید سؤال خود را طراحی کنید.</p>
+                            <h5>تاکنون سوالی برای این جلسه طرح نشده است</h5>
+                            <p>شما می‌توانید اولین سوال را طرح کنید.</p>
                         </div>
                     `;
                 }
@@ -854,7 +1002,94 @@
     }
 
     // ==========================================
-    // تابع باز کردن مودال تنظیمات
+    // باز کردن مودال سوالات من
+    // ==========================================
+    function openMyQuestionsModal() {
+        openModal('myQuestionsModal');
+        
+        const sessionId = '{{ $session->id }}';
+        const body = document.getElementById('myQuestionsModalBody');
+        
+        body.innerHTML = `
+            <div style="text-align:center;padding:30px;">
+                <i class="fas fa-spinner fa-spin fa-2x" style="color:#1e6f9f;"></i>
+                <p style="color:#6b7a8f;margin-top:10px;">در حال بارگذاری سوالات من...</p>
+            </div>
+        `;
+        
+        fetch('/student/questions/list/' + sessionId)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.questions.length > 0) {
+                    const userId = {{ Auth::id() }};
+                    const myQuestions = data.questions.filter(q => q.user_id == userId);
+                    
+                    if (myQuestions.length > 0) {
+                        let html = '';
+                        myQuestions.forEach((q, index) => {
+                            const options = [
+                                q.answer1,
+                                q.answer2,
+                                q.answer3,
+                                q.answer4
+                            ];
+                            
+                            const statusBadge = getStatusBadge(q.status);
+                            
+                            html += `
+                                <div class="question-list-item">
+                                    <div class="q-text">
+                                        <strong>سوال ${index + 1}:</strong> ${q.question}
+                                    </div>
+                                    <div class="q-options">
+                                        ${options.map((opt, i) => `
+                                            <span class="${q.answer == (i + 1) ? 'correct' : ''}">
+                                                ${i + 1}. ${opt} ${q.answer == (i + 1) ? '✓' : ''}
+                                            </span>
+                                        `).join('')}
+                                    </div>
+                                    <div class="q-meta">
+                                        <span>طراح: ${q.user_name || 'نامشخص'}</span>
+                                        <span>${statusBadge}</span>
+                                        <span>تاریخ: ${q.date || ''}</span>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        body.innerHTML = html;
+                    } else {
+                        body.innerHTML = `
+                            <div class="empty-state">
+                                <span class="empty-icon"><i class="fas fa-inbox"></i></span>
+                                <h5>شما هنوز سوالی برای این جلسه طرح نکرده‌اید</h5>
+                                <p>اولین سوال خود را طراحی کنید!</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    body.innerHTML = `
+                        <div class="empty-state">
+                            <span class="empty-icon"><i class="fas fa-inbox"></i></span>
+                            <h5>تاکنون سوالی برای این جلسه طرح نشده است</h5>
+                            <p>شما می‌توانید اولین سوال را طرح کنید.</p>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                body.innerHTML = `
+                    <div class="empty-state">
+                        <span class="empty-icon"><i class="fas fa-exclamation-triangle" style="color:#f44336;"></i></span>
+                        <h5>خطا در بارگذاری سوالات</h5>
+                        <p>مشکلی در ارتباط با سرور رخ داده است. لطفاً مجدداً تلاش کنید.</p>
+                    </div>
+                `;
+            });
+    }
+
+    // ==========================================
+    // باز کردن مودال تنظیمات
     // ==========================================
     function openSettingModal() {
         openModal('settingModal');
@@ -866,6 +1101,10 @@
     function getStatusBadge(status) {
         if (status === null || status === undefined) {
             return `<span class="badge badge-pending">در انتظار تایید</span>`;
+        }
+        
+        if (status === 0) {
+            return `<span class="badge badge-returned">برگشت خورده</span>`;
         }
         
         const statusMap = {

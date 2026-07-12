@@ -24,18 +24,6 @@ use Log;
 class ExamController extends Controller
 {
     /**
-     * نمایش فرم ایجاد سوال (معلم)
-     */
-    public function create()
-    {
-        return view('teacher.create-question')->with([
-            'pageTitle' => 'طرح سوال',
-            'pageName' => 'سوال',
-            'pageDescription' => 'سوال خود را با دقت وارد کنید',
-        ]);
-    }
-
-    /**
      * ذخیره سوال جدید (معلم)
      */
     public function store(Request $request)
