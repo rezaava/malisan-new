@@ -498,8 +498,8 @@
     <div class="text-center mb-3">
         <h4>تنظیمات درس {{ $course->name }}</h4>
     </div>
-    <form class="settings-form" action="{{ route('courses.setting.update') }}" method="post" enctype="multipart/form-data">
-        @csrf
+    <form action="/teacher/courses/edit-setting" method="post" enctype="multipart/form-data">
+            @csrf
         <input name="course_id" value="{{ $course->id }}" hidden>
 
         <div class="accordion-wrapper">
