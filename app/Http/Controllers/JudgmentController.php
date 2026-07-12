@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Course;
 use App\Models\CourseUser;
 use App\Models\Discussion;
 use App\Models\Exercise;
@@ -46,17 +47,28 @@ class JudgmentController extends Controller
 
         return view('student.judgment.index', compact('items', 'stats'));
     }
+
     private function getPendingItems($userId)
     {
         $items = [];
 
-        // دریافت آی‌دی درس‌هایی که کاربر در آنها ثبت نام کرده
+        // دریافت آی‌دی درس‌هایی که کاربر در آنها ثبت نام کرده و davari=1 دارند
         $courseIds = CourseUser::where('user_id', $userId)
             ->pluck('course_id')
             ->toArray();
 
         if (empty($courseIds)) {
-            return $items; // اگر کاربر در هیچ درسی ثبت نام نکرده
+            return $items;
+        }
+
+        // فیلتر کردن دوره‌هایی که davari=1 دارند
+        $courseIds = Course::whereIn('id', $courseIds)
+            ->where('davari', 1)
+            ->pluck('id')
+            ->toArray();
+
+        if (empty($courseIds)) {
+            return $items;
         }
 
         // دریافت آی‌دی جلسات این درس‌ها
@@ -65,7 +77,7 @@ class JudgmentController extends Controller
             ->toArray();
 
         if (empty($sessionIds)) {
-            return $items; // اگر هیچ جلسه‌ای وجود ندارد
+            return $items;
         }
 
         // ==========================================
@@ -147,6 +159,7 @@ class JudgmentController extends Controller
                 ];
             }
         }
+
         // مرتب‌سازی بر اساس تاریخ (جدیدترین اول)
         usort($items, function ($a, $b) {
             return $b['created_at'] <=> $a['created_at'];
@@ -274,7 +287,7 @@ class JudgmentController extends Controller
             'negaresh' => $request->negaresh ?? 0,
             'gozine' => $request->gozine ?? 0,
             'dark' => $request->dark ?? 0,
-            'status' => $status,  // استفاده از مقدار معتبر
+            'status' => $status,
         ];
 
         if ($request->action === 'approve') {
@@ -302,25 +315,24 @@ class JudgmentController extends Controller
     /**
      * برگشت آیتم به کاربر (برای اصلاح)
      */
-
     private function returnItemToUser($itemId, $type, $comment)
     {
         switch ($type) {
             case 'question':
                 Question::where('id', $itemId)->update([
-                    'status' => 0,  // 0 به معنی برگشت خورده
+                    'status' => 0,
                     'comment' => $comment,
                 ]);
                 break;
             case 'discussion':
                 Discussion::where('id', $itemId)->update([
-                    'status' => 0,  // 0 به معنی برگشت خورده
+                    'status' => 0,
                     'comment' => $comment,
                 ]);
                 break;
             case 'exercise':
                 ExerciseAnswer::where('id', $itemId)->update([
-                    'status' => 'returned',  // در exercise_answers از string استفاده می‌شود
+                    'status' => 'returned',
                     'comment' => $comment,
                 ]);
                 break;
@@ -337,7 +349,7 @@ class JudgmentController extends Controller
         switch ($type) {
             case 'question':
                 $scores = ScoreQuestion::where('question_id', $itemId)
-                    ->where('status', ScoreQuestion::STATUS_APPROVED)  // استفاده از ثابت
+                    ->where('status', ScoreQuestion::STATUS_APPROVED)
                     ->pluck('score')
                     ->toArray();
                 break;
@@ -356,8 +368,6 @@ class JudgmentController extends Controller
                     ->toArray();
                 break;
         }
-
-
 
         // اگر ۳ داور تایید کرده باشند
         if (count($scores) >= 3) {
@@ -474,15 +484,15 @@ class JudgmentController extends Controller
         $user = Auth::user();
         
         $returnedQuestions = Question::where('user_id', $user->id)
-            ->where('status', 0)  // 0 = برگشت خورده
+            ->where('status', 0)
             ->get();
             
         $returnedDiscussions = Discussion::where('user_id', $user->id)
-            ->where('status', 0)  // 0 = برگشت خورده
+            ->where('status', 0)
             ->get();
             
         $returnedExercises = ExerciseAnswer::where('user_id', $user->id)
-            ->where('status', 'returned')  // در exercise_answers
+            ->where('status', 'returned')
             ->get();
 
         return view('student.judgment.returned', compact(
@@ -509,18 +519,18 @@ class JudgmentController extends Controller
             case 'question':
                 $item = Question::where('id', $request->item_id)
                     ->where('user_id', $user->id)
-                    ->where('status', 0)  // 0 = برگشت خورده
+                    ->where('status', 0)
                     ->firstOrFail();
                 $item->question = $request->text;
-                $item->status = null;  // برگشت به حالت انتظار داوری
-                $item->comment = null; // پاک کردن کامنت برگشت
+                $item->status = null;
+                $item->comment = null;
                 $item->save();
                 break;
                 
             case 'discussion':
                 $item = Discussion::where('id', $request->item_id)
                     ->where('user_id', $user->id)
-                    ->where('status', 0)  // 0 = برگشت خورده
+                    ->where('status', 0)
                     ->firstOrFail();
                 $item->text = $request->text;
                 $item->status = null;

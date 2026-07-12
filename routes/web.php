@@ -57,6 +57,7 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
     Route::get('/', [TeacherSiteController::class, 'index'])->name('index_teacher');
 
     Route::prefix('/courses')->group(function () {
+        Route::post('/toggle-visibility/{id}', [CourseController::class, 'toggleVisibility'])->name('courses.toggle.visibility');
 
         Route::prefix('/sessions')->group(function () {
             Route::get('/create/{id}', [CourseController::class, 'create'])->name('sessions.create');

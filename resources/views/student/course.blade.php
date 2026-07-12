@@ -72,18 +72,26 @@
     </div>
     
     <div class="course-chips">
-        <a href="{{ route('student.selfTest.start', $course->id) }}" class="chip-item">
-            <i class="fas fa-star"></i>
-            خودآزمایی
-        </a>
-        <a href="{{ route('student.my.activities',$course->id) }}" class="chip-item">
-            <i class="fas fa-database"></i>
-            فعالیت های من 
-        </a>
-        <a href="{{ route('student.progress', $course->id) }}" class="chip-item">
-            <i class="fas fa-chart-line"></i>
-            پیشرفت درسی
-        </a>
+        @if($course->quiz == 1)
+            <a href="{{ route('student.selfTest.start', $course->id) }}" class="chip-item">
+                <i class="fas fa-star"></i>
+                خودآزمایی
+            </a>
+        @endif
+        
+        @if($course->faaliat == 1)
+            <a href="{{ route('student.my.activities',$course->id) }}" class="chip-item">
+                <i class="fas fa-database"></i>
+                فعالیت های من 
+            </a>
+        @endif
+        
+        @if($course->pishraft == 1)
+            <a href="{{ route('student.progress', $course->id) }}" class="chip-item">
+                <i class="fas fa-chart-line"></i>
+                پیشرفت درسی
+            </a>
+        @endif
     </div>
 
     <div class="sessions-section">
@@ -121,16 +129,18 @@
                     </h5>
                 </div>
                 <div class="session-action-buttons">
-                    <a href="{{ route('student.question.create',$course->id) }}" class="action-icon-btn" data-tooltip="طرح سوال">
+                    {{-- دکمه طرح سوال --}}
+                    <a href="#" id="questionBtn" class="action-icon-btn" data-tooltip="طرح سوال">
                         <i class="fas fa-question-circle"></i>
                     </a>
                     
-                    <a href="{{ route('student.exercise.show',$course->id) }}" class="action-icon-btn" data-tooltip="مدیریت تکالیف">
+                    {{-- دکمه مدیریت تکالیف --}}
+                    <a href="#" id="homeworkBtn" class="action-icon-btn" data-tooltip="مدیریت تکالیف">
                         <i class="fas fa-file-alt"></i>
                     </a>
                     
-                    {{-- دکمه گزارش --}}
-                    <a href="{{ route('student.discussion.create',$course->id) }}" id="reportBtn" class="action-icon-btn" data-tooltip="ارسال گزارش">
+                    {{-- دکمه ارسال گزارش --}}
+                    <a href="#" id="reportBtn" class="action-icon-btn" data-tooltip="ارسال گزارش">
                         <i class="fas fa-edit"></i>
                     </a>
                 </div>
@@ -164,7 +174,7 @@
                             <object width="100%" height="550" data="https://docs.google.com/gview?embedded=true&url={{ $sessions->first()->file }}"></object>
                         </object>
                     @else
-                        <div class="text-center p-5">
+                        <div id="pdfViewer" class="text-center p-5">
                             <i class="fas fa-file-pdf fa-3x text-muted mb-3"></i>
                             <p class="text-muted">هیچ فایلی برای این جلسه آپلود نشده است</p>
                         </div>
@@ -182,6 +192,9 @@
     let currentSessionNumber = 'جلسه {{ $sessions->first()->number ?? "" }}';
 
     function changeSession(element, sessionId, pdfUrl, title, number) {
+        // اگر عنصر وجود نداشت، از تابع خارج شو
+        if (!element) return;
+        
         document.querySelectorAll('.session-item').forEach(item => {
             item.classList.remove('active');
         });
@@ -192,98 +205,108 @@
         currentSessionTitle = title;
         currentSessionNumber = number;
 
-        document.getElementById('sessionTitleDisplay').innerHTML = `<h5>${number} : ${title}</h5>`;
-
-        const pdfViewer = document.getElementById('pdfViewer');
-        if (pdfUrl) {
-            pdfViewer.setAttribute('data', pdfUrl);
-            pdfViewer.innerHTML = `<object width="100%" height="550" data="https://docs.google.com/gview?embedded=true&url=${pdfUrl}"></object>`;
-        } else {
-            pdfViewer.innerHTML = `
-                <div class="text-center p-5">
-                    <i class="fas fa-file-pdf fa-3x text-muted mb-3"></i>
-                    <p class="text-muted">هیچ فایلی برای این جلسه آپلود نشده است</p>
-                </div>
-            `;
+        // به‌روزرسانی عنوان جلسه
+        const titleDisplay = document.getElementById('sessionTitleDisplay');
+        if (titleDisplay) {
+            titleDisplay.innerHTML = `<h5>${number} : ${title}</h5>`;
         }
 
+        // ===== به‌روزرسانی PDF Viewer =====
+        const pdfViewer = document.getElementById('pdfViewer');
+        if (pdfViewer) {
+            if (pdfUrl) {
+                pdfViewer.outerHTML = `<object id="pdfViewer" data="https://docs.google.com/gview?embedded=true&url=${pdfUrl}" type="application/pdf" width="100%" height="550px">
+                    <object width="100%" height="550" data="https://docs.google.com/gview?embedded=true&url=${pdfUrl}"></object>
+                </object>`;
+            } else {
+                pdfViewer.innerHTML = `
+                    <div class="text-center p-5">
+                        <i class="fas fa-file-pdf fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">هیچ فایلی برای این جلسه آپلود نشده است</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ===== به‌روزرسانی دکمه باز کردن PDF =====
         const pdfOpenBtn = document.getElementById('pdfOpenBtn');
-        if (pdfUrl) {
-            pdfOpenBtn.setAttribute('href', pdfUrl);
-            pdfOpenBtn.style.display = 'inline-flex';
-        } else {
-            pdfOpenBtn.style.display = 'none';
+        if (pdfOpenBtn) {
+            if (pdfUrl) {
+                pdfOpenBtn.setAttribute('href', pdfUrl);
+                pdfOpenBtn.style.display = 'inline-flex';
+            } else {
+                pdfOpenBtn.style.display = 'none';
+            }
         }
 
         // ==========================================
-        // تنظیم لینک ۳ دکمه
+        // تنظیم لینک ۳ دکمه با session_id جدید
         // ==========================================
         
-        // 1. دکمه ویرایش جلسه (استاد)
-        const editBtn = document.getElementById('editBtn');
-        if (editBtn) {
-            editBtn.setAttribute('href', `/dashboard/courses/sessions/edit/${sessionId}`);
-        }
-
-        // 2. دکمه طرح سوال (دانشجو)
+        // 1. دکمه طرح سوال (دانشجو)
         const questionBtn = document.getElementById('questionBtn');
         if (questionBtn) {
             questionBtn.setAttribute('href', `/student/questions/create/${sessionId}`);
         }
 
-        // 3. دکمه مدیریت تکالیف (استاد)
-        const homeworkTeacherBtn = document.getElementById('homeworkTeacherBtn');
-        if (homeworkTeacherBtn) {
-            homeworkTeacherBtn.setAttribute('href', `/dashboard/exercise/show/${sessionId}`);
+        // 2. دکمه مدیریت تکالیف (دانشجو)
+        const homeworkBtn = document.getElementById('homeworkBtn');
+        if (homeworkBtn) {
+            homeworkBtn.setAttribute('href', `/student/exercise/show/${sessionId}`);
         }
+
+        // 3. دکمه ارسال گزارش (دانشجو)
         const reportBtn = document.getElementById('reportBtn');
         if (reportBtn) {
             reportBtn.setAttribute('href', `/student/discussion/create/${sessionId}`);
         }
-
     }
 
     // ===== Collapsible =====
-    document.querySelector('.collapsible-header')?.addEventListener('click', function() {
-        const body = this.nextElementSibling;
-        const icon = this.querySelector('.expand-icon');
-        if (body.style.display === 'none' || body.style.display === '') {
-            body.style.display = 'block';
-            icon.style.transform = 'rotate(180deg)';
-        } else {
-            body.style.display = 'none';
-            icon.style.transform = 'rotate(0deg)';
+    document.addEventListener('DOMContentLoaded', function() {
+        const collapsibleHeader = document.querySelector('.collapsible-header');
+        if (collapsibleHeader) {
+            collapsibleHeader.addEventListener('click', function() {
+                const body = this.nextElementSibling;
+                const icon = this.querySelector('.expand-icon');
+                if (body) {
+                    if (body.style.display === 'none' || body.style.display === '') {
+                        body.style.display = 'block';
+                        if (icon) icon.style.transform = 'rotate(180deg)';
+                    } else {
+                        body.style.display = 'none';
+                        if (icon) icon.style.transform = 'rotate(0deg)';
+                    }
+                }
+            });
         }
-    });
 
-    // ===== تنظیم لینک‌های اولیه برای جلسه اول =====
-    @if($sessions->isNotEmpty())
-        document.addEventListener('DOMContentLoaded', function() {
+        // ===== تنظیم لینک‌های اولیه برای جلسه اول =====
+        @if($sessions->isNotEmpty())
             const firstSession = document.querySelector('.session-item.active');
             if (firstSession) {
                 const sessionId = firstSession.dataset.session;
                 
-                // 1. دکمه ویرایش جلسه
-                document.getElementById('editBtn').setAttribute('href', `/dashboard/courses/sessions/edit/${sessionId}`);
+                // 1. دکمه طرح سوال
+                const questionBtn = document.getElementById('questionBtn');
+                if (questionBtn) {
+                    questionBtn.setAttribute('href', `/student/questions/create/${sessionId}`);
+                }
                 
-                // 2. دکمه طرح سوال
-                document.getElementById('questionBtn').setAttribute('href', `/student/questions/create/${sessionId}`);
-                
-                // 3. دکمه مدیریت تکالیف
-                document.getElementById('homeworkTeacherBtn').setAttribute('href', `/student/exercise/show/${sessionId}`);
+                // 2. دکمه مدیریت تکالیف
+                const homeworkBtn = document.getElementById('homeworkBtn');
+                if (homeworkBtn) {
+                    homeworkBtn.setAttribute('href', `/student/exercise/show/${sessionId}`);
+                }
 
-                document.getElementById('reportBtn').setAttribute('href', `/student/discussion/create/${sessionId}`);
+                // 3. دکمه ارسال گزارش
+                const reportBtn = document.getElementById('reportBtn');
+                if (reportBtn) {
+                    reportBtn.setAttribute('href', `/student/discussion/create/${sessionId}`);
+                }
             }
-        });
-    @endif
-    // ===== Report Button =====
-    const reportBtn = document.getElementById('reportBtn');
-    if (reportBtn) {
-        reportBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            window.location.href = '/student/discussion/create/' + currentSessionId;
-        });
-    }
+        @endif
+    });
 </script>
 
 <style>

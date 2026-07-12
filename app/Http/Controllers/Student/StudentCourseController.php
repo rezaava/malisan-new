@@ -48,39 +48,57 @@ class StudentCourseController extends Controller
         $isJudment = ($pendingQuestionsCount > 0 || $pendingDiscussionsCount > 0);
 
         if ($isStudent) {
-            $sessions = $course->sessions->where('active', 1);
-            
-            if ($sessions->isEmpty()) {
-                $sessions = collect();
-            } else {
-                $totalSessionsCount = $sessions->count();
+            // ===== بررسی active بودن کل دوره =====
+            if ($course->active == 1) {
+                // فقط جلسات فعال رو بگیر
+                $sessions = $course->sessions->where('active', 1);
+                
+                if ($sessions->isEmpty()) {
+                    $sessions = collect();
+                } else {
+                    $totalSessionsCount = $sessions->count();
 
-                if ($member == 1 && $course->private == 1) {
-                    $now = Carbon::now();
-                    $time = Carbon::parse($courseUser->created_at);
-                    $diffInDays = $time->diffInDays($now);
-                    $availableCount = $totalSessionsCount - floor($diffInDays / $course->period) - 1;
+                    // فیلتر بر اساس عضویت
+                    if ($member == 1 && $course->private == 1) {
+                        $now = Carbon::now();
+                        $time = Carbon::parse($courseUser->created_at);
+                        $diffInDays = $time->diffInDays($now);
+                        $availableCount = $totalSessionsCount - floor($diffInDays / $course->period) - 1;
 
-                    if ($availableCount > 0) {
-                        $sessions = $sessions->filter(function ($session, $index) use ($availableCount) {
-                            return $index < $availableCount;
+                        if ($availableCount > 0) {
+                            $filteredSessions = collect();
+                            $index = 0;
+                            foreach ($sessions as $session) {
+                                if ($index < $availableCount) {
+                                    $filteredSessions->push($session);
+                                }
+                                $index++;
+                            }
+                            $sessions = $filteredSessions;
+                        } else {
+                            $sessions = collect();
+                        }
+                    }
+
+                    // فیلتر برای کاربر غیرعضو
+                    if ($member == 0) {
+                        $sessions = $sessions->filter(function ($session) {
+                            return $session->number == 1;
                         });
-                    } else {
-                        $sessions = collect();
+                    } 
+                    // فیلتر برای کاربری که پرداخت نکرده
+                    elseif ($paid == 0) {
+                        $sessions = $sessions->filter(function ($session) {
+                            return $session->number <= 4;
+                        });
                     }
                 }
-
-                if ($member == 0) {
-                    $sessions = $sessions->filter(function ($session) {
-                        return $session->number == 1;
-                    });
-                } elseif ($paid == 0) {
-                    $sessions = $sessions->filter(function ($session) {
-                        return $session->number <= 4;
-                    });
-                }
+            } else {
+                // اگر دوره غیرفعال بود، هیچ جلسه‌ای نشون نده
+                $sessions = collect();
             }
         } else {
+            // برای استاد همه جلسات رو نشون بده (حتی غیرفعال)
             $sessions = $course->sessions;
             
             if ($sessions->isEmpty()) {

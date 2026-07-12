@@ -2313,7 +2313,39 @@ class CourseController extends Controller
             ], 500);
         }
     }
-
+    public function toggleVisibility(Request $request, $id)
+    {
+        try {
+            $course = Course::findOrFail($id);
+            $field = $request->input('field');
+            $value = $request->input('value');
+            
+            // فیلدهای مجاز - مطابق با migration
+            $validFields = ['active', 'quiz', 'davari', 'faaliat', 'pishraft'];
+            
+            if (!in_array($field, $validFields)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'فیلد نامعتبر است'
+                ], 400);
+            }
+            
+            $course->$field = $value;
+            $course->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'وضعیت با موفقیت به‌روزرسانی شد',
+                'field' => $field,
+                'value' => $value
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در به‌روزرسانی: ' . $e->getMessage()
+            ], 500);
+        }
+    }
     /**
      * به‌روزرسانی تنظیمات همه دوره‌ها (برای course_id = 99999)
     */

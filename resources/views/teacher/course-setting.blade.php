@@ -299,6 +299,167 @@
         color: #6c757d;
     }
 
+    /* ===== استایل نمایش بخش‌ها به دانشجو ===== */
+    .visibility-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+    }
+
+    .vis-item {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 12px 16px;
+        transition: all 0.3s ease;
+        border: 1px solid #eef2f7;
+    }
+
+    .vis-item:hover {
+        background: #f0f7fe;
+        border-color: #d4e4f0;
+    }
+
+    .switch-label {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        color: #1a2332;
+        width: 100%;
+        user-select: none;
+    }
+
+    .vis-icon {
+        width: 32px;
+        height: 32px;
+        background: #e3f2fd;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #1e6f9f;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .vis-text {
+        flex: 1;
+        font-size: 13px;
+    }
+
+    .switch {
+        position: relative;
+        width: 42px;
+        height: 24px;
+        flex-shrink: 0;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #d1d9e6;
+        transition: 0.3s ease;
+        border-radius: 34px;
+    }
+
+    .slider:before {
+        content: "";
+        position: absolute;
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background: #fff;
+        transition: 0.3s ease;
+        border-radius: 50%;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    .switch input:checked + .slider {
+        background: linear-gradient(135deg, #1e6f9f, #155a82);
+    }
+
+    .switch input:checked + .slider:before {
+        transform: translateX(18px);
+    }
+
+    .switch.loading .slider {
+        animation: pulse 0.8s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    .vis-note {
+        margin-top: 16px;
+        padding: 10px 16px;
+        background: #f0f7fe;
+        border-radius: 8px;
+        font-size: 13px;
+        color: #1e6f9f;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .vis-note i {
+        font-size: 16px;
+    }
+
+    /* ===== Toast ===== */
+    .custom-toast {
+        position: fixed;
+        bottom: 30px;
+        left: 30px;
+        padding: 14px 24px;
+        border-radius: 12px;
+        color: #fff;
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        transform: translateY(100px);
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 10000;
+        max-width: 400px;
+        direction: rtl;
+    }
+
+    .custom-toast.show {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    .custom-toast.success {
+        background: linear-gradient(135deg, #27ae60, #1e8449);
+    }
+
+    .custom-toast.error {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+    }
+
+    .custom-toast i {
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
     @media (max-width: 768px) {
         .settings-form {
             padding: 16px;
@@ -316,6 +477,17 @@
         .save-btn {
             width: 100%;
             justify-content: center;
+        }
+        .visibility-grid {
+            grid-template-columns: 1fr;
+        }
+        .custom-toast {
+            left: 16px;
+            right: 16px;
+            bottom: 16px;
+            max-width: none;
+            padding: 12px 16px;
+            font-size: 13px;
         }
     }
 </style>
@@ -383,7 +555,6 @@
                                 </td>
                                 <td></td>
                             </tr>
-                            <!-- ========== گزینه‌های جدید ========== -->
                             <tr>
                                 <td>حضور و غیاب</td>
                                 <td>
@@ -580,6 +751,90 @@
                     </table>
                 </div>
             </div>
+
+            <!-- ==========================================
+                 نمایش بخش‌ها به دانشجو
+                 ========================================== -->
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <i class="fas fa-eye"></i>
+                    <span>نمایش بخش‌ها به دانشجو</span>
+                    <i class="fas fa-chevron-down accordion-icon"></i>
+                </div>
+                <div class="accordion-body">
+                    <div class="visibility-grid">
+                        <div class="vis-item">
+                            <label class="switch-label">
+                                <span class="vis-icon"><i class="fas fa-list-ul"></i></span>
+                                <span class="vis-text">نمایش جلسات درس</span>
+                                <div class="switch">
+                                    <input type="checkbox" class="vis-checkbox" 
+                                           data-field="active" 
+                                           id="visActive"
+                                           {{ $course->active ? 'checked' : '' }}>
+                                    <span class="slider round"></span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="vis-item">
+                            <label class="switch-label">
+                                <span class="vis-icon"><i class="fas fa-gavel"></i></span>
+                                <span class="vis-text">امکان داوری</span>
+                                <div class="switch">
+                                    <input type="checkbox" class="vis-checkbox" 
+                                           data-field="davari" 
+                                           id="visDavari"
+                                           {{ $course->davari ? 'checked' : '' }}>
+                                    <span class="slider round"></span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="vis-item">
+                            <label class="switch-label">
+                                <span class="vis-icon"><i class="fas fa-pencil-alt"></i></span>
+                                <span class="vis-text">شرکت در خودآزمایی</span>
+                                <div class="switch">
+                                    <input type="checkbox" class="vis-checkbox" 
+                                           data-field="quiz" 
+                                           id="visQuiz"
+                                           {{ $course->quiz ? 'checked' : '' }}>
+                                    <span class="slider round"></span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="vis-item">
+                            <label class="switch-label">
+                                <span class="vis-icon"><i class="fas fa-eye"></i></span>
+                                <span class="vis-text">مشاهده فعالیت‌ها</span>
+                                <div class="switch">
+                                    <input type="checkbox" class="vis-checkbox" 
+                                           data-field="faaliat" 
+                                           id="visFaaliat"
+                                           {{ $course->faaliat ? 'checked' : '' }}>
+                                    <span class="slider round"></span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="vis-item">
+                            <label class="switch-label">
+                                <span class="vis-icon"><i class="fas fa-chart-line"></i></span>
+                                <span class="vis-text">مشاهده پیشرفت درسی</span>
+                                <div class="switch">
+                                    <input type="checkbox" class="vis-checkbox" 
+                                           data-field="pishraft" 
+                                           id="visPishraft"
+                                           {{ $course->pishraft ? 'checked' : '' }}>
+                                    <span class="slider round"></span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="vis-note">
+                        <i class="fas fa-info-circle"></i>
+                        با فعال کردن هر گزینه، بخش مربوطه برای دانشجو قابل مشاهده خواهد بود
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="form-actions">
@@ -663,6 +918,86 @@
         firstBody.style.maxHeight = firstBody.scrollHeight + 'px';
         firstBody.style.paddingTop = '20px';
         firstBody.style.paddingBottom = '20px';
+    }
+
+    // ==========================================
+    // مدیریت چک‌باکس‌های نمایش با AJAX
+    // ==========================================
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkboxes = document.querySelectorAll('.vis-checkbox');
+        const courseId = {{ $course->id }};
+        
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const field = this.dataset.field;
+                const value = this.checked ? 1 : 0;
+                const switchContainer = this.closest('.switch');
+                
+                if (switchContainer) {
+                    switchContainer.classList.add('loading');
+                }
+                this.disabled = true;
+                
+                fetch(`/teacher/courses/toggle-visibility/${courseId}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        field: field,
+                        value: value
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => {
+                            throw new Error(err.message || 'خطا در ارتباط با سرور');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data.success) {
+                        this.checked = !this.checked;
+                        showToast('error', data.message || 'خطا در به‌روزرسانی');
+                    } else {
+                        showToast('success', data.message || 'وضعیت با موفقیت به‌روزرسانی شد');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    this.checked = !this.checked;
+                    showToast('error', error.message || 'خطا در ارتباط با سرور');
+                })
+                .finally(() => {
+                    if (switchContainer) {
+                        switchContainer.classList.remove('loading');
+                    }
+                    this.disabled = false;
+                });
+            });
+        });
+    });
+
+    function showToast(type, message) {
+        const oldToast = document.querySelector('.custom-toast');
+        if (oldToast) oldToast.remove();
+        
+        const toast = document.createElement('div');
+        toast.className = `custom-toast ${type}`;
+        toast.innerHTML = `
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+            <span>${message}</span>
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => toast.classList.add('show'), 10);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
     }
 </script>
 @endsection
