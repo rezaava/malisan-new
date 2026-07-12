@@ -457,6 +457,71 @@
     .alert-warning i {
         margin-left: 0.5rem;
     }
+
+    /* ===== استایل مودال لیست تکالیف ===== */
+    .btn-settings {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 28px;
+        background: linear-gradient(135deg, #1e6f9f, #155a82);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        font-family: inherit;
+    }
+
+    .btn-settings:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(30, 111, 159, 0.3);
+        color: #fff;
+    }
+
+    .btn-close-modal {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 28px;
+        background: #f0f4f9;
+        color: #4a5a6e;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+
+    .btn-close-modal:hover {
+        background: #e3e8ef;
+        transform: translateY(-2px);
+    }
+
+    .modal-body ul {
+        list-style: none;
+        padding-right: 0;
+    }
+
+    .modal-body ul li {
+        position: relative;
+        padding-right: 24px;
+        margin-bottom: 6px;
+    }
+
+    .modal-body ul li::before {
+        content: "•";
+        position: absolute;
+        right: 0;
+        color: #1e6f9f;
+        font-weight: 700;
+        font-size: 18px;
+    }
 </style>
 @endsection
 
@@ -467,6 +532,9 @@
     </div>
 
     <div class="course-actions-bar">
+        <a href="{{ route('courses.setting',$course->id) }}" class="action-btn settings-btn">
+            <i class="fas fa-cog"></i>
+        </a>
         @include('layout.backbtn')
     </div>
 
@@ -569,9 +637,9 @@
                     <a href="#" id="homeworkBtn" class="action-icon-btn" data-position="bottom" data-tooltip="تکالیف من">
                         <i class="fas fa-tasks"></i>
                     </a>
-                    <a href="#" id="profExBtn" class="action-icon-btn" data-position="bottom" data-tooltip="لیست تکالیف">
+                    <button class="action-icon-btn" onclick="openProfExModal()" data-position="bottom" data-tooltip="لیست تکالیف">
                         <i class="fas fa-list-ul"></i>
-                    </a>
+                    </button>
                 </div>
             </div>
             <div class="session-description">
@@ -608,6 +676,53 @@
                             <p class="text-muted">هیچ فایلی برای این جلسه آپلود نشده است</p>
                         </div>
                     @endif
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ========================================== --}}
+{{-- MODAL لیست تکالیف (ارسال گزارش) --}}
+{{-- ========================================== --}}
+<div class="modal-overlay" id="profExModal">
+    <div class="modal-box" style="max-width: 600px;">
+        <div class="modal-header">
+            <h4>
+                <i class="fas fa-file-alt" style="color:#1e6f9f;"></i>
+                راهنمای ارسال گزارش
+            </h4>
+            <button class="modal-close-btn" onclick="closeProfExModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div style="padding:10px 0;">
+                <div style="background:#f8fafc;border-radius:12px;padding:20px;border-right:4px solid #1e6f9f;margin-bottom:20px;">
+                    <p style="font-size:14px;line-height:2;color:#1a2332;margin:0;">
+                        از دانشجو بخواهید گزارشی برای این جلسه تهیه کند. این گزارش می تواند شامل موارد زیر باشد:
+                    </p>
+                    <ul style="font-size:14px;line-height:2;color:#1a2332;padding-right:20px;margin:10px 0 0;">
+                        <li>تهیه یک طرح درسی برای مبحث ارائه شده</li>
+                        <li>نوشتن خلاصه ای از مهمترین موضوعات تدریس شده در این جلسه</li>
+                        <li>هر گونه نکته یا پیشنهاد تکمیلی که به بهبود یادگیری کمک کند</li>
+                    </ul>
+                </div>
+                
+                <div style="background:#e3f2fd;border-radius:12px;padding:16px 20px;margin-bottom:16px;font-size:13px;color:#1a2332;">
+                    <i class="fas fa-info-circle" style="color:#1e6f9f;"></i>
+                    <strong>توجه:</strong> در صورت عدم تکمیل این بخش، توضیحات پیش فرض ثبت شده در تنظیمات به دانشجو نمایش داده خواهد شد.
+                </div>
+                
+                <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;padding-top:10px;">
+                    <a href="{{ route('courses.setting', $course->id) }}#activity-settings" class="btn-settings">
+                        <i class="fas fa-cog"></i>
+                        رفتن به تنظیمات
+                    </a>
+                    <button class="btn-close-modal" onclick="closeProfExModal()">
+                        <i class="fas fa-times"></i>
+                        بستن
+                    </button>
                 </div>
             </div>
         </div>
@@ -741,7 +856,7 @@
     let currentEditId = null;
 
     // ==========================================
-    // توابع مودال
+    // توابع مودال جلسات
     // ==========================================
     function openModal(mode, sessionId = null) {
         modalMode = mode;
@@ -753,18 +868,15 @@
         const submitText = document.getElementById('modalSubmitText');
         const deleteBtn = document.getElementById('modalDeleteBtn');
 
-        // تنظیم عنوان و آیکون
         if (mode === 'create') {
             title.textContent = 'ایجاد جلسه جدید';
             icon.className = 'fas fa-plus-circle';
             submitText.textContent = 'ایجاد جلسه';
             deleteBtn.style.display = 'none';
             
-            // تنظیم فرم برای ایجاد
             form.action = '{{ route("sessions.store", $course->id) }}';
             form.method = 'POST';
             
-            // پاک کردن فرم
             document.getElementById('sessionId').value = '';
             document.getElementById('modalNumber').value = {{ $sessions->count() + 1 }};
             document.getElementById('modalName').value = '';
@@ -773,12 +885,10 @@
             document.getElementById('modalAparat').value = '';
             document.getElementById('modalActive').checked = true;
             
-            // پاک کردن ادیتور
             if (joditEditor) {
                 joditEditor.value = '';
             }
             
-            // پاک کردن فایل
             document.getElementById('modalFileUpload').value = '';
             document.getElementById('modalFileName').textContent = 'هیچ فایلی انتخاب نشده است';
             document.getElementById('modalExistingFile').style.display = 'none';
@@ -790,11 +900,9 @@
             deleteBtn.style.display = 'inline-flex';
             currentEditId = sessionId;
             
-            // تنظیم فرم برای ویرایش
             form.action = '{{ route("sessions.update", "") }}/' + sessionId;
             form.method = 'POST';
             
-            // اضافه کردن متد PUT
             let methodInput = form.querySelector('input[name="_method"]');
             if (!methodInput) {
                 methodInput = document.createElement('input');
@@ -804,7 +912,6 @@
             }
             methodInput.value = 'PUT';
             
-            // دریافت اطلاعات جلسه از سرور
             fetchSessionData(sessionId);
         }
 
@@ -817,17 +924,16 @@
         document.body.style.overflow = '';
     }
 
-    // بستن مودال با کلیک روی پس‌زمینه
     document.getElementById('sessionModal').addEventListener('click', function(e) {
         if (e.target === this) {
             closeModal();
         }
     });
 
-    // بستن مودال با کلید ESC
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeModal();
+            closeProfExModal();
         }
     });
 
@@ -853,7 +959,6 @@
                         joditEditor.value = session.text || '';
                     }
                     
-                    // نمایش فایل موجود
                     if (session.file) {
                         document.getElementById('modalExistingFile').style.display = 'flex';
                         document.getElementById('modalExistingFileName').textContent = session.file.split('/').pop();
@@ -1004,11 +1109,6 @@
         if (homeworkBtn) {
             homeworkBtn.setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
         }
-
-        const profExBtn = document.getElementById('profExBtn');
-        if (profExBtn) {
-            profExBtn.setAttribute('href', `/teacher/courses/sessions/prof-ex/${sessionId}`);
-        }
     }
 
     // ==========================================
@@ -1023,6 +1123,25 @@
         
         changeSession(element, sessionId, pdfUrl, title, number, description);
     }
+
+    // ==========================================
+    // توابع مودال لیست تکالیف (ارسال گزارش)
+    // ==========================================
+    function openProfExModal() {
+        document.getElementById('profExModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeProfExModal() {
+        document.getElementById('profExModal').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    document.getElementById('profExModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeProfExModal();
+        }
+    });
 
     // ==========================================
     // Event listener برای collapsible
@@ -1165,7 +1284,6 @@
             var fileName = e.target.files[0] ? e.target.files[0].name : 'هیچ فایلی انتخاب نشده است';
             document.getElementById('modalFileName').textContent = fileName;
             
-            // اگر فایلی انتخاب شده، فایل موجود را مخفی کن
             if (e.target.files[0]) {
                 document.getElementById('modalExistingFile').style.display = 'none';
             }
@@ -1186,11 +1304,6 @@
             const homeworkBtn = document.getElementById('homeworkBtn');
             if (homeworkBtn) {
                 homeworkBtn.setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
-            }
-            
-            const profExBtn = document.getElementById('profExBtn');
-            if (profExBtn) {
-                profExBtn.setAttribute('href', `/teacher/courses/sessions/prof-ex/${sessionId}`);
             }
         }
     });

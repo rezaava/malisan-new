@@ -616,7 +616,7 @@
             <!-- ==========================================
                  فعالیت ها
                  ========================================== -->
-            <div class="accordion-item">
+            <div class="accordion-item" id="activity-settings">
                 <div class="accordion-header" onclick="toggleAccordion(this)">
                     <i class="fas fa-tasks"></i>
                     <span>فعالیت ها</span>
