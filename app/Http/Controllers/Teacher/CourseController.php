@@ -862,7 +862,6 @@ class CourseController extends Controller
      */
     public function editSetting(Request $request)
     {
-        Log::info('Request data:', $request->all());
         // اعتبارسنجی
         $validator = Validator::make($request->all(), [
             'course_id' => 'required|exists:courses,id',

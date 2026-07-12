@@ -14,7 +14,6 @@ use App\Http\Controllers\Teacher\CourseController;
 use App\Http\Controllers\Teacher\StudentAdjectiveController;
 use App\Http\Controllers\Teacher\StudentEventController;
 use App\Http\Controllers\SurveyController;
-use App\Http\Controllers\Teacher\TeacherCourseController;
 use App\Http\Controllers\TeacherSiteController;
 use App\Http\Controllers\ExamController;
 use Illuminate\Support\Facades\Route;
@@ -47,8 +46,6 @@ Route::get("/", function () {
     return redirect("/login");
 });
 
-// test
-Route::get('/role', [AuthController::class, 'roleFun']);
 
 // ==========================================
 // Teacher Routes
@@ -57,6 +54,8 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
     Route::get('/', [TeacherSiteController::class, 'index'])->name('index_teacher');
 
     Route::prefix('/courses')->group(function () {
+        
+        Route::post('/edit-setting', [CourseController::class, 'editSetting'])->name('update.setting.courses');
         Route::post('/toggle-visibility/{id}', [CourseController::class, 'toggleVisibility'])->name('courses.toggle.visibility');
 
         Route::prefix('/sessions')->group(function () {
@@ -98,7 +97,6 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         Route::get('/students/removed/{courseId}', [CourseController::class, 'removedStudents'])->name('students.removed');
 
         Route::get('/setting/{id}', [CourseController::class, 'setting'])->name('courses.setting');
-        Route::post('/edit-setting', [CourseController::class, 'editSetting'])->name('courses.setting.update');
 
         Route::get('/adjectives/{studentId}', [StudentAdjectiveController::class, 'index']);
         Route::post('/adjectives', [StudentAdjectiveController::class, 'store']);
