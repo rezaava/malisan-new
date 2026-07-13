@@ -14,7 +14,7 @@ class Course extends Model
         'name', 'archieve', 'header', 'code', 'private', 'period', 'type',
         'desc', 'price', 'length', 'sessions_length', 'majazi', 'max_session',
         'num_q', 'score_e', 'score_d', 'score_q', 'status', 'active', 'quiz',
-        'davari', 'faaliat', 'pishraft'
+        'davari', 'faaliat', 'pishraft', 'is_dore'
     ];
 
     // روابط

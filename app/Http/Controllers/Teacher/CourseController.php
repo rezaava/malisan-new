@@ -30,6 +30,28 @@ use Log;
 
 class CourseController extends Controller
 {
+    public function toggleDore($id)
+    {
+        try {
+            $course = Course::findOrFail($id);
+            
+            // تغییر وضعیت is_dore
+            $course->is_dore = $course->is_dore ? 0 : 1;
+            $course->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => $course->is_dore ? 'درس به حالت دوره‌ای تغییر یافت' : 'درس به حالت غیردوره‌ای تغییر یافت',
+                'is_dore' => $course->is_dore
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در تغییر وضعیت درس: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function reportsList($courseId)
     {
         $course = Course::findOrFail($courseId);
