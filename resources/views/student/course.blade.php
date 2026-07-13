@@ -102,7 +102,13 @@
             <div class="sessions-list">
                 @forelse($sessions as $session)
                     <a href="#" class="session-item {{ $loop->first ? 'active' : '' }}" 
-                       data-session="{{ $session->id }}" 
+                       data-session="{{ $session->id }}"
+                       data-can-question="{{ isset($session['can_question']) && $session['can_question'] ? 'true' : 'false' }}"
+                       data-can-homework="{{ isset($session['can_homework']) && $session['can_homework'] ? 'true' : 'false' }}"
+                       data-can-report="{{ isset($session['can_report']) && $session['can_report'] ? 'true' : 'false' }}"
+                       data-pdf="{{ $session->file ?? '' }}"
+                       data-title="{{ addslashes($session->name) }}"
+                       data-number="جلسه {{ $session->number }}"
                        onclick="changeSession(this, '{{ $session->id }}', '{{ $session->file ?? '' }}', '{{ addslashes($session->name) }}', 'جلسه {{ $session->number }}')">
                         <span class="session-check"><i class="fas fa-check-circle"></i></span>
                         <span class="session-title">{{ $session->name }}</span>
@@ -240,25 +246,51 @@
         }
 
         // ==========================================
-        // تنظیم لینک ۳ دکمه با session_id جدید
+        // تنظیم دکمه‌ها بر اساس وضعیت دسترسی جلسه
         // ==========================================
         
-        // 1. دکمه طرح سوال (دانشجو)
+        // دریافت وضعیت‌های دسترسی از data attributes
+        const canQuestion = element.dataset.canQuestion === 'true';
+        const canHomework = element.dataset.canHomework === 'true';
+        const canReport = element.dataset.canReport === 'true';
+        
+        // 1. دکمه طرح سوال
         const questionBtn = document.getElementById('questionBtn');
         if (questionBtn) {
-            questionBtn.setAttribute('href', `/student/questions/create/${sessionId}`);
+            if (canQuestion) {
+                questionBtn.setAttribute('href', `/student/questions/create/${sessionId}`);
+                questionBtn.style.display = 'inline-flex';
+                questionBtn.style.opacity = '1';
+                questionBtn.style.pointerEvents = 'auto';
+            } else {
+                questionBtn.style.display = 'none'; // پنهان کردن کامل
+            }
         }
 
-        // 2. دکمه مدیریت تکالیف (دانشجو)
+        // 2. دکمه مدیریت تکالیف
         const homeworkBtn = document.getElementById('homeworkBtn');
         if (homeworkBtn) {
-            homeworkBtn.setAttribute('href', `/student/exercise/show/${sessionId}`);
+            if (canHomework) {
+                homeworkBtn.setAttribute('href', `/student/exercise/show/${sessionId}`);
+                homeworkBtn.style.display = 'inline-flex';
+                homeworkBtn.style.opacity = '1';
+                homeworkBtn.style.pointerEvents = 'auto';
+            } else {
+                homeworkBtn.style.display = 'none'; // پنهان کردن کامل
+            }
         }
 
-        // 3. دکمه ارسال گزارش (دانشجو)
+        // 3. دکمه ارسال گزارش
         const reportBtn = document.getElementById('reportBtn');
         if (reportBtn) {
-            reportBtn.setAttribute('href', `/student/discussion/create/${sessionId}`);
+            if (canReport) {
+                reportBtn.setAttribute('href', `/student/discussion/create/${sessionId}`);
+                reportBtn.style.display = 'inline-flex';
+                reportBtn.style.opacity = '1';
+                reportBtn.style.pointerEvents = 'auto';
+            } else {
+                reportBtn.style.display = 'none'; // پنهان کردن کامل
+            }
         }
     }
 
@@ -281,31 +313,47 @@
             });
         }
 
-        // ===== تنظیم لینک‌های اولیه برای جلسه اول =====
-        @if($sessions->isNotEmpty())
-            const firstSession = document.querySelector('.session-item.active');
-            if (firstSession) {
-                const sessionId = firstSession.dataset.session;
-                
-                // 1. دکمه طرح سوال
-                const questionBtn = document.getElementById('questionBtn');
-                if (questionBtn) {
+        // ===== تنظیم دکمه‌ها برای جلسه اول =====
+        const firstSession = document.querySelector('.session-item.active');
+        if (firstSession) {
+            const sessionId = firstSession.dataset.session;
+            const canQuestion = firstSession.dataset.canQuestion === 'true';
+            const canHomework = firstSession.dataset.canHomework === 'true';
+            const canReport = firstSession.dataset.canReport === 'true';
+            
+            // 1. دکمه طرح سوال
+            const questionBtn = document.getElementById('questionBtn');
+            if (questionBtn) {
+                if (canQuestion) {
                     questionBtn.setAttribute('href', `/student/questions/create/${sessionId}`);
-                }
-                
-                // 2. دکمه مدیریت تکالیف
-                const homeworkBtn = document.getElementById('homeworkBtn');
-                if (homeworkBtn) {
-                    homeworkBtn.setAttribute('href', `/student/exercise/show/${sessionId}`);
-                }
-
-                // 3. دکمه ارسال گزارش
-                const reportBtn = document.getElementById('reportBtn');
-                if (reportBtn) {
-                    reportBtn.setAttribute('href', `/student/discussion/create/${sessionId}`);
+                    questionBtn.style.display = 'inline-flex';
+                } else {
+                    questionBtn.style.display = 'none';
                 }
             }
-        @endif
+            
+            // 2. دکمه مدیریت تکالیف
+            const homeworkBtn = document.getElementById('homeworkBtn');
+            if (homeworkBtn) {
+                if (canHomework) {
+                    homeworkBtn.setAttribute('href', `/student/exercise/show/${sessionId}`);
+                    homeworkBtn.style.display = 'inline-flex';
+                } else {
+                    homeworkBtn.style.display = 'none';
+                }
+            }
+
+            // 3. دکمه ارسال گزارش
+            const reportBtn = document.getElementById('reportBtn');
+            if (reportBtn) {
+                if (canReport) {
+                    reportBtn.setAttribute('href', `/student/discussion/create/${sessionId}`);
+                    reportBtn.style.display = 'inline-flex';
+                } else {
+                    reportBtn.style.display = 'none';
+                }
+            }
+        }
     });
 </script>
 

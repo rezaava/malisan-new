@@ -127,22 +127,50 @@ class StudentCourseController extends Controller
             }
         }
 
+        // ===== اضافه کردن وضعیت دسترسی به هر جلسه =====
         if (!$sessions->isEmpty()) {
+            // پیدا کردن آخرین جلسه
+            $lastSession = Session::where('course_id', $course->id)
+                ->orderBy('id', 'desc')
+                ->first();
+            
             foreach ($sessions as $index => $session) {
                 $session['ex_count'] = Exercise::where('session_id', $session->id)->count();
+                
+                // تنظیم وضعیت‌های پیش‌فرض
                 $session['taklif_last'] = 1;
                 $session['gozaresh_last'] = 1;
                 $session['soal_last'] = 1;
+                
+                // تنظیم وضعیت‌های دسترسی برای دکمه‌ها
+                $session['can_question'] = true;
+                $session['can_homework'] = true;
+                $session['can_report'] = true;
 
-                if ($index != 0) {
-                    if ($setting && $setting->taklif_last == 1) {
-                        $session['taklif_last'] = 0;
+                // اگر تنظیمات وجود دارد و محدودیت فعال است
+                if ($setting) {
+                    // محدودیت طرح سوال به آخرین جلسه
+                    if ($setting->soal_last == 1 && $isStudent) {
+                        if (!$lastSession || $session->id != $lastSession->id) {
+                            $session['can_question'] = false;
+                            $session['soal_last'] = 0;
+                        }
                     }
-                    if ($setting && $setting->gozaresh_last == 1) {
-                        $session['gozaresh_last'] = 0;
+                    
+                    // محدودیت ارسال تکلیف به آخرین جلسه
+                    if ($setting->taklif_last == 1) {
+                        if (!$lastSession || $session->id != $lastSession->id) {
+                            $session['can_homework'] = false;
+                            $session['taklif_last'] = 0;
+                        }
                     }
-                    if ($isStudent && $setting && $setting->soal_last == 1) {
-                        $session['soal_last'] = 0;
+                    
+                    // محدودیت ارسال گزارش به آخرین جلسه
+                    if ($setting->gozaresh_last == 1) {
+                        if (!$lastSession || $session->id != $lastSession->id) {
+                            $session['can_report'] = false;
+                            $session['gozaresh_last'] = 0;
+                        }
                     }
                 }
             }
@@ -174,11 +202,6 @@ class StudentCourseController extends Controller
             'member',
             'paid'
         ))->with([
-            'pageTitle' => 'صفحه مدیریت درس',
-            'pageName' => 'درس',
-            'pageDescription' => $isStudent 
-                ? "دوست من ! اینجا صفحه مدیریت کلاس درسته" 
-                : "مدرس گرامی ! داشبورد مدیریت درس در اختیار شماست",
             'student' => (int) $isStudent,
         ]);
     }

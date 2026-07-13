@@ -82,19 +82,13 @@ class ExamController extends Controller
 
         $setting = Setting::where('course_id', $course->id)->first();
         
-        // بررسی شرط soal_last
         if ($setting && $setting->soal_last == 1) {
-            // پیدا کردن آخرین جلسه این درس
             $lastSession = Session::where('course_id', $course->id)
                 ->orderBy('id', 'desc') // یا orderBy('session_number', 'desc') اگر چنین فیلدی دارید
                 ->first();
                 
-            // اگر جلسه فعلی آخرین جلسه نیست، خطا بدهید یا هدایت کنید
             if (!$lastSession || $session->id != $lastSession->id) {
-                // می‌توانید به صفحه قبلی برگردانید یا خطا نشان دهید
                 return redirect()->back()->with('error', 'شما فقط می‌توانید برای آخرین جلسه این درس سوال طراحی کنید.');
-                // یا می‌توانید کاربر را به صفحه آخرین جلسه هدایت کنید:
-                // return redirect()->route('student.create-question', $lastSession->id);
             }
         }
 
