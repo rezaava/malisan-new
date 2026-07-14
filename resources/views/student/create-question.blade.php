@@ -107,6 +107,66 @@
         box-shadow: 0 4px 12px rgba(30, 111, 159, 0.3);
     }
 
+    /* ===== کلاس‌های جایگزین استایل‌های اینلاین ===== */
+
+    /* کلاس‌های مربوط به پیام‌های موفقیت و خطا */
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+        padding: 12px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        border: 1px solid #c3e6cb;
+    }
+
+    .alert-danger {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 12px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        border: 1px solid #f5c6cb;
+    }
+
+    .alert-danger ul {
+        margin: 0;
+        padding-right: 20px;
+    }
+
+    /* کلاس‌های مربوط به مودال و وضعیت‌های بارگذاری */
+    .loading-container {
+        text-align: center;
+        padding: 30px;
+    }
+
+    .loading-spinner {
+        color: #1e6f9f;
+    }
+
+    .loading-text {
+        color: #6b7a8f;
+        margin-top: 10px;
+    }
+
+    /* کلاس‌های مربوط به بخش توضیحات تنظیمات */
+    .setting-score-box {
+        margin-top: 16px;
+        padding: 12px 16px;
+        background: #e3f2fd;
+        border-radius: 10px;
+        font-size: 14px;
+    }
+
+    .setting-score-icon {
+        color: #ff9800;
+    }
+
+    /* کلاس‌های مربوط به آیتم‌های سوال در لیست */
+    .question-list-item .q-options .correct-option {
+        color: #4caf50;
+        font-weight: 600;
+    }
+
     /* ===== مودال ===== */
     .modal-overlay {
         display: none;
@@ -567,20 +627,20 @@
         </div>
 
         @if(session('success'))
-            <div class="alert alert-success" style="background: #d4edda; color: #155724; padding: 12px; border-radius: 5px; margin-bottom: 15px; border: 1px solid #c3e6cb;">
+            <div class="alert alert-success">
                 {{ session('success') }}
             </div>
         @endif
 
         @if(session('error'))
-            <div class="alert alert-danger" style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 5px; margin-bottom: 15px; border: 1px solid #f5c6cb;">
+            <div class="alert alert-danger">
                 {{ session('error') }}
             </div>
         @endif
 
         @if($errors->any())
-            <div class="alert alert-danger" style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 5px; margin-bottom: 15px; border: 1px solid #f5c6cb;">
-                <ul style="margin: 0; padding-right: 20px;">
+            <div class="alert alert-danger">
+                <ul>
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
@@ -604,8 +664,8 @@
                     <div class="form-group option-item" data-option="{{ $i }}">
                         <label for="option-{{ $i }}">
                             گزینه {{ $i + 1 }}
-                            <span class="badge-correct" style="display: none;">✓ صحیح</span>
-                            <span class="correct-label" style="display: none; color: #4caf50; font-weight: 600; font-size: 13px;">(گزینه صحیح)</span>
+                            <span class="badge-correct">✓</span>
+                            <span class="correct-label">(گزینه صحیح)</span>
                         </label>
                         <div class="option-input-wrapper">
                             <input type="text" id="option-{{ $i }}" name="options[]" class="form-input" 
@@ -651,9 +711,9 @@
         </div>
         <div class="modal-body" id="friendsQuestionsModalBody">
             {{-- محتوا توسط جاوااسکریپت پر می‌شود --}}
-            <div style="text-align:center;padding:20px;">
-                <i class="fas fa-spinner fa-spin fa-2x" style="color:#1e6f9f;"></i>
-                <p style="color:#6b7a8f;margin-top:10px;">در حال بارگذاری...</p>
+            <div class="loading-container">
+                <i class="fas fa-spinner fa-spin fa-2x loading-spinner"></i>
+                <p class="loading-text">در حال بارگذاری...</p>
             </div>
         </div>
     </div>
@@ -675,9 +735,9 @@
         </div>
         <div class="modal-body" id="myQuestionsModalBody">
             {{-- محتوا توسط جاوااسکریپت پر می‌شود --}}
-            <div style="text-align:center;padding:20px;">
-                <i class="fas fa-spinner fa-spin fa-2x" style="color:#1e6f9f;"></i>
-                <p style="color:#6b7a8f;margin-top:10px;">در حال بارگذاری...</p>
+            <div class="loading-container">
+                <i class="fas fa-spinner fa-spin fa-2x loading-spinner"></i>
+                <p class="loading-text">در حال بارگذاری...</p>
             </div>
         </div>
     </div>
@@ -702,8 +762,8 @@
                 {!! $settingDescription !!}
             </div>
             @if($settingScore > 0)
-                <div style="margin-top:16px;padding:12px 16px;background:#e3f2fd;border-radius:10px;font-size:14px;">
-                    <i class="fas fa-star" style="color:#ff9800;"></i>
+                <div class="setting-score-box">
+                    <i class="fas fa-star setting-score-icon"></i>
                     <strong>امتیاز این فعالیت:</strong> {{ $settingScore }} امتیاز
                 </div>
             @endif
@@ -926,9 +986,9 @@
         const body = document.getElementById('friendsQuestionsModalBody');
         
         body.innerHTML = `
-            <div style="text-align:center;padding:30px;">
-                <i class="fas fa-spinner fa-spin fa-2x" style="color:#1e6f9f;"></i>
-                <p style="color:#6b7a8f;margin-top:10px;">در حال بارگذاری سوالات دوستان...</p>
+            <div class="loading-container">
+                <i class="fas fa-spinner fa-spin fa-2x loading-spinner"></i>
+                <p class="loading-text">در حال بارگذاری سوالات دوستان...</p>
             </div>
         `;
         
@@ -1011,9 +1071,9 @@
         const body = document.getElementById('myQuestionsModalBody');
         
         body.innerHTML = `
-            <div style="text-align:center;padding:30px;">
-                <i class="fas fa-spinner fa-spin fa-2x" style="color:#1e6f9f;"></i>
-                <p style="color:#6b7a8f;margin-top:10px;">در حال بارگذاری سوالات من...</p>
+            <div class="loading-container">
+                <i class="fas fa-spinner fa-spin fa-2x loading-spinner"></i>
+                <p class="loading-text">در حال بارگذاری سوالات من...</p>
             </div>
         `;
         
