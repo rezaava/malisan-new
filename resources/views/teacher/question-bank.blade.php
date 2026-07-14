@@ -525,6 +525,20 @@
     font-weight: 600;
     color: #1a2332;
 }
+
+.stat-card.teacher-questions .stat-number { 
+    color: #6a1b9a; /* رنگ بنفش برای تمایز */
+}
+
+.stat-card.teacher-questions {
+    border-color: #ce93d8;
+    background: #f3e5f5;
+}
+
+.stat-card.teacher-questions:hover {
+    border-color: #8e24aa;
+    box-shadow: 0 4px 12px rgba(106, 27, 154, 0.15);
+}
 </style>
 @endsection
 
@@ -568,6 +582,11 @@
         <div class="stat-card starred">
             <div class="stat-number">{{ $stats['starred'] ?? 0 }}</div>
             <div class="stat-label">ستاره دار</div>
+        </div>
+        <!-- باکس جدید سوالات استاد -->
+        <div class="stat-card teacher-questions">
+            <div class="stat-number">{{ $stats['teacher_questions'] ?? 0 }}</div>
+            <div class="stat-label">سوالات استاد</div>
         </div>
     </div>
 
@@ -664,7 +683,7 @@
 
                     <!-- عملیات -->
                     <div class="question-actions">
-                        <a href="/teacher/questions/delete/{{ $question->id }}" class="btn btn-delete" 
+                        <a href="/teacher/questions/{{ $question->id }}" class="btn btn-delete" 
                            onclick="return confirm('آیا از حذف این سوال اطمینان دارید؟')">
                             <i class="fas fa-trash"></i> حذف
                         </a>

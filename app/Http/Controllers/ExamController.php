@@ -103,7 +103,6 @@ class ExamController extends Controller
      */
     public function studentStore(Request $request, $session_id)
     {
-
         $validator = Validator::make($request->all(), [
             'question' => 'required|string|min:5',
             'options' => 'required|array|min:4|max:4',
@@ -128,11 +127,10 @@ class ExamController extends Controller
                 return redirect()->back()->with('error', 'شما فقط می‌توانید برای آخرین جلسه این درس سوال طراحی کنید.');
             }
         }
-    
+
         try {
             $options = $request->options;
             $correctIndex = (int) $request->correct_answer + 1;
-
 
             if (!isset($options[$correctIndex])) {
                 return redirect()->back()->with('error', 'گزینه صحیح نامعتبر است')->withInput();
@@ -142,17 +140,24 @@ class ExamController extends Controller
             $session = Session::findOrFail($session_id);
             $setting = Setting::where('course_id', $session->course_id)->first();
 
-            // بررسی محدودیت تعداد سوالات دانشجو
+            // بررسی محدودیت تعداد سوالات (فقط برای دانشجویان)
             if ($setting && $setting->max_soal) {
-                $questionCount = Question::where('session_id', $session_id)
-                    ->where('user_id', $user->id)
-                    ->count();
+                // اگر کاربر معلم نیست، محدودیت تعداد سوال را اعمال کن
+                if (!$user->hasRole('teacher')) {
+                    $questionCount = Question::where('session_id', $session_id)
+                        ->where('user_id', $user->id)
+                        ->count();
 
-                if ($questionCount >= $setting->max_soal) {
-                    return redirect()->back()->with('error', 'شما به حداکثر تعداد مجاز سوال برای این جلسه رسیده‌اید.');
+                    if ($questionCount >= $setting->max_soal) {
+                        return redirect()->back()->with('error', 'شما به حداکثر تعداد مجاز سوال برای این جلسه رسیده‌اید.');
+                    }
                 }
             }
 
+            // تعیین وضعیت سوال بر اساس نقش کاربر
+            // اگر کاربر معلم است، سوال تایید شده (عالی) در نظر گرفته می‌شود
+            $isTeacher = $user->hasRole('teacher');
+            $status = $isTeacher ? 5 : null; // 1 = عالی (تایید شده)، null = در انتظار تایید
 
             $question = Question::create([
                 'question' => $request->question,
@@ -163,7 +168,7 @@ class ExamController extends Controller
                 'answer' => $correctIndex,
                 'user_id' => $user->id,
                 'session_id' => $session_id,
-                'status' => null,
+                'status' => $status,
                 'star' => 0,
                 'counter' => 0,
                 'is_edit' => 0,
@@ -171,8 +176,13 @@ class ExamController extends Controller
                 'comment' => null,
             ]);
 
+            // پیام مناسب بر اساس نقش کاربر
+            $message = $isTeacher 
+                ? 'سوال شما با موفقیت ثبت و تایید شد.' 
+                : 'سوال شما با موفقیت ثبت شد و در انتظار تایید است.';
+
             return redirect()->route('view.coure.St', $session->course_id)
-                ->with('success', 'سوال شما با موفقیت ثبت شد و در انتظار تایید است.');
+                ->with('success', $message);
 
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'خطا در ثبت سوال: ' . $e->getMessage())->withInput();
@@ -296,12 +306,13 @@ class ExamController extends Controller
             } else {
                 $question->designer_name = 'نامشخص';
             }
-
             $question->level_text = match ($question->status) {
                 1 => 'عالی',
                 2 => 'خوب',
                 3 => 'متوسط',
                 4 => 'بد',
+                5 => 'سوال استاد', // اضافه شد
+                null => 'در انتظار تایید',
                 default => 'نامشخص',
             };
         }

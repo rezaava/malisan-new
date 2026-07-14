@@ -183,7 +183,7 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         Route::get('/show/{id}', [ExamController::class, 'show'])->name('question.show');
         Route::get('/show/{id}', [ExamController::class, 'getQuestionData'])->name('question.getData');
         Route::put('/status/{id}', [ExamController::class, 'updateStatusTe'])->name('question.updateStatus');
-        Route::delete('/{id}', [ExamController::class, 'destroy'])->name('question.destroy');
+        Route::get('/{id}', [ExamController::class, 'destroy'])->name('question.destroy');
         Route::get('/list', [ExamController::class, 'list'])->name('question.list');
     });
 

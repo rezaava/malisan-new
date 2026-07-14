@@ -1709,6 +1709,7 @@ class CourseController extends Controller
                 2 => 'خوب',
                 3 => 'متوسط',
                 4 => 'بد',
+                5 => 'سوال استاد', // اضافه شد
                 null => 'در انتظار تایید',
                 default => 'نامشخص',
             };
@@ -1727,8 +1728,8 @@ class CourseController extends Controller
             }
             $question->nazars = $nazars;
         }
+        $teacherQuestionsCount = $questions->where('status', 5)->count();
 
-        // آمار سوالات
         $stats = [
             'total' => $questions->count(),
             'excellent' => $questions->where('status', 1)->count(),
@@ -1737,16 +1738,11 @@ class CourseController extends Controller
             'bad' => $questions->where('status', 4)->count(),
             'pending' => $questions->whereNull('status')->count(),
             'starred' => $questions->where('star', 1)->count(),
+            'teacher_questions' => $teacherQuestionsCount,
         ];
         
-        // return $question;
-        return view('teacher.question-bank', compact('course', 'questions', 'stats'))->with([
-            'pageTitle' => 'بانک سوالات',
-            'pageName' => 'بانک سوالات',
-            'pageDescription' => 'مدیریت سوالات درس',
-        ]);
+        return view('teacher.question-bank', compact('course', 'questions', 'stats'));
     }
-
     /**
      * تغییر وضعیت ستاره سوال
      */
