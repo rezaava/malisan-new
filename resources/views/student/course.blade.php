@@ -136,17 +136,17 @@
                 </div>
                 <div class="session-action-buttons">
                     {{-- دکمه طرح سوال --}}
-                    <a href="#" id="questionBtn" class="action-icon-btn" data-tooltip="طرح سوال">
+                    <a href="#" id="questionBtn" class="action-icon-btn" data-tooltip="{{ $setting->tarahi_soal_desc }}">
                         <i class="fas fa-question-circle"></i>
                     </a>
-                    
+
                     {{-- دکمه مدیریت تکالیف --}}
-                    <a href="#" id="homeworkBtn" class="action-icon-btn" data-tooltip="مدیریت تکالیف">
+                    <a href="#" id="homeworkBtn" class="action-icon-btn" data-tooltip="ارسال تکالیف">
                         <i class="fas fa-file-alt"></i>
                     </a>
-                    
+
                     {{-- دکمه ارسال گزارش --}}
-                    <a href="#" id="reportBtn" class="action-icon-btn" data-tooltip="ارسال گزارش">
+                    <a href="#" id="reportBtn" class="action-icon-btn" data-tooltip="{{ $setting->ersal_gozaresh_desc }}">
                         <i class="fas fa-edit"></i>
                     </a>
                 </div>

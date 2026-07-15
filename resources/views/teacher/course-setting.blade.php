@@ -518,19 +518,12 @@
                             <tr>
                                 <th style="width: 30%;">موضوع</th>
                                 <th style="width: 25%;">امتیاز</th>
-                                <th style="width: 45%;">توضیح برای دانشجو</th>
+                                <th style="width: 45%;">توضیح</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td>تعداد جلسات</td>
-                                <td>
-                                    <input type="number" name="jalasat" value="{{ $setting->jalasat ?? 16 }}" class="form-input" min="1">
-                                </td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>چند نمره برای ارزشیابی مستمر در نظر می گیرید؟</td>
+                                <td>ارزشیابی مستمر</td>
                                 <td>
                                     <input type="number" name="mostamar_nomre" id="mostamar_nomre" value="{{ $setting->mostamar_nomre ?? 12 }}" class="form-input" onkeyup="jam()" min="0" max="100">
                                 </td>
@@ -657,6 +650,13 @@
                                         <span class="toggle-slider"></span>
                                     </label>
                                 </td>
+                            </tr>
+                            <tr>
+                                <td>تعداد جلسات</td>
+                                <td>
+                                    <input type="number" name="jalasat" value="{{ $setting->jalasat ?? 16 }}" class="form-input" min="1">
+                                </td>
+                                <td></td>
                             </tr>
                             <tr>
                                 <td>حداکثر تعداد سوالاتی که توسط دانشجو در هر جلسه طرح می شود</td>
