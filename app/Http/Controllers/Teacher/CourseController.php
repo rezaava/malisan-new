@@ -513,6 +513,7 @@ class CourseController extends Controller
             $course->majazi = $this->cleanUrl($request->majazi);
             $course->max_session = 16;
             $course->code = $code;
+            $course->is_dore = 0;
             $course->header = rand(0, 30);
             $course->save();
             
@@ -525,12 +526,7 @@ class CourseController extends Controller
             
             DB::commit();
             
-            $message = "دانشجوی عزیز، برای دسترسی به درس " . $course->name . 
-                      " ابتدا از طریق سایت WWW.MALISAN.IR در سامانه آموزشی ملیسان با هویت واقعی ثبت نام کنید، سپس با استفاده از شناسه " . 
-                      $course->code . " در درس ذکر شده عضو شوید.";
-            
             return redirect()->route('courses')
-                ->with('success', $message)
                 ->with('crete', 'ok');
                 
         } catch (\Exception $e) {

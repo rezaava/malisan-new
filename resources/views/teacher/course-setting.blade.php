@@ -420,6 +420,21 @@
         font-size: 16px;
     }
 
+    .score-description-cell {
+        background: #f0f7fe;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 12px;
+        color: #1a2332;
+        line-height: 1.8;
+        border-right: 3px solid #1e6f9f;
+    }
+
+    .score-description-cell i {
+        color: #1e6f9f;
+        margin-left: 6px;
+    }
+
     /* ===== Toast ===== */
     .custom-toast {
         position: fixed;
@@ -489,14 +504,23 @@
             padding: 12px 16px;
             font-size: 13px;
         }
+        .score-description-cell {
+            font-size: 11px;
+            padding: 6px 10px;
+        }
     }
 </style>
 @endsection
 
 @section('mohtava')
 <div class="settings-container">
-    <div class="text-center mb-3">
-        <h4>تنظیمات درس {{ $course->name }}</h4>
+    <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
+        <h4 class="mb-0">
+            تنظیمات درس {{ $course->name }}
+        </h4>
+        <div>
+            @include('layout.backbtn')
+        </div>
     </div>
     <form action="/teacher/courses/edit-setting" method="post" enctype="multipart/form-data">
             @csrf
@@ -506,19 +530,19 @@
             <!-- ==========================================
                  بارم بندی
                  ========================================== -->
-            <div class="accordion-item active">
+            <div class="accordion-item">
                 <div class="accordion-header" onclick="toggleAccordion(this)">
                     <i class="fas fa-balance-scale"></i>
                     <span>بارم بندی (مجموع : ۱۰۰)</span>
                     <i class="fas fa-chevron-down accordion-icon"></i>
                 </div>
-                <div class="accordion-body active" style="display: block; max-height: 2000px; padding: 20px;">
+                <div class="accordion-body">
                     <table class="settings-table">
                         <thead>
                             <tr>
                                 <th style="width: 30%;">موضوع</th>
-                                <th style="width: 25%;">امتیاز</th>
-                                <th style="width: 45%;">توضیح</th>
+                                <th style="width: 20%;">امتیاز</th>
+                                <th style="width: 50%;">توضیح</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -527,19 +551,19 @@
                                 <td>
                                     <input type="number" name="mostamar_nomre" id="mostamar_nomre" value="{{ $setting->mostamar_nomre ?? 12 }}" class="form-input" onkeyup="jam()" min="0" max="100">
                                 </td>
-                                <td></td>
+                                <td>
+                                    <div class="score-description-cell">
+                                        <i class="fas fa-info-circle"></i>
+                                        یک سوم از امتیاز در نظر گرفته شده به «تلاش و فعالیت» و دو سوم آن به «پیشرفت درسی» اختصاص می‌یابد؛ امتیاز هر دو بخش توسط سیستم و بر اساس میزان تلاش و عملکرد دانشجو محاسبه خواهد شد.
+                                    </div>
+                                </td>
                             </tr>
                             <tr>
                                 <td>تکلیف یا سمینار</td>
                                 <td>
                                     <input type="number" name="taklif_seminar_nomre" id="taklif_nomre" value="{{ $setting->taklif_seminar_nomre ?? 0 }}" class="form-input" onkeyup="jam()" min="0" max="100">
                                 </td>
-                                <td>
-                                    <div class="input-group">
-                                        <span class="input-group-label">برآورد تعداد تکلیف یا سمینار</span>
-                                        <input type="number" name="max_taklif" value="{{ $setting->max_taklif ?? 8 }}" class="form-input" min="1">
-                                    </div>
-                                </td>
+                                <td></td>
                             </tr>
                             <tr>
                                 <td>آزمون</td>
@@ -599,10 +623,6 @@
                             }}
                         </span>
                     </div>
-                    <div class="score-info">
-                        <p><i class="fas fa-info-circle"></i> پیشرفت درسی: 70 درصد نمره ارزشیابی مستمر (محاسبه توسط سیستم)</p>
-                        <p><i class="fas fa-info-circle"></i> تلاش و فعالیت: 30 درصد نمره ارزشیابی مستمر (محاسبه توسط سیستم)</p>
-                    </div>
                 </div>
             </div>
 
@@ -656,7 +676,12 @@
                                 <td>
                                     <input type="number" name="jalasat" value="{{ $setting->jalasat ?? 16 }}" class="form-input" min="1">
                                 </td>
-                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>تعداد تکلیف/سمینار</td>
+                                <td>
+                                    <input type="number" name="max_taklif" value="{{ $setting->max_taklif ?? 3 }}" class="form-input" min="0">
+                                </td>
                             </tr>
                             <tr>
                                 <td>حداکثر تعداد سوالاتی که توسط دانشجو در هر جلسه طرح می شود</td>
@@ -910,15 +935,6 @@
             }
         });
     });
-
-    // باز کردن اولین آیتم به صورت پیش‌فرض
-    var firstBody = document.querySelector('.accordion-item.active .accordion-body');
-    if (firstBody) {
-        firstBody.style.display = 'block';
-        firstBody.style.maxHeight = firstBody.scrollHeight + 'px';
-        firstBody.style.paddingTop = '20px';
-        firstBody.style.paddingBottom = '20px';
-    }
 
     // ==========================================
     // مدیریت چک‌باکس‌های نمایش با AJAX

@@ -46,7 +46,6 @@ Route::get("/", function () {
     return redirect("/login");
 });
 
-
 // ==========================================
 // Teacher Routes
 // ==========================================
@@ -54,6 +53,8 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
     Route::get('/', [TeacherSiteController::class, 'index'])->name('index_teacher');
 
     Route::prefix('/courses')->group(function () {
+        Route::post('/create', [CourseController::class, 'storeCourse'])->name('courses.store');
+
         Route::post('/edit-setting', [CourseController::class, 'editSetting'])->name('update.setting.courses');
         Route::post('/toggle-visibility/{id}', [CourseController::class, 'toggleVisibility'])->name('courses.toggle.visibility');
         Route::post('/toggle-dore/{id}', [CourseController::class, 'toggleDore'])->name('courses.toggle.dore');
@@ -81,8 +82,6 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
 
         Route::get('/sessions/create/{id}', [CourseController::class, 'create'])->name('sessions.create');
         Route::post('/sessions/store/{id}', [CourseController::class, 'store'])->name('sessions.store');
-
-        Route::post('/create', [CourseController::class, 'storeCourse'])->name('courses.store');
 
         Route::post('/toggle-status/{id}', [CourseController::class, 'toggleStatus'])->name('courses.toggle.status');
         Route::post('/toggle-archive/{id}', [CourseController::class, 'toggleArchive'])->name('courses.toggle.archive');

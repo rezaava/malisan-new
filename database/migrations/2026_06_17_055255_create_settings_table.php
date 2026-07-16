@@ -58,7 +58,7 @@ return new class extends Migration
             $table->integer('max_soal')->nullable()->default(3);
             $table->integer('min_soal')->nullable()->default(2);
             $table->integer('min_davari')->default(14);
-            $table->integer('max_taklif')->default(8);
+            $table->integer('max_taklif')->default(3);
             $table->integer('max_seminar')->nullable()->default(4);
             $table->integer('max_gozaresh')->nullable()->default(4);
             $table->integer('max_gheibat')->nullable()->default(3);
