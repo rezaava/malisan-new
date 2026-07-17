@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('angizeshes', function (Blueprint $table) {
             $table->id();
             $table->text('text');
-            $table->integer('level');
+            $table->tinyInteger('level')->comment('1=20, 2=18-20, 3=15-18, 4=12-15, 5=10-12, 6=<10, 7=ورود');
             $table->timestamps();
         });
     }

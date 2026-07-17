@@ -237,7 +237,7 @@
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <div class="dashboard-wrapper">
-        @if (Auth::user()->hasRole('teacher'))
+        @if (Auth::user()->hasRole('teacher|admin'))
             @include('layout.asideTe')
         @elseif (Auth::user()->hasRole('student'))
             @include('layout.asideSt')

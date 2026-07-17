@@ -39,26 +39,34 @@
             </a>
         @endif
         
+        @if (Auth::user()->hasRole('admin'))
+            <a href="{{ route('admin_angizesh') }}" class="menu-item">
+                <i class="fas fa-comments"></i> <span>پیام انگیزشی</span>
+            </a>
+        @endif
+
         <div class="menu-divider"></div>
         
-        {{-- تغییر نقش --}}
-        @if($isTeacherRoute)
-            <a href="{{ route('index_student') }}" class="menu-item">
-                <i class="fas fa-user-graduate"></i> <span>در نقش دانشجو</span>
-            </a>
-        @elseif($isStudentRoute)
-            <a href="{{ route('index_teacher') }}" class="menu-item">
-                <i class="fas fa-chalkboard-teacher"></i> <span>بازگشت به نقش استاد</span>
-            </a>
-        @else
-            @if($userRole == 'teacher' || $userRole == 'admin')
+        @if (Auth::user()->hasRole('teacher'))
+            {{-- تغییر نقش --}}
+            @if($isTeacherRoute)
                 <a href="{{ route('index_student') }}" class="menu-item">
                     <i class="fas fa-user-graduate"></i> <span>در نقش دانشجو</span>
                 </a>
-            @else
+            @elseif($isStudentRoute)
                 <a href="{{ route('index_teacher') }}" class="menu-item">
-                    <i class="fas fa-chalkboard-teacher"></i> <span>در نقش استاد</span>
+                    <i class="fas fa-chalkboard-teacher"></i> <span>بازگشت به نقش استاد</span>
                 </a>
+            @else
+                @if($userRole == 'teacher' || $userRole == 'admin')
+                    <a href="{{ route('index_student') }}" class="menu-item">
+                        <i class="fas fa-user-graduate"></i> <span>در نقش دانشجو</span>
+                    </a>
+                @else
+                    <a href="{{ route('index_teacher') }}" class="menu-item">
+                        <i class="fas fa-chalkboard-teacher"></i> <span>در نقش استاد</span>
+                    </a>
+                @endif
             @endif
         @endif
         

@@ -152,7 +152,7 @@ class AuthController extends Controller
 
         // هدایت بر اساس نقش
         if ($user->hasRole('admin')) {
-            return redirect()->route('admin.dashboard')->with('success', 'خوش آمدید مدیر گرامی');
+            return redirect()->route('index_teacher')->with('success', 'خوش آمدید مدیر گرامی');
         } elseif ($user->hasRole('teacher')) {
             return redirect()->route('index_teacher')->with('success', 'خوش آمدید استاد گرامی');
         } elseif ($user->hasRole('student')) {

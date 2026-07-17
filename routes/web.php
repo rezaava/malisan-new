@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AzmonController;
 use App\Http\Controllers\ChatController;
@@ -17,22 +18,6 @@ use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\TeacherSiteController;
 use App\Http\Controllers\ExamController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\TestController;
-
-// مسیرهای عمومی
-Route::get('/', [TestController::class, 'index'])->name('index');
-Route::get('/quiz-course', [TestController::class, 'quizCourse'])->name('quizCourse');
-Route::get('/add-course', [TestController::class, 'addCourse'])->name('addCourse');
-Route::get('/publics', [TestController::class, 'publics'])->name('publics');
-Route::get('/exams', [TestController::class, 'exams'])->name('exams');
-Route::get('/surveys', [TestController::class, 'surveys'])->name('surveys');
-Route::get('/content', [TestController::class, 'content'])->name('content');
-Route::get('/create-quiz', [TestController::class, 'createQuiz'])->name('createQuiz');
-Route::get('/quizzes', [TestController::class, 'quizzes'])->name('quizzes');
-Route::get('/chats', [TestController::class, 'chats'])->name('chats');
-Route::get('/change', [TestController::class, 'change'])->name('change');
-Route::get('/azmoon',[TeacherSiteController::class,'azmoon'])->name('azmoon');
-Route::get('/self-tests-list', [TestController::class, 'selfTestsList'])->name('selfTestsList');
 
 // مسیرهای احراز هویت
 Route::get('/login', [AuthController::class, 'login'])->name('login');
@@ -45,6 +30,18 @@ Route::post('/registerPost', [AuthController::class, 'registerPost'])->name('reg
 Route::get("/", function () {
     return redirect("/login");
 });
+
+
+Route::prefix('/admin')->middleware(['role:admin'])->group(function () {
+    Route::prefix('/angizesh')->group(function () {
+        Route::get('/', [AdminController::class, 'angizesh_index'])->name('admin_angizesh');
+        Route::post('/store', [AdminController::class, 'angizesh_store'])->name('admin_angizesh.store');
+        Route::put('/update/{id}', [AdminController::class, 'angizesh_update'])->name('admin_angizesh.update');
+        Route::delete('/destroy/{id}', [AdminController::class, 'angizesh_destroy'])->name('admin_angizesh.destroy');
+        Route::get('/edit/{id}', [AdminController::class, 'angizesh_edit'])->name('admin_angizesh.edit');
+    });
+});
+
 
 // ==========================================
 // Teacher Routes

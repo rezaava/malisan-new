@@ -77,6 +77,10 @@ class TeacherSiteController extends Controller
 
         // 5. تعداد کنکورهای فعال
         $konkor_count = Konkor::where('active', 1)->count();
+        $massage = null;
+        if ($user->hasRole('admin')) {
+            $massage = Angizesh::whereNotIn('level', [8,7])->count();
+        }
 
         return view('teacher.index', compact(
             'user',
@@ -87,6 +91,7 @@ class TeacherSiteController extends Controller
             'total_course_count',
             'student_count',
             'lesson_count',
+            'massage',
             'konkor_count'
         ));
     }
