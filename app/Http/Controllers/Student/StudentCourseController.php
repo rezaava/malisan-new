@@ -28,6 +28,10 @@ class StudentCourseController extends Controller
         }, 'settings'])->findOrFail($id);
 
         $user = Auth::user();
+        $studentRole = Role::where('name', 'student')->first();
+        $teacherRole = Role::where('name', 'teacher')->first();
+        
+        // بررسی اینکه آیا کاربر نقش دانشجو دارد یا خیر
         $isStudent = $user->hasRole('student');
         $setting = $course->settings;
 
@@ -134,6 +138,11 @@ class StudentCourseController extends Controller
                 ->orderBy('id', 'desc')
                 ->first();
             
+            // دریافت تمام exerciseها برای این دوره
+            $exerciseIds = Exercise::whereIn('session_id', $sessions->pluck('id'))
+                ->pluck('session_id')
+                ->toArray();
+            
             foreach ($sessions as $index => $session) {
                 $session['ex_count'] = Exercise::where('session_id', $session->id)->count();
                 
@@ -142,15 +151,22 @@ class StudentCourseController extends Controller
                 $session['gozaresh_last'] = 1;
                 $session['soal_last'] = 1;
                 
-                // تنظیم وضعیت‌های دسترسی برای دکمه‌ها
+                // تنظیم وضعیت‌های دسترسی برای دکمه‌ها - پیش‌فرض همه فعال
                 $session['can_question'] = true;
                 $session['can_homework'] = true;
                 $session['can_report'] = true;
+                
+                // *** تغییر جدید: بررسی وجود تکلیف برای جلسه ***
+                // اگر استاد برای این جلسه تکلیفی تعریف نکرده باشد، دکمه ارسال تکلیف نمایش داده نشود
+                $hasExercise = in_array($session->id, $exerciseIds);
+                if (!$hasExercise) {
+                    $session['can_homework'] = false;
+                }
 
                 // اگر تنظیمات وجود دارد و محدودیت فعال است
                 if ($setting) {
                     // محدودیت طرح سوال به آخرین جلسه
-                    if ($setting->soal_last == 1 && $isStudent) {
+                    if ($setting->soal_last == 1) {
                         if (!$lastSession || $session->id != $lastSession->id) {
                             $session['can_question'] = false;
                             $session['soal_last'] = 0;
@@ -158,7 +174,8 @@ class StudentCourseController extends Controller
                     }
                     
                     // محدودیت ارسال تکلیف به آخرین جلسه
-                    if ($setting->taklif_last == 1) {
+                    // فقط اگر تکلیف وجود داشته باشد و محدودیت فعال باشد
+                    if ($setting->taklif_last == 1 && $hasExercise) {
                         if (!$lastSession || $session->id != $lastSession->id) {
                             $session['can_homework'] = false;
                             $session['taklif_last'] = 0;
@@ -175,9 +192,6 @@ class StudentCourseController extends Controller
                 }
             }
         }
-
-        $studentRole = Role::where('name', 'student')->first();
-        $teacherRole = Role::where('name', 'teacher')->first();
 
         $course['sessions'] = $course->sessions()->count();
         $course['count'] = ($studentRole) 
@@ -205,6 +219,7 @@ class StudentCourseController extends Controller
             'student' => (int) $isStudent,
         ]);
     }
+    
     public function join(Request $request)
     {
         // اعتبارسنجی

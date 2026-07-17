@@ -52,6 +52,16 @@
         z-index: 10;
     }
 
+    .action-icon-btn.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .action-icon-btn.hidden-btn {
+        display: none !important;
+    }
+
     @media (max-width: 768px) {
         .session-action-buttons {
             gap: 6px;
@@ -61,6 +71,24 @@
             height: 34px;
             font-size: 14px;
         }
+    }
+
+    .text-center { text-align: center; }
+    .p-5 { padding: 3rem; }
+    .m-3 { margin: 1rem; }
+    .text-muted { color: #6c757d; }
+    .fa-3x { font-size: 3em; }
+    .mb-3 { margin-bottom: 1rem; }
+    .alert-warning {
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        color: #856404;
+        padding: 0.75rem 1.25rem;
+        border-radius: 0.25rem;
+        width: 100%;
+    }
+    .alert-warning i {
+        margin-left: 0.5rem;
     }
 </style>
 @endsection
@@ -136,7 +164,7 @@
                 </div>
                 <div class="session-action-buttons">
                     {{-- دکمه طرح سوال --}}
-                    <a href="#" id="questionBtn" class="action-icon-btn" data-tooltip="{{ $setting->tarahi_soal_desc }}">
+                    <a href="#" id="questionBtn" class="action-icon-btn" data-tooltip="{{ $setting->tarahi_soal_desc ?? 'طرح سوال' }}">
                         <i class="fas fa-question-circle"></i>
                     </a>
 
@@ -146,7 +174,7 @@
                     </a>
 
                     {{-- دکمه ارسال گزارش --}}
-                    <a href="#" id="reportBtn" class="action-icon-btn" data-tooltip="{{ $setting->ersal_gozaresh_desc }}">
+                    <a href="#" id="reportBtn" class="action-icon-btn" data-tooltip="{{ $setting->ersal_gozaresh_desc ?? 'ارسال گزارش' }}">
                         <i class="fas fa-edit"></i>
                     </a>
                 </div>
@@ -221,7 +249,7 @@
         const pdfViewer = document.getElementById('pdfViewer');
         if (pdfViewer) {
             if (pdfUrl) {
-                pdfViewer.outerHTML = `<object id="pdfViewer" data="https://docs.google.com/gview?embedded=true&url=${pdfUrl}" type="application/pdf" width="100%" height="550px">
+                pdfViewer.outerHTML = `<object id="pdfViewer" data="${pdfUrl}" type="application/pdf" width="100%" height="550px">
                     <object width="100%" height="550" data="https://docs.google.com/gview?embedded=true&url=${pdfUrl}"></object>
                 </object>`;
             } else {
@@ -245,6 +273,9 @@
             }
         }
 
+        // ===== به‌روزرسانی توضیحات جلسه =====
+        // (در صورت نیاز می‌توانید توضیحات را نیز از طریق AJAX دریافت کنید)
+
         // ==========================================
         // تنظیم دکمه‌ها بر اساس وضعیت دسترسی جلسه
         // ==========================================
@@ -262,8 +293,12 @@
                 questionBtn.style.display = 'inline-flex';
                 questionBtn.style.opacity = '1';
                 questionBtn.style.pointerEvents = 'auto';
+                questionBtn.classList.remove('disabled');
+                questionBtn.classList.remove('hidden-btn');
             } else {
-                questionBtn.style.display = 'none'; // پنهان کردن کامل
+                questionBtn.style.display = 'none';
+                questionBtn.classList.add('disabled');
+                questionBtn.classList.add('hidden-btn');
             }
         }
 
@@ -275,8 +310,12 @@
                 homeworkBtn.style.display = 'inline-flex';
                 homeworkBtn.style.opacity = '1';
                 homeworkBtn.style.pointerEvents = 'auto';
+                homeworkBtn.classList.remove('disabled');
+                homeworkBtn.classList.remove('hidden-btn');
             } else {
-                homeworkBtn.style.display = 'none'; // پنهان کردن کامل
+                homeworkBtn.style.display = 'none';
+                homeworkBtn.classList.add('disabled');
+                homeworkBtn.classList.add('hidden-btn');
             }
         }
 
@@ -288,8 +327,12 @@
                 reportBtn.style.display = 'inline-flex';
                 reportBtn.style.opacity = '1';
                 reportBtn.style.pointerEvents = 'auto';
+                reportBtn.classList.remove('disabled');
+                reportBtn.classList.remove('hidden-btn');
             } else {
-                reportBtn.style.display = 'none'; // پنهان کردن کامل
+                reportBtn.style.display = 'none';
+                reportBtn.classList.add('disabled');
+                reportBtn.classList.add('hidden-btn');
             }
         }
     }
@@ -327,8 +370,12 @@
                 if (canQuestion) {
                     questionBtn.setAttribute('href', `/student/questions/create/${sessionId}`);
                     questionBtn.style.display = 'inline-flex';
+                    questionBtn.classList.remove('disabled');
+                    questionBtn.classList.remove('hidden-btn');
                 } else {
                     questionBtn.style.display = 'none';
+                    questionBtn.classList.add('disabled');
+                    questionBtn.classList.add('hidden-btn');
                 }
             }
             
@@ -338,8 +385,12 @@
                 if (canHomework) {
                     homeworkBtn.setAttribute('href', `/student/exercise/show/${sessionId}`);
                     homeworkBtn.style.display = 'inline-flex';
+                    homeworkBtn.classList.remove('disabled');
+                    homeworkBtn.classList.remove('hidden-btn');
                 } else {
                     homeworkBtn.style.display = 'none';
+                    homeworkBtn.classList.add('disabled');
+                    homeworkBtn.classList.add('hidden-btn');
                 }
             }
 
@@ -349,31 +400,15 @@
                 if (canReport) {
                     reportBtn.setAttribute('href', `/student/discussion/create/${sessionId}`);
                     reportBtn.style.display = 'inline-flex';
+                    reportBtn.classList.remove('disabled');
+                    reportBtn.classList.remove('hidden-btn');
                 } else {
                     reportBtn.style.display = 'none';
+                    reportBtn.classList.add('disabled');
+                    reportBtn.classList.add('hidden-btn');
                 }
             }
         }
     });
 </script>
-
-<style>
-    .text-center { text-align: center; }
-    .p-5 { padding: 3rem; }
-    .m-3 { margin: 1rem; }
-    .text-muted { color: #6c757d; }
-    .fa-3x { font-size: 3em; }
-    .mb-3 { margin-bottom: 1rem; }
-    .alert-warning {
-        background-color: #fff3cd;
-        border: 1px solid #ffeaa7;
-        color: #856404;
-        padding: 0.75rem 1.25rem;
-        border-radius: 0.25rem;
-        width: 100%;
-    }
-    .alert-warning i {
-        margin-left: 0.5rem;
-    }
-</style>
 @endsection
