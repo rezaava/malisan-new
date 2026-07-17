@@ -240,7 +240,6 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
         Route::get('/start/{course_id}', [ExamController::class, 'startSelfTest'])->name('student.selfTest.start');
         Route::post('/next', [ExamController::class, 'nextQuestion'])->name('student.selfTest.next');
         Route::get('/results', [ExamController::class, 'selfTestResults'])->name('student.selfTest.results');
-        Route::get('/history', [ExamController::class, 'selfTestHistory'])->name('student.selfTest.history');
     });
 
     // ==========================================

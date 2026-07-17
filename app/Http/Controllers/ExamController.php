@@ -666,38 +666,6 @@ class ExamController extends Controller
                 ]);
     }
 
-    /**
-     * تاریخچه خودآزمایی‌های دانشجو
-     */
-    public function selfTestHistory()
-    {
-        $quizzes = Quiz::where('user_id', Auth::id())
-            ->whereNull('azmon_id')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        foreach ($quizzes as $quiz) {
-            $questions = Answer::where('quiz_id', $quiz->id)->count();
-            $quiz['count'] = $questions;
-
-            $correct = 0;
-            $answers = Answer::where('quiz_id', $quiz->id)->get();
-            foreach ($answers as $answer) {
-                $q = Question::find($answer->question_id);
-                if ($q && $q->answer == $answer->answer) {
-                    $correct++;
-                }
-            }
-            $quiz['correct'] = $correct;
-        }
-
-        return view('student.self-test-history', compact('quizzes'))->with([
-            'pageTitle' => 'تاریخچه خودآزمایی',
-            'pageName' => 'تاریخچه',
-            'pageDescription' => 'مشاهده تاریخچه خودآزمایی‌ها',
-        ]);
-    }
-
     // ==========================================
     // متدهای کمکی (Helper Methods)
     // ==========================================

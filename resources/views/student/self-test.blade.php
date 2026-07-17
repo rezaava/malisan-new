@@ -561,23 +561,13 @@
                     <i class="fas fa-check"></i>
                     ثبت پاسخ
                 </button>
+                <button type="button" class="btn-report-issue" onclick="openReportModal()">
+                    <i class="fas fa-flag"></i>
+                    گزارش ایراد سوال
+                </button>
             </div>
         </form>
     </div>
-</div>
-
-{{-- ===== دکمه گزارش ایراد ===== --}}
-<div class="form-actions">
-    <button type="button" class="btn-submit-answer" id="submitBtn">
-        <i class="fas fa-check"></i>
-        ثبت پاسخ
-    </button>
-    
-    {{-- دکمه گزارش ایراد سوال --}}
-    <button type="button" class="btn-report-issue" onclick="openReportModal()">
-        <i class="fas fa-flag"></i>
-        گزارش ایراد سوال
-    </button>
 </div>
 
 {{-- ===== MODAL REPORT ISSUE ===== --}}

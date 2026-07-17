@@ -18,7 +18,7 @@ class AuthController extends Controller
             // اگر کاربر لاگین بود بر اساس نقش هدایتش کن
             $user = auth()->user();
             if ($user->hasRole('admin')) {
-                return redirect()->route('admin.dashboard');
+                return redirect()->route('index_teacher');
             } elseif ($user->hasRole('teacher')) {
                 return redirect()->route('index_teacher');
             } elseif ($user->hasRole('student')) {
@@ -165,7 +165,7 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         Auth::logout();
-            session()->flush();
+        session()->flush();
 
         return redirect('/login')->with('success', 'با موفقیت خارج شدید');
     }

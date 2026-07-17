@@ -29,14 +29,16 @@
         @endif
         
         {{-- مکالمات --}}
-        @if($isTeacherRoute)
-            <a href="{{ route('teacher.chat.index') }}" class="menu-item {{ request()->routeIs('teacher.chat.index') ? 'active-menu' : '' }}">
-                <i class="fas fa-comments"></i> <span>مکالمات</span>
-            </a>
-        @else
-            <a href="{{ route('student.chat.index') }}" class="menu-item {{ request()->routeIs('student.chat.index') ? 'active-menu' : '' }}">
-                <i class="fas fa-comments"></i> <span>مکالمات</span>
-            </a>
+        @if (!Auth::user()->hasRole('admin'))            
+            @if($isTeacherRoute)
+                <a href="{{ route('teacher.chat.index') }}" class="menu-item {{ request()->routeIs('teacher.chat.index') ? 'active-menu' : '' }}">
+                    <i class="fas fa-comments"></i> <span>مکالمات</span>
+                </a>
+            @else
+                <a href="{{ route('student.chat.index') }}" class="menu-item {{ request()->routeIs('student.chat.index') ? 'active-menu' : '' }}">
+                    <i class="fas fa-comments"></i> <span>مکالمات</span>
+                </a>
+            @endif
         @endif
         
         @if (Auth::user()->hasRole('admin'))

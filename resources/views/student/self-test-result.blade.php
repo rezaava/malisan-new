@@ -9,7 +9,7 @@
 <style>
     /* ===== CONTAINER ===== */
     .result-container {
-        max-width: 900px;
+        max-width: 1200px;
         margin: 30px auto;
         padding: 0 20px;
     }
@@ -523,7 +523,7 @@
                     @if($motivational)
                         <div class="motivational-box">
                             <i class="fas fa-star"></i>
-                            {{ $motivational->text }}
+                            {!! $motivational->text !!}
                         </div>
                     @endif
                 </div>
@@ -603,25 +603,17 @@
             </div>
             @php $qNum++; @endphp
         @endforeach
-
         {{-- ===== ACTIONS ===== --}}
         <div class="result-actions">
             <a href="{{ route('view.coure.St', $course->id) }}" class="btn-result btn-result-outline">
                 <i class="fas fa-arrow-right"></i>
                 بازگشت به دوره
             </a>
-
             <a href="{{ route('student.selfTest.start', $course->id) }}" class="btn-result btn-result-primary">
                 <i class="fas fa-redo"></i>
                 شروع مجدد
             </a>
-
-            <a href="{{ route('student.selfTest.history') }}" class="btn-result btn-result-outline-success">
-                <i class="fas fa-history"></i>
-                تاریخچه
-            </a>
         </div>
-
     </div>
 </div>
 @endsection
