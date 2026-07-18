@@ -66,6 +66,12 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
             Route::post('/delete-file/{id}', [CourseController::class, 'deleteSessionFile'])->name('sessions.delete.file');
         });
 
+
+        Route::prefix('/settings')->group(function () {
+            Route::post('/update-report-desc', [CourseController::class, 'updateReportDescription'])->name('teacher.settings.update_report_desc');
+            Route::get('/get-report-desc', [CourseController::class, 'getReportDescription'])->name('teacher.settings.get_report_desc');
+        });
+        
         // مسیر ویرایش (با PUT)
         Route::post('/{id}', [CourseController::class, 'update'])->name('courses.update');
         
@@ -240,6 +246,7 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
         Route::get('/start/{course_id}', [ExamController::class, 'startSelfTest'])->name('student.selfTest.start');
         Route::post('/next', [ExamController::class, 'nextQuestion'])->name('student.selfTest.next');
         Route::get('/results', [ExamController::class, 'selfTestResults'])->name('student.selfTest.results');
+        Route::get('/history', [ExamController::class, 'selfTestHistory'])->name('student.selfTest.history');
     });
 
     // ==========================================

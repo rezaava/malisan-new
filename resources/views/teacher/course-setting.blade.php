@@ -129,6 +129,11 @@
         outline: none;
     }
 
+    .form-input.error {
+        border-color: #e74c3c;
+        box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+    }
+
     .form-textarea {
         width: 100%;
         padding: 8px 12px;
@@ -246,6 +251,53 @@
         font-weight: 700;
         color: #1e6f9f;
         text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .total-score.error {
+        background: #fde8e8;
+        color: #e74c3c;
+    }
+
+    .total-score.success {
+        background: #e8f5e9;
+        color: #27ae60;
+    }
+
+    .total-score .score-text {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-default-score {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 20px;
+        background: #fff;
+        color: #1e6f9f;
+        border: 2px solid #1e6f9f;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-default-score:hover {
+        background: #1e6f9f;
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(30, 111, 159, 0.3);
+    }
+
+    .btn-default-score i {
+        font-size: 14px;
     }
 
     .score-info {
@@ -286,9 +338,15 @@
         box-shadow: 0 4px 16px rgba(30, 111, 159, 0.3);
     }
 
-    .save-btn:hover {
+    .save-btn:hover:not(:disabled) {
         transform: translateY(-2px);
         box-shadow: 0 8px 24px rgba(30, 111, 159, 0.4);
+    }
+
+    .save-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
     }
 
     .save-btn i {
@@ -470,9 +528,38 @@
         background: linear-gradient(135deg, #e74c3c, #c0392b);
     }
 
+    .custom-toast.warning {
+        background: linear-gradient(135deg, #f39c12, #d68910);
+    }
+
     .custom-toast i {
         font-size: 20px;
         flex-shrink: 0;
+    }
+
+    /* ===== اعتبارسنجی ===== */
+    .validation-error {
+        color: #e74c3c;
+        font-size: 13px;
+        font-weight: 500;
+        margin-top: 8px;
+        padding: 10px 16px;
+        background: #fde8e8;
+        border-radius: 8px;
+        border-right: 4px solid #e74c3c;
+        display: none;
+        text-align: center;
+    }
+
+    .validation-error.show {
+        display: block;
+        animation: shake 0.5s ease;
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-10px); }
+        75% { transform: translateX(10px); }
     }
 
     @media (max-width: 768px) {
@@ -508,6 +595,14 @@
             font-size: 11px;
             padding: 6px 10px;
         }
+        .total-score {
+            flex-direction: column;
+            gap: 12px;
+        }
+        .btn-default-score {
+            width: 100%;
+            justify-content: center;
+        }
     }
 </style>
 @endsection
@@ -522,8 +617,8 @@
             @include('layout.backbtn')
         </div>
     </div>
-    <form action="/teacher/courses/edit-setting" method="post" enctype="multipart/form-data">
-            @csrf
+    <form action="/teacher/courses/edit-setting" method="post" enctype="multipart/form-data" id="settingsForm">
+        @csrf
         <input name="course_id" value="{{ $course->id }}" hidden>
 
         <div class="accordion-wrapper">
@@ -549,7 +644,7 @@
                             <tr>
                                 <td>ارزشیابی مستمر</td>
                                 <td>
-                                    <input type="number" name="mostamar_nomre" id="mostamar_nomre" value="{{ $setting->mostamar_nomre ?? 12 }}" class="form-input" onkeyup="jam()" min="0" max="100">
+                                    <input type="number" name="mostamar_nomre" id="mostamar_nomre" value="{{ $setting->mostamar_nomre ?? 12 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="100">
                                 </td>
                                 <td>
                                     <div class="score-description-cell">
@@ -561,21 +656,21 @@
                             <tr>
                                 <td>تکلیف یا سمینار</td>
                                 <td>
-                                    <input type="number" name="taklif_seminar_nomre" id="taklif_nomre" value="{{ $setting->taklif_seminar_nomre ?? 0 }}" class="form-input" onkeyup="jam()" min="0" max="100">
+                                    <input type="number" name="taklif_seminar_nomre" id="taklif_nomre" value="{{ $setting->taklif_seminar_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="100">
                                 </td>
                                 <td></td>
                             </tr>
                             <tr>
                                 <td>آزمون</td>
                                 <td>
-                                    <input type="number" name="azmon_nomre" id="azmon_nomre" value="{{ $setting->azmon_nomre ?? 0 }}" class="form-input" onkeyup="jam()" min="0" max="100">
+                                    <input type="number" name="azmon_nomre" id="azmon_nomre" value="{{ $setting->azmon_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="100">
                                 </td>
                                 <td></td>
                             </tr>
                             <tr>
                                 <td>حضور و غیاب</td>
                                 <td>
-                                    <input type="number" name="hozor_ghayab_nomre" id="hozor_ghayab_nomre" value="{{ $setting->hozor_ghayab_nomre ?? 0 }}" class="form-input" onkeyup="jam()" min="0" max="100">
+                                    <input type="number" name="hozor_ghayab_nomre" id="hozor_ghayab_nomre" value="{{ $setting->hozor_ghayab_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="100">
                                 </td>
                                 <td>
                                     <textarea name="hozor_ghayab_desc" class="form-textarea" rows="2">{{ $setting->hozor_ghayab_desc ?? 'نمره حضور و غیاب' }}</textarea>
@@ -584,7 +679,7 @@
                             <tr>
                                 <td>میان ترم</td>
                                 <td>
-                                    <input type="number" name="miyan_term_nomre" id="miyan_term_nomre" value="{{ $setting->miyan_term_nomre ?? 0 }}" class="form-input" onkeyup="jam()" min="0" max="100">
+                                    <input type="number" name="miyan_term_nomre" id="miyan_term_nomre" value="{{ $setting->miyan_term_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="100">
                                 </td>
                                 <td>
                                     <textarea name="miyan_term_desc" class="form-textarea" rows="2">{{ $setting->miyan_term_desc ?? 'نمره میان ترم' }}</textarea>
@@ -593,7 +688,7 @@
                             <tr>
                                 <td>کار عملی (بازدید|آزمایشگاه|کارگاه)</td>
                                 <td>
-                                    <input type="number" name="kar_amali_nomre" id="kar_amali_nomre" value="{{ $setting->kar_amali_nomre ?? 0 }}" class="form-input" onkeyup="jam()" min="0" max="100">
+                                    <input type="number" name="kar_amali_nomre" id="kar_amali_nomre" value="{{ $setting->kar_amali_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="100">
                                 </td>
                                 <td>
                                     <textarea name="kar_amali_desc" class="form-textarea" rows="2">{{ $setting->kar_amali_desc ?? 'نمره کار عملی' }}</textarea>
@@ -602,7 +697,7 @@
                             <tr>
                                 <td>پایان ترم</td>
                                 <td>
-                                    <input type="number" name="payan_term_nomre" id="payan_term_nomre" value="{{ $setting->payan_term_nomre ?? 6 }}" class="form-input" onkeyup="jam()" min="0" max="100">
+                                    <input type="number" name="payan_term_nomre" id="payan_term_nomre" value="{{ $setting->payan_term_nomre ?? 6 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="100">
                                 </td>
                                 <td>
                                     <textarea name="payan_term_desc" class="form-textarea" rows="2">{{ $setting->payan_term_desc ?? 'نمره پایان ترم' }}</textarea>
@@ -610,18 +705,31 @@
                             </tr>
                         </tbody>
                     </table>
-                    <div class="total-score">
-                        مجموع نمرات : <span id="majmo">
-                            {{ 
-                                ($setting->mostamar_nomre ?? 12) + 
-                                ($setting->taklif_seminar_nomre ?? 0) + 
-                                ($setting->azmon_nomre ?? 0) +
-                                ($setting->hozor_ghayab_nomre ?? 0) +
-                                ($setting->miyan_term_nomre ?? 0) +
-                                ($setting->kar_amali_nomre ?? 0) +
-                                ($setting->payan_term_nomre ?? 6)
-                            }}
+                    
+                    <!-- پیام خطای مجموع نمرات -->
+                    <div class="validation-error" id="scoreValidationError">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span id="scoreErrorMessage"></span>
+                    </div>
+
+                    <div class="total-score" id="totalScoreBox">
+                        <span class="score-text">
+                            مجموع نمرات : <span id="majmo">
+                                {{ 
+                                    ($setting->mostamar_nomre ?? 12) + 
+                                    ($setting->taklif_seminar_nomre ?? 0) + 
+                                    ($setting->azmon_nomre ?? 0) +
+                                    ($setting->hozor_ghayab_nomre ?? 0) +
+                                    ($setting->miyan_term_nomre ?? 0) +
+                                    ($setting->kar_amali_nomre ?? 0) +
+                                    ($setting->payan_term_nomre ?? 6)
+                                }}
+                            </span>
                         </span>
+                        <button type="button" class="btn-default-score" onclick="setDefaultScore()">
+                            <i class="fas fa-undo-alt"></i>
+                            بارم بندی پیش فرض
+                        </button>
                     </div>
                 </div>
             </div>
@@ -863,7 +971,7 @@
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="save-btn">
+            <button type="submit" class="save-btn" id="submitBtn">
                 <i class="fas fa-save"></i>
                 ذخیره اطلاعات
             </button>
@@ -874,7 +982,10 @@
 
 @section('js')
 <script>
-    function jam() {
+    // ==========================================
+    // محاسبه مجموع نمرات
+    // ==========================================
+    function calculateTotal() {
         var azmon = parseFloat(document.getElementById('azmon_nomre').value) || 0;
         var taklif = parseFloat(document.getElementById('taklif_nomre').value) || 0;
         var mostamar = parseFloat(document.getElementById('mostamar_nomre').value) || 0;
@@ -883,11 +994,102 @@
         var karAmali = parseFloat(document.getElementById('kar_amali_nomre').value) || 0;
         var payan = parseFloat(document.getElementById('payan_term_nomre').value) || 0;
         
-        var total = azmon + taklif + mostamar + hozor + miyan + karAmali + payan;
-        document.getElementById('majmo').textContent = total;
+        return azmon + taklif + mostamar + hozor + miyan + karAmali + payan;
     }
-    jam();
 
+    function updateTotalDisplay() {
+        var total = calculateTotal();
+        document.getElementById('majmo').textContent = total;
+        return total;
+    }
+
+    // ==========================================
+    // اعتبارسنجی مجموع نمرات
+    // ==========================================
+    function validateScores() {
+        var total = updateTotalDisplay();
+        var errorDiv = document.getElementById('scoreValidationError');
+        var errorMessage = document.getElementById('scoreErrorMessage');
+        var totalBox = document.getElementById('totalScoreBox');
+        var submitBtn = document.getElementById('submitBtn');
+        var scoreInputs = document.querySelectorAll('.score-input');
+
+        // حذف کلاس error از همه فیلدها
+        scoreInputs.forEach(input => input.classList.remove('error'));
+
+        if (total !== 100) {
+            // نمایش خطا
+            if (total > 100) {
+                errorMessage.textContent = 'مجموع نمرات نمی‌تواند از ۱۰۰ بیشتر باشد (مجموع فعلی: ' + total + ')';
+            } else {
+                errorMessage.textContent = 'مجموع نمرات باید دقیقاً برابر با ۱۰۰ باشد (مجموع فعلی: ' + total + ')';
+            }
+            errorDiv.classList.add('show');
+            totalBox.className = 'total-score error';
+            submitBtn.disabled = true;
+            return false;
+        } else {
+            // اعتبارسنجی موفق
+            errorDiv.classList.remove('show');
+            totalBox.className = 'total-score success';
+            submitBtn.disabled = false;
+            return true;
+        }
+    }
+
+    // ==========================================
+    // اجرای اعتبارسنجی هنگام بارگذاری
+    // ==========================================
+    document.addEventListener('DOMContentLoaded', function() {
+        validateScores();
+        
+        // جلوگیری از ارسال فرم در صورت نامعتبر بودن
+        document.getElementById('settingsForm').addEventListener('submit', function(e) {
+            if (!validateScores()) {
+                e.preventDefault();
+                showToast('error', 'لطفاً مجموع نمرات را به ۱۰۰ برسانید');
+                
+                // باز کردن اکیاردین بارم بندی
+                var accordionHeader = document.querySelector('.accordion-item:first-child .accordion-header');
+                if (accordionHeader) {
+                    var body = accordionHeader.nextElementSibling;
+                    if (!body.classList.contains('active')) {
+                        toggleAccordion(accordionHeader);
+                    }
+                }
+                
+                // اسکرول به بخش خطا
+                document.getElementById('scoreValidationError').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+            }
+        });
+    });
+
+    // ==========================================
+    // بارم بندی پیش فرض
+    // ==========================================
+    function setDefaultScore() {
+        // تنظیم مقادیر پیش فرض
+        document.getElementById('mostamar_nomre').value = 60;
+        document.getElementById('taklif_nomre').value = 0;
+        document.getElementById('azmon_nomre').value = 0;
+        document.getElementById('hozor_ghayab_nomre').value = 0;
+        document.getElementById('miyan_term_nomre').value = 0;
+        document.getElementById('kar_amali_nomre').value = 10;
+        document.getElementById('payan_term_nomre').value = 30;
+        
+        // اعتبارسنجی و به‌روزرسانی
+        validateScores();
+        
+        // نمایش پیام موفقیت
+        showToast('success', 'بارم بندی به حالت پیش فرض (ارزشیابی مستمر: ۶۰، کار عملی: ۱۰، پایان ترم: ۳۰) تنظیم شد');
+    }
+
+    // ==========================================
+    // توابع کمکی
+    // ==========================================
     function toggleAccordion(header) {
         var body = header.nextElementSibling;
         var icon = header.querySelector('.accordion-icon');
@@ -1004,7 +1206,7 @@
         const toast = document.createElement('div');
         toast.className = `custom-toast ${type}`;
         toast.innerHTML = `
-            <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-exclamation-circle'}"></i>
             <span>${message}</span>
         `;
         document.body.appendChild(toast);
@@ -1013,7 +1215,7 @@
         setTimeout(() => {
             toast.classList.remove('show');
             setTimeout(() => toast.remove(), 300);
-        }, 3000);
+        }, 4000);
     }
 </script>
 @endsection

@@ -10,7 +10,7 @@
 
 <style>
     .report-container {
-        max-width: 850px;
+        max-width: 1100px;
         margin: 30px auto;
         padding: 0 20px;
     }
@@ -23,11 +23,6 @@
     }
 
     .report-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 15px;
         padding-bottom: 20px;
         border-bottom: 2px solid #f0f4f9;
         margin-bottom: 28px;
@@ -38,26 +33,85 @@
         font-size: 20px;
         font-weight: 700;
         color: #1a2332;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
 
     .report-header h3 i {
         color: #1e6f9f;
-        margin-left: 10px;
     }
 
-    .report-header .course-badge {
-        background: #f0f4f9;
-        padding: 6px 18px;
+    /* ===== INFO BADGES ===== */
+    .info-badges {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 12px;
+        margin-top: 14px;
+    }
+
+    .info-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #f8fafc;
+        padding: 8px 16px;
         border-radius: 30px;
         font-size: 13px;
-        color: #4a5a6e;
+        color: #1a2332;
+        border: 1px solid #e8edf3;
+        transition: all 0.3s ease;
     }
 
-    .report-header .course-badge i {
+    .info-badge:hover {
+        background: #f0f7fe;
+        border-color: #1e6f9f;
+    }
+
+    .info-badge .badge-icon {
+        width: 28px;
+        height: 28px;
+        background: #e3f2fd;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         color: #1e6f9f;
-        margin-left: 6px;
+        font-size: 12px;
+        flex-shrink: 0;
     }
 
+    .info-badge .badge-label {
+        color: #6b7a8f;
+        font-weight: 500;
+    }
+
+    .info-badge .badge-value {
+        font-weight: 600;
+        color: #1a2332;
+    }
+
+    .info-badge.course-badge {
+        background: linear-gradient(135deg, #f0f7fe, #e3f2fd);
+        border-color: #1e6f9f;
+    }
+
+    .info-badge.course-badge .badge-icon {
+        background: #1e6f9f;
+        color: #fff;
+    }
+
+    .info-badge.session-badge .badge-icon {
+        background: #fff3e0;
+        color: #e65100;
+    }
+
+    .info-badge.topic-badge .badge-icon {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    /* ===== FORM ===== */
     .form-group {
         margin-bottom: 22px;
     }
@@ -140,6 +194,31 @@
         min-height: 200px !important;
     }
 
+    .guide-text-box {
+        background: #f0f7fe;
+        border-radius: 12px;
+        padding: 14px 18px;
+        margin-bottom: 18px;
+        border-right: 4px solid #1e6f9f;
+        font-size: 14px;
+        color: #1a2332;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .guide-text-box i {
+        color: #1e6f9f;
+        font-size: 18px;
+        margin-top: 2px;
+        flex-shrink: 0;
+    }
+
+    .guide-text-box strong {
+        color: #1e6f9f;
+    }
+
+    /* ===== FORM ACTIONS ===== */
     .form-actions {
         display: flex;
         gap: 14px;
@@ -173,6 +252,12 @@
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(30, 111, 159, 0.3);
         color: #fff;
+    }
+
+    .btn-submit-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
     }
 
     .btn-submit-outline {
@@ -226,14 +311,19 @@
         font-size: 18px;
     }
 
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
         .report-card {
             padding: 20px 16px;
         }
 
-        .report-header {
+        .info-badges {
             flex-direction: column;
-            align-items: stretch;
+            gap: 8px;
+        }
+
+        .info-badge {
+            width: 100%;
         }
 
         .form-actions {
@@ -258,11 +348,37 @@
         <div class="report-header">
             <h3>
                 <i class="fas fa-file-alt"></i>
-                ارسال گزارش برای جلسه {{ $session->number }}: {{ $session->name }}
+                ارسال گزارش
             </h3>
-            <div class="course-badge">
-                <i class="fas fa-book-open"></i>
-                {{ $course->name }}
+
+            {{-- INFO BADGES --}}
+            <div class="info-badges">
+                {{-- درس --}}
+                <div class="info-badge course-badge">
+                    <span class="badge-icon">
+                        <i class="fas fa-book-open"></i>
+                    </span>
+                    <span class="badge-label">درس:</span>
+                    <span class="badge-value">{{ $course->name }}</span>
+                </div>
+
+                {{-- شماره جلسه --}}
+                <div class="info-badge session-badge">
+                    <span class="badge-icon">
+                        <i class="fas fa-hashtag"></i>
+                    </span>
+                    <span class="badge-label">جلسه:</span>
+                    <span class="badge-value">{{ $session->number }}</span>
+                </div>
+
+                {{-- موضوع جلسه --}}
+                <div class="info-badge topic-badge">
+                    <span class="badge-icon">
+                        <i class="fas fa-tag"></i>
+                    </span>
+                    <span class="badge-label">موضوع:</span>
+                    <span class="badge-value">{{ $session->name }}</span>
+                </div>
             </div>
         </div>
 
@@ -286,14 +402,20 @@
             @csrf
             <input type="hidden" name="session_id" value="{{ $session->id }}">
 
+            {{-- راهنما --}}
+            <div class="guide-text-box">
+                <i class="fas fa-lightbulb"></i>
+                <div>
+                    <strong>راهنمای گزارش:</strong>
+                    {{ $course->settings->ersal_gozaresh_desc ?? 'موضوع اصلی این جلسه چه بود و چه هدفی داشت؟ لطفاً یک نکتهٔ آموزنده از مطالب ارائه شده را با بیانی دیگر (به زبان خودتان) بازنویسی کنید.' }}
+                </div>
+            </div>
+
             {{-- Text --}}
             <div class="form-group {{ $errors->has('text') ? 'has-error' : '' }}">
                 <label>
                     متن گزارش <span class="required">*</span> 
                 </label>
-                <div class="text-center">
-                    <small>{{$course->settings->ersal_gozaresh_desc}}</small> 
-                </div>
                 <textarea class="jodit-editor" name="text" id="reportEditor" 
                           placeholder="متن گزارش خود را وارد کنید...">{{ old('text') }}</textarea>
                 @if($errors->has('text'))
@@ -323,7 +445,6 @@
 @endsection
 
 @section('js')
-{{-- حذف اسکریپت‌های CKEditor و Select2 غیرضروری --}}
 <script src="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.js"></script>
 
 <script>

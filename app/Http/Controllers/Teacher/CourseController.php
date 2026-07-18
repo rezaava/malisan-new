@@ -30,6 +30,127 @@ use Log;
 
 class CourseController extends Controller
 {
+    /**
+     * دریافت توضیحات ارسال گزارش برای درس خاص
+     */
+    public function getReportDescription(Request $request)
+    {
+        try {
+            // دریافت course_id از درخواست
+            $courseId = $request->input('course_id');
+            
+            if (!$courseId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'شناسه درس ارسال نشده است'
+                ], 400);
+            }
+            
+            $course = Course::findOrFail($courseId);
+            
+            // بررسی دسترسی
+            $user = Auth::user();
+            $teacherRole = Role::where('name', 'teacher')->first();
+            $isOwner = DB::table('course_user')
+                ->where('user_id', $user->id)
+                ->where('course_id', $course->id)
+                ->where('role_id', $teacherRole->id)
+                ->exists();
+                
+            if (!$isOwner) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'شما دسترسی به این درس ندارید'
+                ], 403);
+            }
+            
+            // گرفتن تنظیمات این درس
+            $setting = Setting::where('course_id', $course->id)->first();
+            
+            if (!$setting) {
+                $setting = Setting::create([
+                    'course_id' => $course->id,
+                    'ersal_gozaresh_desc' => 'موضوع اصلی این جلسه چه بود و چه هدفی داشت؟ لطفاً یک نکتهٔ آموزنده از مطالب ارائه شده را با بیانی دیگر (به زبان خودتان) بازنویسی کنید.'
+                ]);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'description' => $setting->ersal_gozaresh_desc ?? 'موضوع اصلی این جلسه چه بود و چه هدفی داشت؟ لطفاً یک نکتهٔ آموزنده از مطالب ارائه شده را با بیانی دیگر (به زبان خودتان) بازنویسی کنید.'
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در دریافت توضیحات: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    /**
+     * به‌روزرسانی توضیحات ارسال گزارش برای درس خاص
+     */
+    public function updateReportDescription(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'description' => 'required|string|max:5000',
+            'course_id' => 'required|exists:courses,id'
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+    
+        try {
+            $courseId = $request->course_id;
+            $course = Course::findOrFail($courseId);
+            
+            // بررسی دسترسی
+            $user = Auth::user();
+            $teacherRole = Role::where('name', 'teacher')->first();
+            $isOwner = DB::table('course_user')
+                ->where('user_id', $user->id)
+                ->where('course_id', $course->id)
+                ->where('role_id', $teacherRole->id)
+                ->exists();
+                
+            if (!$isOwner) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'شما دسترسی به این درس ندارید'
+                ], 403);
+            }
+            
+            $setting = Setting::where('course_id', $course->id)->first();
+            
+            if (!$setting) {
+                $setting = new Setting();
+                $setting->course_id = $course->id;
+            }
+            
+            $setting->ersal_gozaresh_desc = $request->description;
+            $setting->save();
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'توضیحات با موفقیت به‌روزرسانی شد',
+                'data' => [
+                    'description' => $setting->ersal_gozaresh_desc
+                ]
+            ]);
+    
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در به‌روزرسانی توضیحات: ' . $e->getMessage()
+            ], 500);
+        }
+    }
     public function toggleDore($id)
     {
         try {

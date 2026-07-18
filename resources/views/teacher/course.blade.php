@@ -598,6 +598,30 @@
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(30, 111, 159, 0.3);
     }
+
+    /* ===== استایل مودال ویرایش گزارش ===== */
+    #reportDescriptionDisplay img {
+        max-width: 100%;
+        border-radius: 8px;
+    }
+
+    #reportDescriptionDisplay ul,
+    #reportDescriptionDisplay ol {
+        padding-right: 20px;
+        margin: 8px 0;
+    }
+
+    #reportDescriptionDisplay blockquote {
+        border-right: 4px solid #1e6f9f;
+        padding-right: 16px;
+        margin: 8px 0;
+        color: #4a5a6e;
+    }
+
+    /* ===== استایل مودال ویرایش گزارش ===== */
+    #reportDescEditor {
+        min-height: 200px;
+    }
 </style>
 @endsection
 
@@ -707,11 +731,10 @@
                     </h5>
                 </div>
                 <div class="session-action-buttons">
-                    {{-- فقط یک دکمه برای مدیریت تکالیف --}}
                     <a href="#" id="homeworkTeacherBtn" class="action-icon-btn" data-tooltip="مدیریت تکالیف">
                         <i class="fas fa-file-alt"></i>
                     </a>
-                    <button class="action-icon-btn" onclick="openProfExModal()" data-tooltip="لیست تکالیف">
+                    <button class="action-icon-btn" onclick="openProfExModal()" data-tooltip="مدیریت گزارش">
                         <i class="fas fa-list-ul"></i>
                     </button>
                 </div>
@@ -760,7 +783,7 @@
 {{-- MODAL لیست تکالیف (ارسال گزارش) --}}
 {{-- ========================================== --}}
 <div class="modal-overlay" id="profExModal">
-    <div class="modal-box" style="max-width: 600px;">
+    <div class="modal-box" style="max-width: 700px;">
         <div class="modal-header">
             <h4>
                 <i class="fas fa-file-alt" style="color:#1e6f9f;"></i>
@@ -772,33 +795,81 @@
         </div>
         <div class="modal-body">
             <div style="padding:10px 0;">
-                <div style="background:#f8fafc;border-radius:12px;padding:20px;border-right:4px solid #1e6f9f;margin-bottom:20px;">
-                    <p style="font-size:14px;line-height:2;color:#1a2332;margin:0;">
-                        از دانشجو بخواهید گزارشی برای این جلسه تهیه کند. این گزارش می تواند شامل موارد زیر باشد:
+                {{-- نمایش توضیحات فعلی --}}
+                <div style="background:#f8fafc;border-radius:12px;padding:20px;border-right:4px solid #1e6f9f;margin-bottom:16px;">
+                    <p style="font-size:14px;line-height:2;color:#1a2332;margin:0;font-weight:600;color:#1e6f9f;">
+                        <i class="fas fa-quote-right" style="margin-left:6px;"></i>
+                        متن راهنما:
                     </p>
-                    <ul style="font-size:14px;line-height:2;color:#1a2332;padding-right:20px;margin:10px 0 0;">
-                        <li>تهیه یک طرح درسی برای مبحث ارائه شده</li>
-                        <li>نوشتن خلاصه ای از مهمترین موضوعات تدریس شده در این جلسه</li>
-                        <li>هر گونه نکته یا پیشنهاد تکمیلی که به بهبود یادگیری کمک کند</li>
-                    </ul>
+                    <div id="reportDescriptionDisplay" style="font-size:14px;line-height:2;color:#1a2332;margin-top:8px;padding:12px 16px;background:#fff;border-radius:8px;">
+                        <span style="color:#6b7a8f;">در حال بارگذاری...</span>
+                    </div>
                 </div>
                 
-                <div style="background:#e3f2fd;border-radius:12px;padding:16px 20px;margin-bottom:16px;font-size:13px;color:#1a2332;">
-                    <i class="fas fa-info-circle" style="color:#1e6f9f;"></i>
-                    <strong>توجه:</strong> در صورت عدم تکمیل این بخش، توضیحات پیش فرض ثبت شده در تنظیمات به دانشجو نمایش داده خواهد شد.
-                </div>
-                
-                <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;padding-top:10px;">
-                    <a href="{{ route('courses.setting', $course->id) }}#activity-settings" class="btn-settings">
-                        <i class="fas fa-cog"></i>
-                        رفتن به تنظیمات
-                    </a>
+                {{-- دکمه ویرایش --}}
+                <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;padding-bottom:16px;border-bottom:2px solid #f0f4f9;margin-bottom:16px;">
+                    <button class="btn-settings" onclick="openEditReportModal()" style="background:linear-gradient(135deg,#ff9800,#e65100);">
+                        <i class="fas fa-edit"></i>
+                        ویرایش متن راهنما
+                    </button>
                     <button class="btn-close-modal" onclick="closeProfExModal()">
                         <i class="fas fa-times"></i>
                         بستن
                     </button>
                 </div>
+                
+                {{-- توضیحات پایینی --}}
+                <div style="background:#e3f2fd;border-radius:12px;padding:16px 20px;font-size:13px;color:#1a2332;">
+                    <i class="fas fa-info-circle" style="color:#1e6f9f;"></i>
+                    <strong>توجه:</strong> در صورت عدم تکمیل این بخش، توضیحات پیش فرض ثبت شده در تنظیمات به دانشجو نمایش داده خواهد شد.
+                </div>
+                
+                <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;padding-top:16px;">
+                    <a href="{{ route('courses.setting', $course->id) }}#activity-settings" class="btn-settings">
+                        <i class="fas fa-cog"></i>
+                        رفتن به تنظیمات درس
+                    </a>
+                </div>
             </div>
+        </div>
+    </div>
+</div>
+
+{{-- ========================================== --}}
+{{-- مودال ویرایش توضیحات ارسال گزارش --}}
+{{-- ========================================== --}}
+<div class="modal-overlay" id="editReportModal">
+    <div class="modal-box" style="max-width: 700px;">
+        <div class="modal-header">
+            <h4>
+                <i class="fas fa-edit" style="color:#ff9800;"></i>
+                ویرایش متن راهنمای ارسال گزارش
+            </h4>
+            <button class="modal-close-btn" onclick="closeEditReportModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="reportDescForm">
+                @csrf
+                <input type="hidden" name="course_id" value="{{ $course->id }}">
+                <div class="form-group">
+                    <label for="reportDescEditor">متن راهنما <span class="required">*</span></label>
+                    <textarea class="jodit-editor" id="reportDescEditor" name="description" 
+                              placeholder="متن راهنمای ارسال گزارش را وارد کنید..."></textarea>
+                </div>
+                
+                <div style="display:flex;gap:12px;flex-wrap:wrap;padding-top:16px;border-top:2px solid #f0f4f9;margin-top:10px;">
+                    <button type="submit" class="btn-settings" id="saveReportDescBtn" style="background:linear-gradient(135deg,#4caf50,#388e3c);">
+                        <i class="fas fa-save"></i>
+                        ذخیره تغییرات
+                    </button>
+                    <button type="button" class="btn-close-modal" onclick="closeEditReportModal()">
+                        <i class="fas fa-times"></i>
+                        انصراف
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -927,6 +998,9 @@
     let joditEditor = null;
     let modalMode = 'create';
     let currentEditId = null;
+    let reportJoditEditor = null;
+    let currentReportDesc = '';
+    const courseId = '{{ $course->id }}';
 
     // ==========================================
     // توابع مودال جلسات
@@ -1007,6 +1081,7 @@
         if (e.key === 'Escape') {
             closeModal();
             closeProfExModal();
+            closeEditReportModal();
         }
     });
 
@@ -1127,10 +1202,9 @@
     }
 
     // ==========================================
-    // تابع اصلی برای تغییر جلسه (مشابه صفحه دانشجو)
+    // تابع اصلی برای تغییر جلسه
     // ==========================================
     function changeSession(element, sessionId, pdfUrl, title, number, description) {
-        // اگر عنصر وجود نداشت، از تابع خارج شو
         if (!element) return;
         
         document.querySelectorAll('.session-item').forEach(item => {
@@ -1143,13 +1217,11 @@
         currentSessionTitle = title;
         currentSessionNumber = number;
 
-        // به‌روزرسانی عنوان جلسه
         const titleDisplay = document.getElementById('sessionTitleDisplay');
         if (titleDisplay) {
             titleDisplay.innerHTML = `<h5>${number} : ${title}</h5>`;
         }
 
-        // ===== به‌روزرسانی توضیحات جلسه =====
         const sessionDescription = document.getElementById('sessionDescription');
         if (sessionDescription) {
             if (description && description.trim() !== '') {
@@ -1159,7 +1231,6 @@
             }
         }
 
-        // ===== به‌روزرسانی PDF Viewer =====
         const pdfViewer = document.getElementById('pdfViewer');
         if (pdfViewer) {
             if (pdfUrl) {
@@ -1176,7 +1247,6 @@
             }
         }
 
-        // ===== به‌روزرسانی دکمه باز کردن PDF =====
         const pdfOpenBtn = document.getElementById('pdfOpenBtn');
         if (pdfOpenBtn) {
             if (pdfUrl) {
@@ -1187,9 +1257,6 @@
             }
         }
 
-        // ==========================================
-        // تنظیم لینک دکمه مدیریت تکالیف با session_id جدید
-        // ==========================================
         const homeworkTeacherBtn = document.getElementById('homeworkTeacherBtn');
         if (homeworkTeacherBtn) {
             homeworkTeacherBtn.setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
@@ -1215,6 +1282,7 @@
     function openProfExModal() {
         document.getElementById('profExModal').classList.add('active');
         document.body.style.overflow = 'hidden';
+        loadReportDescription();
     }
 
     function closeProfExModal() {
@@ -1227,6 +1295,63 @@
             closeProfExModal();
         }
     });
+
+    // ==========================================
+    // توابع مودال ویرایش توضیحات گزارش
+    // ==========================================
+    function openEditReportModal() {
+        const modal = document.getElementById('editReportModal');
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        fetch('/teacher/courses/settings/get-report-desc?course_id=' + courseId)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    currentReportDesc = data.data.description || '';
+                    if (reportJoditEditor) {
+                        reportJoditEditor.value = currentReportDesc;
+                    }
+                } else {
+                    alert('خطا در دریافت توضیحات: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('خطا در ارتباط با سرور');
+            });
+    }
+
+    function closeEditReportModal() {
+        document.getElementById('editReportModal').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    document.getElementById('editReportModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeEditReportModal();
+        }
+    });
+
+    // ==========================================
+    // بارگذاری توضیحات و نمایش در مودال اصلی
+    // ==========================================
+    function loadReportDescription() {
+        fetch('/teacher/courses/settings/get-report-desc?course_id=' + courseId)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const display = document.getElementById('reportDescriptionDisplay');
+                    if (display) {
+                        const desc = data.data.description || 'موضوع اصلی این جلسه چه بود و چه هدفی داشت؟ لطفاً یک نکتهٔ آموزنده از مطالب ارائه شده را با بیانی دیگر (به زبان خودتان) بازنویسی کنید.';
+                        display.innerHTML = desc;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error loading report description:', error);
+            });
+    }
 
     // ==========================================
     // Event listener برای collapsible
@@ -1250,11 +1375,126 @@
         }
 
         // ==========================================
-        // مقداردهی Jodit Editor
+        // مقداردهی Jodit Editor برای مودال جلسات
         // ==========================================
         const editorElement = document.getElementById('modalEditor');
         if (editorElement) {
             joditEditor = new Jodit('#modalEditor', {
+                width: '100%',
+                height: 250,
+                allowResize: true,
+                allowResizeImages: true,
+                direction: 'rtl',
+                language: 'fa',
+                buttons: [
+                    'source', '|',
+                    'undo', 'redo', '|',
+                    'bold', 'italic', 'underline', 'strikethrough', '|',
+                    'font', 'fontsize', 'brush', 'paragraph', '|',
+                    'ul', 'ol', 'outdent', 'indent', '|',
+                    'align', 'hr', 'table', '|',
+                    'link', 'unlink',
+                    {
+                        name: 'uploadImage',
+                        iconURL: 'https://cdn-icons-png.flaticon.com/512/1829/1829586.png',
+                        tooltip: 'آپلود تصویر',
+                        exec: (editor) => {
+                            let input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'image/*';
+                            input.onchange = () => {
+                                let file = input.files[0];
+                                if (!file) return;
+
+                                let formData = new FormData();
+                                formData.append('file', file);
+
+                                fetch('{{ route("upload.image") }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                    },
+                                    body: formData
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.files && data.files[0].url) {
+                                        let img = document.createElement('img');
+                                        img.src = data.files[0].url;
+                                        img.style.maxWidth = '100%';
+                                        editor.s.insertNode(img);
+                                    } else {
+                                        alert('خطا در آپلود تصویر');
+                                    }
+                                })
+                                .catch(err => alert('Upload error: ' + err));
+                            };
+                            input.click();
+                        }
+                    },
+                    {
+                        name: 'uploadVideo',
+                        iconURL: 'https://cdn-icons-png.flaticon.com/512/727/727245.png',
+                        tooltip: 'آپلود ویدیو',
+                        exec: (editor) => {
+                            let input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'video/*';
+                            input.onchange = () => {
+                                let file = input.files[0];
+                                if (!file) return;
+
+                                let formData = new FormData();
+                                formData.append('file', file);
+
+                                fetch('{{ route("upload.video") }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                    },
+                                    body: formData
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.files && data.files[0].url) {
+                                        let wrapper = document.createElement('div');
+                                        wrapper.classList.add('video-wrapper');
+
+                                        let video = document.createElement('video');
+                                        video.setAttribute('controls', '');
+                                        video.src = data.files[0].url;
+                                        video.style.maxWidth = '100%';
+
+                                        wrapper.appendChild(video);
+                                        editor.s.insertNode(wrapper);
+                                    } else {
+                                        alert('خطا در آپلود ویدیو');
+                                    }
+                                })
+                                .catch(err => alert('Upload error: ' + err));
+                            };
+                            input.click();
+                        }
+                    },
+                    '|', 'symbols', 'emoticons', '|',
+                    'print', 'fullsize', 'preview'
+                ],
+                colors: {
+                    text: ['#000000', '#ff0000', '#00ff00', '#0000ff', '#ff00ff', '#00ffff'],
+                    background: ['#ffffff', '#ffff00', '#00ffff', '#ffcc99']
+                },
+                defaultFont: 'Vazir, Tahoma, Arial, sans-serif',
+                defaultFontSize: '14px',
+                fonts: ['Vazir', 'Tahoma', 'Arial', 'Courier New']
+            });
+        }
+
+        // ==========================================
+        // مقداردهی Jodit Editor برای مودال ویرایش گزارش
+        // ==========================================
+        const reportEditorElement = document.getElementById('reportDescEditor');
+        if (reportEditorElement) {
+            reportJoditEditor = new Jodit('#reportDescEditor', {
                 width: '100%',
                 height: 250,
                 allowResize: true,
@@ -1388,6 +1628,65 @@
                 homeworkTeacherBtn.setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
             }
         }
+        
+        // ==========================================
+        // بارگذاری توضیحات گزارش در مودال
+        // ==========================================
+        loadReportDescription();
+    });
+
+    // ==========================================
+    // ذخیره توضیحات گزارش
+    // ==========================================
+    document.getElementById('reportDescForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('saveReportDescBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال ذخیره...';
+        
+        const description = reportJoditEditor ? reportJoditEditor.value : document.getElementById('reportDescEditor').value;
+        
+        fetch('/teacher/courses/settings/update-report-desc', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                description: description,
+                course_id: courseId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('توضیحات با موفقیت به‌روزرسانی شد');
+                
+                const display = document.getElementById('reportDescriptionDisplay');
+                if (display) {
+                    display.innerHTML = data.data.description;
+                }
+                
+                closeEditReportModal();
+            } else {
+                let errorMsg = 'خطا در ذخیره: ';
+                if (data.errors) {
+                    const errors = Object.values(data.errors).flat();
+                    errorMsg += errors.join(', ');
+                } else {
+                    errorMsg += data.message || 'مشخص نیست';
+                }
+                alert(errorMsg);
+            }
+        })
+        .catch(error => {
+            alert('خطا در ارتباط با سرور');
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-save"></i> ذخیره تغییرات';
+        });
     });
 </script>
 

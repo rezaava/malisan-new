@@ -12,9 +12,7 @@
         </button>
     </div>
     <div class="top-actions">
-        <a href="/profile" class="profile-btn" title="پروفایل کاربر">
-            <img src="" alt="پروفایل" class="profile-img">
-        </a>
+        <img src="{{asset(Auth::user()->image)}}" alt="پروفایل" class="profile-img">
         <a href="/messages" class="top-icon-btn" title="پیام‌ها">
             <i class="far fa-envelope"></i>
         </a>
