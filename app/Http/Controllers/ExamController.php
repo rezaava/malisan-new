@@ -23,54 +23,6 @@ use Log;
 
 class ExamController extends Controller
 {
-    /**
-     * ذخیره سوال جدید (معلم)
-     */
-    public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'question' => 'required|string|min:5',
-            'options' => 'required|array|min:4|max:4',
-            'options.*' => 'required|string|min:1',
-            'correct_answer' => 'required|integer|min:0|max:3',
-            'session_id' => 'nullable|exists:sessions,id',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        try {
-            $options = $request->options;
-            $correctIndex = (int) $request->correct_answer;
-
-            if (!isset($options[$correctIndex])) {
-                return redirect()->back()->with('error', 'گزینه صحیح نامعتبر است')->withInput();
-            }
-            $question = Question::create([
-                'question' => $request->question,
-                'answer1' => $options[0] ?? '',
-                'answer2' => $options[1] ?? '',
-                'answer3' => $options[2] ?? '',
-                'answer4' => $options[3] ?? '',
-                'answer' => $correctIndex + 1, // ذخیره شماره گزینه (۱، ۲، ۳ یا ۴)
-                'user_id' => Auth::id(),
-                'session_id' => $request->session_id ?? 1,
-                'status' => null,
-                'star' => 0,
-                'counter' => 0,
-                'is_edit' => 0,
-                'score' => 0,
-                'comment' => null,
-            ]);
-
-            return redirect()->route('createQuestion')
-                ->with('success', 'سوال با موفقیت ثبت شد!');
-
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'خطا در ثبت سوال: ' . $e->getMessage())->withInput();
-        }
-    }
 
     /**
      * نمایش فرم ایجاد سوال (دانشجو)
@@ -154,10 +106,8 @@ class ExamController extends Controller
                 }
             }
 
-            // تعیین وضعیت سوال بر اساس نقش کاربر
-            // اگر کاربر معلم است، سوال تایید شده (عالی) در نظر گرفته می‌شود
-            $isTeacher = $user->hasRole('teacher');
-            $status = $isTeacher ? 5 : null; // 1 = عالی (تایید شده)، null = در انتظار تایید
+            $isTeacher = $user->hasRole('teacher||admin');
+            $status = $isTeacher ? 5 : null; 
 
             $question = Question::create([
                 'question' => $request->question,
@@ -181,8 +131,7 @@ class ExamController extends Controller
                 ? 'سوال شما با موفقیت ثبت و تایید شد.' 
                 : 'سوال شما با موفقیت ثبت شد و در انتظار تایید است.';
 
-            return redirect()->route('view.coure.St', $session->course_id)
-                ->with('success', $message);
+            return back()->with('success', $message);
 
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'خطا در ثبت سوال: ' . $e->getMessage())->withInput();

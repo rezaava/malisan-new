@@ -31,6 +31,97 @@ use Log;
 class CourseController extends Controller
 {
     /**
+     * نمایش فرم ویرایش سوال
+     */
+    public function editQuestion($id)
+    {
+        $question = Question::findOrFail($id);
+        
+        // بررسی دسترسی استاد به این سوال
+        $course = $question->session->course;
+        
+        if (!$course) {
+            return response()->json([
+                'success' => false,
+                'message' => 'شما دسترسی به ویرایش این سوال ندارید.'
+            ], 403);
+        }
+        
+        return response()->json([
+            'success' => true,
+            'question' => $question
+        ]);
+    }
+
+    /**
+     * بروزرسانی سوال
+     */
+    public function updateQuestion(Request $request, $id)
+    {
+        $question = Question::findOrFail($id);
+        
+        // بررسی دسترسی استاد به این سوال
+        $course = $question->session->course ?? null;
+        if (!$course) {
+            return response()->json([
+                'success' => false,
+                'message' => 'شما دسترسی به ویرایش این سوال ندارید.'
+            ], 403);
+        }
+        
+        // اعتبارسنجی
+        $validator = Validator::make($request->all(), [
+            'question' => 'required|string|max:1000',
+            'answer1' => 'required|string|max:500',
+            'answer2' => 'required|string|max:500',
+            'answer3' => 'required|string|max:500',
+            'answer4' => 'required|string|max:500',
+            'answer' => 'required|integer|min:1|max:4',
+            'status' => 'nullable|integer|in:1,2,3,4',
+        ]);
+        
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+        
+        try {
+            // بروزرسانی سوال
+            $question->question = $request->question;
+            $question->answer1 = $request->answer1;
+            $question->answer2 = $request->answer2;
+            $question->answer3 = $request->answer3;
+            $question->answer4 = $request->answer4;
+            $question->answer = $request->answer;
+            $question->teacher_change = 1;
+
+            // فقط در صورتی که استاد سطح را مشخص کرده باشد
+            if ($request->has('status') && $request->status !== null) {
+                $question->status = $request->status;
+            }
+            
+            // ثبت اینکه سوال ویرایش شده است
+            $question->is_edit = $question->is_edit + 1;
+            
+            $question->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'سوال با موفقیت ویرایش شد.',
+                'question' => $question
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در ویرایش سوال: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    /**
      * دریافت توضیحات ارسال گزارش برای درس خاص
      */
     public function getReportDescription(Request $request)
@@ -2455,8 +2546,7 @@ class CourseController extends Controller
             $field = $request->input('field');
             $value = $request->input('value');
             
-            // فیلدهای مجاز - مطابق با migration
-            $validFields = ['active', 'quiz', 'davari', 'faaliat', 'pishraft'];
+            $validFields = ['private','active', 'quiz', 'davari', 'faaliat', 'pishraft','is_ended'];
             
             if (!in_array($field, $validFields)) {
                 return response()->json([

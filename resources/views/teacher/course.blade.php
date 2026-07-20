@@ -731,9 +731,17 @@
                     </h5>
                 </div>
                 <div class="session-action-buttons">
+                    {{-- ===== دکمه ثبت سوال (اضافه شده) ===== --}}
+                    <a href="#" id="questionTeacherBtn" class="action-icon-btn" data-tooltip="ثبت سوال">
+                        <i class="fas fa-question-circle"></i>
+                    </a>
+
+                    {{-- دکمه مدیریت تکالیف --}}
                     <a href="#" id="homeworkTeacherBtn" class="action-icon-btn" data-tooltip="مدیریت تکالیف">
                         <i class="fas fa-file-alt"></i>
                     </a>
+
+                    {{-- دکمه مدیریت گزارش --}}
                     <button class="action-icon-btn" onclick="openProfExModal()" data-tooltip="مدیریت گزارش">
                         <i class="fas fa-list-ul"></i>
                     </button>
@@ -810,7 +818,7 @@
                 <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;padding-bottom:16px;border-bottom:2px solid #f0f4f9;margin-bottom:16px;">
                     <button class="btn-settings" onclick="openEditReportModal()" style="background:linear-gradient(135deg,#ff9800,#e65100);">
                         <i class="fas fa-edit"></i>
-                        ویرایش متن راهنما
+                        پیام نحوه نوشتن گزارش به دانشجو
                     </button>
                     <button class="btn-close-modal" onclick="closeProfExModal()">
                         <i class="fas fa-times"></i>
@@ -1257,6 +1265,13 @@
             }
         }
 
+        // ===== تنظیم دکمه ثبت سوال =====
+        const questionTeacherBtn = document.getElementById('questionTeacherBtn');
+        if (questionTeacherBtn) {
+            questionTeacherBtn.setAttribute('href', `/teacher/questions/create/${sessionId}`);
+        }
+
+        // ===== تنظیم دکمه مدیریت تکالیف =====
         const homeworkTeacherBtn = document.getElementById('homeworkTeacherBtn');
         if (homeworkTeacherBtn) {
             homeworkTeacherBtn.setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
@@ -1617,12 +1632,19 @@
         });
 
         // ==========================================
-        // تنظیم دکمه تکالیف برای جلسه اول
+        // تنظیم دکمه‌ها برای جلسه اول
         // ==========================================
         const firstSession = document.querySelector('.session-item.active');
         if (firstSession) {
             const sessionId = firstSession.dataset.session;
             
+            // دکمه ثبت سوال
+            const questionTeacherBtn = document.getElementById('questionTeacherBtn');
+            if (questionTeacherBtn) {
+                questionTeacherBtn.setAttribute('href', `/teacher/questions/create/${sessionId}`);
+            }
+            
+            // دکمه مدیریت تکالیف
             const homeworkTeacherBtn = document.getElementById('homeworkTeacherBtn');
             if (homeworkTeacherBtn) {
                 homeworkTeacherBtn.setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);

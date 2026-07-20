@@ -62,6 +62,22 @@
         display: none !important;
     }
 
+    /* ===== استایل دکمه داوری دوستان در چپ‌ها ===== */
+    .chip-item.davari {
+        background: linear-gradient(135deg, #9c27b0, #6a1b9a) !important;
+        color: #fff !important;
+    }
+
+    .chip-item.davari i {
+        color: #fff !important;
+    }
+
+    .chip-item.davari:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(156, 39, 176, 0.4);
+        background: linear-gradient(135deg, #ab47bc, #7b1fa2) !important;
+    }
+
     @media (max-width: 768px) {
         .session-action-buttons {
             gap: 6px;
@@ -118,6 +134,14 @@
             <a href="{{ route('student.progress', $course->id) }}" class="chip-item">
                 <i class="fas fa-chart-line"></i>
                 پیشرفت درسی
+            </a>
+        @endif
+
+        {{-- دکمه داوری دوستان - فقط در صورت فعال بودن نمایش داده می‌شود --}}
+        @if(isset($course->davari) && $course->davari == 1)
+            <a href="{{ route('student.judgment.index', ['course_id' => $course->id]) }}" class="chip-item davari">
+                <i class="fas fa-users-cog"></i>
+                داوری دوستان
             </a>
         @endif
     </div>

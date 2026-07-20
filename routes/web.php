@@ -130,6 +130,8 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         Route::prefix('/bank')->group(function () {
             Route::get('/{id}', [CourseController::class, 'questionBank'])->name('question.bank');
             Route::post('/star/{id}', [CourseController::class, 'toggleStar'])->name('question.star');
+            Route::get('/edit/{id}', [CourseController::class, 'editQuestion'])->name('question.edit');
+            Route::put('/update/{id}', [CourseController::class, 'updateQuestion'])->name('question.update');
         });
 
         // ===== نظرسنجی =====
@@ -179,8 +181,8 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
     // مسیرهای مربوط به سوالات - معلم
     // ==========================================
     Route::prefix('/questions')->middleware(['role:teacher|admin'])->group(function () {
-        Route::get('/create', [ExamController::class, 'create'])->name('createQuestion');
-        Route::post('/store', [ExamController::class, 'store'])->name('question.store');
+        Route::get('/create/{session_id}', [ExamController::class, 'studentCreate'])->name('student.question.create');
+        Route::post('/store/{session_id}', [ExamController::class, 'studentStore'])->name('student.question.store');
         Route::get('/random/{count?}', [ExamController::class, 'getRandomQuestions'])->name('api.random.questions');
         Route::get('/show/{id}', [ExamController::class, 'show'])->name('question.show');
         Route::get('/show/{id}', [ExamController::class, 'getQuestionData'])->name('question.getData');
@@ -188,6 +190,7 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         Route::get('/{id}', [ExamController::class, 'destroy'])->name('question.destroy');
         Route::get('/list', [ExamController::class, 'list'])->name('question.list');
     });
+
 
     // ==========================================
     // مسیرهای گزارش ایراد سوال

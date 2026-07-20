@@ -7,7 +7,7 @@
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-courses.css')}}">
 <style>
-    /* استایل برای وضعیت درس */
+    /* ===== استایل برای وضعیت درس (خصوصی/عمومی) ===== */
     .course-status-badge {
         display: inline-flex;
         align-items: center;
@@ -42,7 +42,7 @@
         font-size: 10px;
     }
     
-    /* استایل برای نشانگر دوره‌ای */
+    /* ===== استایل برای نشانگر دوره‌ای ===== */
     .dore-badge {
         display: inline-block;
         background: #e3f2fd;
@@ -61,45 +61,80 @@
         margin-left: 4px;
     }
     
-    /* انیمیشن برای تغییر وضعیت دوره‌ای */
+    .dore-badge.updating {
+        animation: dorePulse 0.5s ease;
+    }
+    
     @keyframes dorePulse {
         0% { transform: scale(1); }
         50% { transform: scale(1.1); background: #bbdefb; }
         100% { transform: scale(1); }
     }
     
-    .dore-badge.updating {
+    /* ===== استایل برای وضعیت عمومی/خصوصی ===== */
+    .private-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        margin-right: 8px;
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+    }
+    
+    .private-badge.public {
+        background: #e3f2fd;
+        color: #1e6f9f;
+        border-color: #90caf9;
+    }
+    
+    .private-badge.public i {
+        color: #1e6f9f;
+    }
+    
+    .private-badge.private {
+        background: #ffebee;
+        color: #c62828;
+        border-color: #ef9a9a;
+    }
+    
+    .private-badge.private i {
+        color: #c62828;
+    }
+    
+    .private-badge.updating {
         animation: dorePulse 0.5s ease;
     }
     
-    /* کارت در حالت غیرفعال (خاتمه یافته) */
-    .course-card.inactive {
+    /* ===== کارت در حالت خاتمه یافته ===== */
+    .course-card.ended {
         background: #f8f9fa !important;
         border-color: #e0e0e0 !important;
         opacity: 0.85;
     }
     
-    .course-card.inactive .course-title {
+    .course-card.ended .course-title {
         color: #6c757d !important;
     }
     
-    .course-card.inactive .course-info {
+    .course-card.ended .course-info {
         background: #f1f3f5 !important;
     }
     
-    .course-card.inactive .course-image {
+    .course-card.ended .course-image {
         filter: grayscale(0.3);
     }
     
-    .course-card.inactive .action-item {
+    .course-card.ended .action-item {
         opacity: 0.7;
     }
     
-    .course-card.inactive .action-item:hover {
+    .course-card.ended .action-item:hover {
         opacity: 1;
     }
     
-    /* استایل badge جدید */
+    /* ===== استایل badge روی تصویر ===== */
     .course-card .course-image .course-badge {
         position: absolute;
         top: 10px;
@@ -117,7 +152,7 @@
         background: rgba(76, 175, 80, 0.9);
     }
     
-    .course-card .course-image .course-badge.badge-inactive {
+    .course-card .course-image .course-badge.badge-ended {
         background: rgba(108, 117, 125, 0.9);
     }
     
@@ -125,7 +160,7 @@
         position: relative;
     }
 
-    /* انیمیشن برای به‌روزرسانی کارت */
+    /* ===== انیمیشن برای به‌روزرسانی کارت ===== */
     @keyframes updatePulse {
         0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
         70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
@@ -159,29 +194,32 @@
 <div class="courses-grid" id="coursesGrid">
     @forelse ($courses as $cours)
         @php
-            // تعیین وضعیت بر اساس private: 1 = خاتمه یافته، 0 = در حال برگزاری
-            $isActive = ($cours->private == 0);
+            // is_ended: 1 = خاتمه یافته، 0 = در حال برگزاری
+            $isEnded = ($cours->is_ended == 1);
             $isDore = ($cours->is_dore == 1);
+            $isPrivate = ($cours->private == 1);
         @endphp
-        <div class="course-card {{ $isActive ? '' : 'inactive' }}" 
+        <div class="course-card {{ $isEnded ? 'ended' : '' }}" 
              data-course-id="{{ $cours->id }}"
-             data-is-dore="{{ $isDore ? '1' : '0' }}">
+             data-is-dore="{{ $isDore ? '1' : '0' }}"
+             data-is-private="{{ $isPrivate ? '1' : '0' }}"
+             data-is-ended="{{ $isEnded ? '1' : '0' }}">
             <a href="{{ route('view.coure',$cours->id)}}" class="course-link">
                 <div class="course-image">
                     <img src="{{ asset('/files/icons/' . $cours->header . '.jpg') }}" alt="{{ $cours->name }}">
-                    <div class="course-badge {{ $isActive ? 'badge-active' : 'badge-inactive' }}">
-                        <i class="fas {{ $isActive ? 'fa-play-circle' : 'fa-stop-circle' }}"></i>
-                        {{ $isActive ? 'در حال برگزاری' : 'خاتمه یافته' }}
+                    <div class="course-badge {{ $isEnded ? 'badge-ended' : 'badge-active' }}">
+                        <i class="fas {{ $isEnded ? 'fa-stop-circle' : 'fa-play-circle' }}"></i>
+                        {{ $isEnded ? 'خاتمه یافته' : 'در حال برگزاری' }}
                     </div>
                 </div>
                 <div class="course-info">
                     <h3 class="course-title">{{ $cours->name }}</h3>
                     <p class="course-code">کد: {{ $cours->code }}</p>
                     
-                    <!-- نمایش وضعیت به صورت متن زیر عنوان -->
-                    <span class="course-status-badge {{ $isActive ? 'course-status-active' : 'course-status-inactive' }}">
+                    <!-- نمایش وضعیت برگزاری -->
+                    <span class="course-status-badge {{ $isEnded ? 'course-status-inactive' : 'course-status-active' }}">
                         <i class="fas fa-circle"></i>
-                        {{ $isActive ? '● در حال برگزاری' : '● خاتمه یافته' }}
+                        {{ $isEnded ? '● خاتمه یافته' : '● در حال برگزاری' }}
                     </span>
                     
                     <!-- نشانگر دوره‌ای بودن درس -->
@@ -190,6 +228,12 @@
                             <i class="fas fa-calendar-check"></i> دوره‌ای
                         </span>
                     @endif
+                    
+                    <!-- نشانگر عمومی/خصوصی بودن درس -->
+                    <span class="private-badge {{ $isPrivate ? 'private' : 'public' }}" id="privateBadge-{{ $cours->id }}">
+                        <i class="fas {{ $isPrivate ? 'fa-lock' : 'fa-globe-asia' }}"></i>
+                        {{ $isPrivate ? 'خصوصی' : 'عمومی' }}
+                    </span>
                     
                     @if(isset($cours->majazi))
                         @php
@@ -228,16 +272,24 @@
                     <i class="fas fa-archive"></i>
                     <span class="action-tooltip">آرشیو</span>
                 </div>
-                <!-- دکمه جدید: تغییر وضعیت دوره‌ای/غیردوره‌ای -->
+                <!-- دکمه تغییر وضعیت دوره‌ای/غیردوره‌ای -->
                 <div class="action-item" 
                      data-action="دوره‌ای" 
                      onclick="event.preventDefault(); event.stopPropagation(); toggleDore({{ $cours->id }})">
                     <i class="fas {{ $isDore ? 'fa-calendar-check' : 'fa-calendar-times' }}"></i>
                     <span class="action-tooltip">{{ $isDore ? 'غیردوره‌ای' : 'دوره‌ای' }}</span>
                 </div>
-                <div class="action-item" data-action="فعال/غیرفعال" onclick="event.preventDefault(); event.stopPropagation(); toggleCourseStatus({{ $cours->id }})">
-                    <i class="fas {{ $isActive ? 'fa-toggle-on' : 'fa-toggle-off' }}"></i>
-                    <span class="action-tooltip">فعال/غیرفعال</span>
+                <!-- دکمه تغییر وضعیت خاتمه یافته/در حال برگزاری (is_ended) -->
+                <div class="action-item" data-action="خاتمه/فعال" onclick="event.preventDefault(); event.stopPropagation(); toggleEnded({{ $cours->id }})">
+                    <i class="fas {{ $isEnded ? 'fa-play' : 'fa-stop' }}"></i>
+                    <span class="action-tooltip">{{ $isEnded ? 'فعال کردن' : 'خاتمه دادن' }}</span>
+                </div>
+                <!-- دکمه تغییر وضعیت عمومی/خصوصی (private) -->
+                <div class="action-item" 
+                     data-action="عمومی/خصوصی" 
+                     onclick="event.preventDefault(); event.stopPropagation(); togglePrivate({{ $cours->id }})">
+                    <i class="fas {{ $isPrivate ? 'fa-lock' : 'fa-globe-asia' }}"></i>
+                    <span class="action-tooltip">{{ $isPrivate ? 'عمومی کردن' : 'خصوصی کردن' }}</span>
                 </div>
                 <div class="action-item" data-action="حذف" onclick="event.preventDefault(); event.stopPropagation(); deleteCourse({{ $cours->id }})">
                     <i class="fas fa-trash-alt"></i>
@@ -630,10 +682,8 @@
         event.preventDefault();
         event.stopPropagation();
         
-        // نمایش وضعیت بارگذاری
         showToast('در حال دریافت اطلاعات درس...', 'info');
         
-        // دریافت اطلاعات درس از سرور
         fetch(`/teacher/courses/${courseId}/edit-data`, {
             method: 'GET',
             headers: {
@@ -652,12 +702,10 @@
         })
         .then(data => {
             if (data.success) {
-                // پر کردن فرم با اطلاعات دریافتی
                 document.getElementById('edit_name').value = data.course.name;
                 document.getElementById('edit_majazi').value = data.course.majazi || '';
                 document.getElementById('editCourseId').value = courseId;
                 
-                // نمایش مودال
                 const modal = document.getElementById('editCourseModal');
                 modal.classList.add('active');
                 showToast('اطلاعات درس بارگذاری شد', 'success');
@@ -698,19 +746,17 @@
         const submitBtn = form.querySelector('.btn-submit');
         const originalText = submitBtn.innerHTML;
         
-        // بررسی اعتبار فرم
         const name = document.getElementById('edit_name').value.trim();
         if (!name) {
             showToast('لطفاً عنوان درس را وارد کنید', 'error');
             return;
         }
         
-        // نمایش وضعیت در حال ارسال
         submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> در حال ذخیره...';
         submitBtn.disabled = true;
         
         fetch(`/teacher/courses/${courseId}`, {
-            method: 'POST', // استفاده از POST با _method=PUT
+            method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
                 'X-Requested-With': 'XMLHttpRequest',
@@ -729,14 +775,9 @@
         .then(data => {
             if (data.success) {
                 showToast(data.message || 'درس با موفقیت ویرایش شد', 'success');
-                
-                // به‌روزرسانی کارت درس در صفحه
                 updateCourseCard(courseId, data.course);
-                
-                // بستن مودال
                 closeEditModal();
             } else {
-                // نمایش خطاهای اعتبارسنجی
                 if (data.errors) {
                     let errorMessages = '';
                     for (let field in data.errors) {
@@ -764,24 +805,17 @@
 
     function updateCourseCard(courseId, courseData) {
         const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
-        if (!card) {
-            console.warn('Card not found for course:', courseId);
-            return;
-        }
+        if (!card) return;
         
-        // افزودن انیمیشن به‌روزرسانی
         card.classList.add('updating');
         
-        // به‌روزرسانی عنوان درس
         const title = card.querySelector('.course-title');
         if (title) title.textContent = courseData.name;
         
-        // به‌روزرسانی لینک کلاس مجازی
         const virtualContainer = card.querySelector('.virtual-class-container');
         const virtualLink = card.querySelector('.virtual-class-link');
         
         if (courseData.majazi) {
-            // اگر لینک مجازی وجود دارد
             const baseUrl = 'https://testnn.malisan.ir/teacher/';
             const cleanUrl = courseData.majazi.replace(baseUrl, '');
             
@@ -789,7 +823,6 @@
                 virtualLink.href = 'https://' + cleanUrl;
                 if (virtualContainer) virtualContainer.style.display = 'block';
             } else {
-                // اگر لینک وجود ندارد، یک لینک جدید ایجاد کن
                 const newContainer = document.createElement('div');
                 newContainer.className = 'text-center mt-4 virtual-class-container';
                 newContainer.innerHTML = `
@@ -804,23 +837,27 @@
                 card.querySelector('.course-info').appendChild(newContainer);
             }
         } else {
-            // اگر لینک مجازی وجود ندارد، آن را حذف کن
             if (virtualContainer) {
                 virtualContainer.style.display = 'none';
             }
         }
         
-        // به‌روزرسانی is_dore اگر در دیتا موجود باشد
         if (courseData.is_dore !== undefined) {
             updateDoreStatus(courseId, courseData.is_dore);
         }
         
-        // حذف انیمیشن بعد از 1 ثانیه
+        if (courseData.private !== undefined) {
+            updatePrivateStatus(courseId, courseData.private);
+        }
+        
+        if (courseData.is_ended !== undefined) {
+            updateEndedStatus(courseId, courseData.is_ended);
+        }
+        
         setTimeout(() => {
             card.classList.remove('updating');
         }, 1000);
         
-        // نمایش پیام موفقیت
         showToast('✅ درس با موفقیت به‌روزرسانی شد', 'success');
     }
 
@@ -883,10 +920,8 @@
         const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
         if (!card) return;
         
-        // به‌روزرسانی data attribute
         card.dataset.isDore = isDore ? '1' : '0';
         
-        // به‌روزرسانی دکمه
         const doreBtn = card.querySelector('.action-item[data-action="دوره‌ای"]');
         if (doreBtn) {
             doreBtn.innerHTML = `
@@ -895,7 +930,6 @@
             `;
         }
         
-        // به‌روزرسانی نشانگر دوره‌ای روی کارت
         let doreBadge = card.querySelector('.dore-badge');
         const infoDiv = card.querySelector('.course-info');
         
@@ -916,7 +950,6 @@
             } else {
                 doreBadge.style.display = 'inline-block';
             }
-            // اضافه کردن انیمیشن
             if (doreBadge) {
                 doreBadge.classList.add('updating');
                 setTimeout(() => {
@@ -928,6 +961,217 @@
                 doreBadge.style.display = 'none';
             }
         }
+    }
+
+    // ============================================
+    // تغییر وضعیت عمومی/خصوصی (private) با toggleVisibility
+    // ============================================
+
+    function togglePrivate(courseId) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        const targetBtn = event?.currentTarget;
+        if (targetBtn) {
+            targetBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            targetBtn.style.pointerEvents = 'none';
+        }
+        
+        const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
+        const currentValue = card?.dataset?.isPrivate === '1' ? 0 : 1;
+        
+        fetch(`/teacher/courses/toggle-visibility/${courseId}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                field: 'private',
+                value: currentValue
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.message || 'خطا در تغییر وضعیت');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                updatePrivateStatus(courseId, data.value);
+            } else {
+                showToast(data.message || 'خطا در تغییر وضعیت', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast(error.message || 'خطا در ارتباط با سرور', 'error');
+        })
+        .finally(() => {
+            if (targetBtn) {
+                const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
+                const isPrivate = card?.dataset?.isPrivate === '1';
+                targetBtn.innerHTML = `
+                    <i class="fas ${isPrivate ? 'fa-lock' : 'fa-globe-asia'}"></i>
+                    <span class="action-tooltip">${isPrivate ? 'عمومی کردن' : 'خصوصی کردن'}</span>
+                `;
+                targetBtn.style.pointerEvents = 'auto';
+            }
+        });
+    }
+
+    function updatePrivateStatus(courseId, isPrivate) {
+        const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
+        if (!card) return;
+        
+        card.dataset.isPrivate = isPrivate ? '1' : '0';
+        
+        const privateBtn = card.querySelector('.action-item[data-action="عمومی/خصوصی"]');
+        if (privateBtn) {
+            privateBtn.innerHTML = `
+                <i class="fas ${isPrivate ? 'fa-lock' : 'fa-globe-asia'}"></i>
+                <span class="action-tooltip">${isPrivate ? 'عمومی کردن' : 'خصوصی کردن'}</span>
+            `;
+        }
+        
+        let privateBadge = card.querySelector('.private-badge');
+        
+        if (privateBadge) {
+            if (isPrivate) {
+                privateBadge.className = 'private-badge private';
+                privateBadge.innerHTML = '<i class="fas fa-lock"></i> خصوصی';
+            } else {
+                privateBadge.className = 'private-badge public';
+                privateBadge.innerHTML = '<i class="fas fa-globe-asia"></i> عمومی';
+            }
+            privateBadge.classList.add('updating');
+            setTimeout(() => {
+                privateBadge.classList.remove('updating');
+            }, 500);
+        }
+    }
+
+    // ============================================
+    // تغییر وضعیت خاتمه یافته/در حال برگزاری (is_ended) با toggleVisibility
+    // ============================================
+
+    function toggleEnded(courseId) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        if (!confirm('آیا از تغییر وضعیت این درس اطمینان دارید؟')) {
+            return;
+        }
+        
+        const targetBtn = event?.currentTarget;
+        if (targetBtn) {
+            targetBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            targetBtn.style.pointerEvents = 'none';
+        }
+        
+        const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
+        const currentValue = card?.dataset?.isEnded === '1' ? 0 : 1;
+        
+        fetch(`/teacher/courses/toggle-visibility/${courseId}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                field: 'is_ended',
+                value: currentValue
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.message || 'خطا در تغییر وضعیت');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                updateEndedStatus(courseId, data.value);
+            } else {
+                showToast(data.message || 'خطا در تغییر وضعیت', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast(error.message || 'خطا در ارتباط با سرور', 'error');
+        })
+        .finally(() => {
+            if (targetBtn) {
+                const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
+                const isEnded = card?.dataset?.isEnded === '1';
+                targetBtn.innerHTML = `
+                    <i class="fas ${isEnded ? 'fa-play' : 'fa-stop'}"></i>
+                    <span class="action-tooltip">${isEnded ? 'فعال کردن' : 'خاتمه دادن'}</span>
+                `;
+                targetBtn.style.pointerEvents = 'auto';
+            }
+        });
+    }
+
+    function updateEndedStatus(courseId, isEnded) {
+        const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
+        if (!card) return;
+        
+        card.dataset.isEnded = isEnded ? '1' : '0';
+        
+        // به‌روزرسانی کلاس ended
+        if (isEnded) {
+            card.classList.add('ended');
+        } else {
+            card.classList.remove('ended');
+        }
+        
+        // به‌روزرسانی دکمه
+        const endedBtn = card.querySelector('.action-item[data-action="خاتمه/فعال"]');
+        if (endedBtn) {
+            endedBtn.innerHTML = `
+                <i class="fas ${isEnded ? 'fa-play' : 'fa-stop'}"></i>
+                <span class="action-tooltip">${isEnded ? 'فعال کردن' : 'خاتمه دادن'}</span>
+            `;
+        }
+        
+        // به‌روزرسانی badge روی تصویر
+        const badge = card.querySelector('.course-badge');
+        if (badge) {
+            if (isEnded) {
+                badge.className = 'course-badge badge-ended';
+                badge.innerHTML = '<i class="fas fa-stop-circle"></i> خاتمه یافته';
+            } else {
+                badge.className = 'course-badge badge-active';
+                badge.innerHTML = '<i class="fas fa-play-circle"></i> در حال برگزاری';
+            }
+        }
+        
+        // به‌روزرسانی status badge زیر عنوان
+        const statusBadge = card.querySelector('.course-status-badge');
+        if (statusBadge) {
+            if (isEnded) {
+                statusBadge.className = 'course-status-badge course-status-inactive';
+                statusBadge.innerHTML = '<i class="fas fa-circle"></i> ● خاتمه یافته';
+            } else {
+                statusBadge.className = 'course-status-badge course-status-active';
+                statusBadge.innerHTML = '<i class="fas fa-circle"></i> ● در حال برگزاری';
+            }
+        }
+        
+        card.classList.add('updating');
+        setTimeout(() => {
+            card.classList.remove('updating');
+        }, 500);
     }
 
     // ============================================
@@ -1110,7 +1354,7 @@
     }
 
     // ============================================
-    // آرشیو و تغییر وضعیت
+    // آرشیو کردن درس
     // ============================================
 
     function archiveCourse(courseId) {
@@ -1166,103 +1410,6 @@
                 targetBtn.innerHTML = `
                     <i class="fas fa-archive"></i>
                     <span class="action-tooltip">آرشیو</span>
-                `;
-                targetBtn.style.pointerEvents = 'auto';
-            }
-        });
-    }
-
-    function toggleCourseStatus(courseId) {
-        event.preventDefault();
-        event.stopPropagation();
-        
-        if (!confirm('آیا از تغییر وضعیت این درس اطمینان دارید؟')) {
-            return;
-        }
-        
-        const targetBtn = event?.currentTarget;
-        if (targetBtn) {
-            targetBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            targetBtn.style.pointerEvents = 'none';
-        }
-        
-        fetch(`/teacher/courses/toggle-status/${courseId}`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showToast(data.message, 'success');
-                
-                const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
-                if (card) {
-                    // تعیین وضعیت جدید بر اساس private
-                    const isActive = (data.private === 0);
-                    
-                    // به‌روزرسانی کلاس inactive
-                    if (isActive) {
-                        card.classList.remove('inactive');
-                    } else {
-                        card.classList.add('inactive');
-                    }
-                    
-                    // به‌روزرسانی Badge
-                    const badge = card.querySelector('.course-badge');
-                    if (badge) {
-                        if (isActive) {
-                            badge.className = 'course-badge badge-active';
-                            badge.innerHTML = '<i class="fas fa-play-circle"></i> در حال برگزاری';
-                        } else {
-                            badge.className = 'course-badge badge-inactive';
-                            badge.innerHTML = '<i class="fas fa-stop-circle"></i> خاتمه یافته';
-                        }
-                    }
-                    
-                    // به‌روزرسانی status badge زیر عنوان
-                    const statusBadge = card.querySelector('.course-status-badge');
-                    if (statusBadge) {
-                        if (isActive) {
-                            statusBadge.className = 'course-status-badge course-status-active';
-                            statusBadge.innerHTML = '<i class="fas fa-circle"></i> ● در حال برگزاری';
-                        } else {
-                            statusBadge.className = 'course-status-badge course-status-inactive';
-                            statusBadge.innerHTML = '<i class="fas fa-circle"></i> ● خاتمه یافته';
-                        }
-                    }
-                }
-                
-                // به‌روزرسانی آیکون دکمه toggle
-                const toggleBtns = document.querySelectorAll('.action-item[data-action="فعال/غیرفعال"]');
-                toggleBtns.forEach(btn => {
-                    if (btn.closest('.course-card')?.dataset?.courseId == courseId) {
-                        const isActive = (data.private === 0);
-                        btn.innerHTML = `
-                            <i class="fas ${isActive ? 'fa-toggle-on' : 'fa-toggle-off'}"></i>
-                            <span class="action-tooltip">فعال/غیرفعال</span>
-                        `;
-                    }
-                });
-                
-                setTimeout(() => {
-                    location.reload();
-                }, 2000);
-            } else {
-                showToast(data.message, 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast('خطا در ارتباط با سرور', 'error');
-        })
-        .finally(() => {
-            if (targetBtn) {
-                targetBtn.innerHTML = `
-                    <i class="fas fa-toggle-on"></i>
-                    <span class="action-tooltip">فعال/غیرفعال</span>
                 `;
                 targetBtn.style.pointerEvents = 'auto';
             }

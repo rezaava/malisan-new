@@ -16,6 +16,7 @@ return new class extends Migration
             $table->text('answer3');
             $table->text('answer4');
             $table->text('answer');
+            $table->tinyInteger('teacher_change')->default(0);
             $table->bigInteger('user_id');
             $table->bigInteger('session_id');
             $table->integer('status')->nullable()->comment('1.ali 2.khob 3.motevaset 4.bad');

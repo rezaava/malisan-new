@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('name', 191);
             $table->tinyInteger('is_dore')->default(0);
+            $table->tinyInteger('is_ended')->default(0);
             $table->integer('archieve')->default(0);
             $table->string('header', 191)->nullable();
             $table->string('code', 191);

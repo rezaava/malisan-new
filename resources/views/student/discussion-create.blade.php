@@ -1,7 +1,7 @@
 @extends('layout.master')
 
 @section('title')
-ملیسان | ارسال گزارش
+ملیسان | گزارش
 @endsection
 
 @section('head')
@@ -63,7 +63,7 @@
         transition: all 0.3s ease;
     }
 
-    .info-badge:hover {
+    .info-badge {
         background: #f0f7fe;
         border-color: #1e6f9f;
     }
@@ -202,20 +202,20 @@
         border-right: 4px solid #1e6f9f;
         font-size: 14px;
         color: #1a2332;
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
+        line-height: 1.9;
     }
 
     .guide-text-box i {
         color: #1e6f9f;
         font-size: 18px;
-        margin-top: 2px;
-        flex-shrink: 0;
+        margin-left: 10px;
     }
 
-    .guide-text-box strong {
+    .guide-text-box .guide-label {
+        font-weight: 600;
         color: #1e6f9f;
+        display: inline-block;
+        margin-left: 6px;
     }
 
     /* ===== FORM ACTIONS ===== */
@@ -348,7 +348,7 @@
         <div class="report-header">
             <h3>
                 <i class="fas fa-file-alt"></i>
-                ارسال گزارش
+                گزارش
             </h3>
 
             {{-- INFO BADGES --}}
@@ -403,11 +403,19 @@
             <input type="hidden" name="session_id" value="{{ $session->id }}">
 
             {{-- راهنما --}}
+            @php
+                $guideText = $course->settings->ersal_gozaresh_desc ?? 'موضوع اصلی این جلسه چه بود و چه هدفی داشت؟ لطفاً یک نکتهٔ آموزنده از مطالب ارائه شده را با بیانی دیگر (به زبان خودتان) بازنویسی کنید.';
+                // حذف کاراکترهای اضافی مثل نقل قول‌ها و تگ‌های HTML
+                $guideText = strip_tags($guideText);
+                $guideText = trim($guideText);
+                // حذف نقل قول‌های اضافی
+                $guideText = preg_replace('/^["\']+|["\']+$/', '', $guideText);
+            @endphp
             <div class="guide-text-box">
                 <i class="fas fa-lightbulb"></i>
                 <div>
-                    <strong>راهنمای گزارش:</strong>
-                    {{ $course->settings->ersal_gozaresh_desc ?? 'موضوع اصلی این جلسه چه بود و چه هدفی داشت؟ لطفاً یک نکتهٔ آموزنده از مطالب ارائه شده را با بیانی دیگر (به زبان خودتان) بازنویسی کنید.' }}
+                    <span class="guide-label">راهنما:</span>
+                    {{ $guideText }}
                 </div>
             </div>
 
