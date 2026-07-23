@@ -250,9 +250,6 @@
                                 @endif
                                 {{ $question->status_label }}
                             </span>
-                            <a href="{{ route('question.show', $question->id) }}" class="btn-view">
-                                <i class="fas fa-eye"></i> مشاهده
-                            </a>
                             @if($question->status === 0)
                                 <a href="{{ route('student.judgment.returned') }}" class="btn-edit">
                                     <i class="fas fa-edit"></i> اصلاح
@@ -337,7 +334,7 @@
                     <div class="item-header">
                         <div style="flex:1;min-width:150px;">
                             <div class="item-title">
-                                {{ Str::limit($exercise->exercise->text ?? 'بدون عنوان', 80) }}
+                                {!! Str::limit($exercise->exercise->text ?? 'بدون عنوان', 80) !!}
                             </div>
                             <div class="item-meta">
                                 <span class="meta-item">
