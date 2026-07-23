@@ -7,472 +7,12 @@
 @section('head')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.css">
+<link rel="stylesheet" href="{{ asset('css/exercises.css') }}">
 
-<style>
-    .exercises-container {
-        max-width: 1100px;
-        margin: 30px auto;
-        padding: 0 20px;
-    }
-
-    .exercises-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 15px;
-        margin-bottom: 25px;
-    }
-
-    .exercises-header h2 {
-        font-size: 22px;
-        font-weight: 700;
-        color: #1a2332;
-        margin: 0;
-    }
-
-    .exercises-header h2 i {
-        color: #1e6f9f;
-        margin-left: 10px;
-    }
-
-    .exercises-header .subtitle {
-        font-size: 14px;
-        color: #6b7a8f;
-        margin-top: 4px;
-    }
-
-    .btn-back {
-        padding: 8px 20px;
-        background: #f0f4f9;
-        border-radius: 10px;
-        text-decoration: none;
-        color: #1a2332;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 14px;
-        font-weight: 600;
-    }
-
-    .btn-back:hover {
-        background: #e3e8ef;
-    }
-
-    .stats-row {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        margin-bottom: 25px;
-    }
-
-    .stat-box {
-        flex: 1;
-        min-width: 120px;
-        background: #fff;
-        border-radius: 16px;
-        padding: 16px 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        text-align: center;
-        border-right: 4px solid #1e6f9f;
-    }
-
-    .stat-box .number {
-        font-size: 26px;
-        font-weight: 800;
-        color: #1a2332;
-    }
-
-    .stat-box .label {
-        font-size: 12px;
-        color: #6b7a8f;
-    }
-
-    .stat-box.total { border-right-color: #1e6f9f; }
-    .stat-box.answered { border-right-color: #4caf50; }
-    .stat-box.pending { border-right-color: #ff9800; }
-    .stat-box.scored { border-right-color: #9c27b0; }
-
-    .session-section {
-        margin-bottom: 30px;
-    }
-
-    .session-title {
-        font-size: 18px;
-        font-weight: 700;
-        color: #1a2332;
-        padding: 12px 20px;
-        background: #f8fafc;
-        border-radius: 12px;
-        border-right: 4px solid #1e6f9f;
-        margin-bottom: 16px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-
-    .session-title .badge-count {
-        font-size: 13px;
-        font-weight: 600;
-        color: #6b7a8f;
-    }
-
-    .exercise-card {
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 2px 15px rgba(0,0,0,0.04);
-        padding: 20px 24px;
-        margin-bottom: 14px;
-        border-right: 4px solid #e8edf3;
-        transition: all 0.3s ease;
-    }
-
-    .exercise-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 25px rgba(0,0,0,0.08);
-    }
-
-    .exercise-card .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-bottom: 10px;
-    }
-
-    .exercise-card .exercise-number {
-        font-size: 13px;
-        font-weight: 600;
-        color: #6b7a8f;
-    }
-
-    .exercise-card .exercise-text {
-        font-size: 15px;
-        color: #1a2332;
-        line-height: 1.8;
-        padding: 12px 16px;
-        background: #f8fafc;
-        border-radius: 10px;
-        margin-bottom: 12px;
-    }
-
-    .exercise-card .exercise-file {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 6px 16px;
-        background: #e3f2fd;
-        border-radius: 8px;
-        color: #1e6f9f;
-        text-decoration: none;
-        font-size: 13px;
-        font-weight: 500;
-        transition: all 0.2s ease;
-    }
-
-    .exercise-card .exercise-file:hover {
-        background: #1e6f9f;
-        color: #fff;
-    }
-
-    .status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 4px 14px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-
-    .status-badge.answered {
-        background: #e8f5e9;
-        color: #2e7d32;
-    }
-
-    .status-badge.not-answered {
-        background: #ffebee;
-        color: #c62828;
-    }
-
-    .status-badge.scored {
-        background: #e3f2fd;
-        color: #1e6f9f;
-    }
-
-    .status-badge.returned {
-        background: #fff3cd;
-        color: #e65100;
-    }
-
-    .answer-form {
-        margin-top: 16px;
-        padding-top: 16px;
-        border-top: 2px solid #f0f4f9;
-    }
-
-    .form-group {
-        margin-bottom: 14px;
-    }
-
-    .form-group label {
-        display: block;
-        font-weight: 600;
-        font-size: 13px;
-        color: #1a2332;
-        margin-bottom: 4px;
-    }
-
-    .form-group textarea {
-        width: 100%;
-        padding: 10px 14px;
-        border: 2px solid #e8edf3;
-        border-radius: 10px;
-        font-size: 14px;
-        font-family: inherit;
-        background: #fafbfc;
-        transition: all 0.3s ease;
-        min-height: 80px;
-        resize: vertical;
-    }
-
-    .form-group textarea:focus {
-        border-color: #1e6f9f;
-        outline: none;
-        box-shadow: 0 0 0 4px rgba(30,111,159,0.1);
-        background: #fff;
-    }
-
-    .jodit-container {
-        border-radius: 12px !important;
-        overflow: hidden;
-        border: 2px solid #e8edf3 !important;
-        transition: all 0.3s ease;
-    }
-
-    .jodit-container:focus-within {
-        border-color: #1e6f9f !important;
-        box-shadow: 0 0 0 4px rgba(30,111,159,0.1);
-    }
-
-    .jodit-container .jodit-toolbar {
-        background: #f8fafc !important;
-        border-bottom: 1px solid #e8edf3 !important;
-    }
-
-    .jodit-container .jodit-workplace {
-        min-height: 150px;
-    }
-
-    .jodit-container .jodit-wysiwyg {
-        padding: 12px 16px !important;
-        font-family: 'Vazir', Tahoma, Arial, sans-serif !important;
-        font-size: 14px !important;
-        direction: rtl !important;
-        min-height: 150px !important;
-    }
-
-    .file-upload-wrapper {
-        position: relative;
-        display: inline-block;
-    }
-
-    .file-upload-wrapper input[type="file"] {
-        position: absolute;
-        left: 0;
-        top: 0;
-        opacity: 0;
-        width: 100%;
-        height: 100%;
-        cursor: pointer;
-    }
-
-    .file-upload-label {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 18px;
-        background: #f0f4f9;
-        border: 2px dashed #c5cdd8;
-        border-radius: 10px;
-        cursor: pointer;
-        font-weight: 500;
-        color: #4a5a6e;
-        font-size: 13px;
-        transition: all 0.2s ease;
-    }
-
-    .file-upload-label:hover {
-        border-color: #1e6f9f;
-        background: #e3f2fd;
-    }
-
-    .btn-submit {
-        padding: 10px 28px;
-        border-radius: 10px;
-        font-weight: 600;
-        font-size: 14px;
-        border: none;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        background: linear-gradient(135deg, #1e6f9f, #155a82);
-        color: #fff;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .btn-submit:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(30,111,159,0.3);
-    }
-
-    .btn-submit-success {
-        background: linear-gradient(135deg, #4caf50, #388e3c);
-    }
-
-    .btn-submit-success:hover {
-        box-shadow: 0 4px 15px rgba(76,175,80,0.3);
-    }
-
-    /* ===== LOCKED ANSWER ===== */
-    .locked-answer {
-        padding: 12px 16px;
-        background: #f5f5f5;
-        border-radius: 10px;
-        border-right: 4px solid #9e9e9e;
-        margin-bottom: 12px;
-    }
-
-    .locked-answer .answer-content {
-        font-size: 14px;
-        color: #1a2332;
-        line-height: 1.8;
-        background: #fff;
-        padding: 10px 14px;
-        border-radius: 8px;
-        border: 1px solid #e8edf3;
-        margin-top: 6px;
-    }
-
-    .locked-answer .lock-icon {
-        color: #9e9e9e;
-        margin-left: 6px;
-    }
-
-    .locked-answer .score-display {
-        display: inline-block;
-        padding: 4px 14px;
-        border-radius: 12px;
-        font-size: 13px;
-        font-weight: 600;
-        margin-top: 6px;
-    }
-
-    .score-excellent { background: #e8f5e9; color: #2e7d32; }
-    .score-good { background: #e3f2fd; color: #0d47a1; }
-    .score-medium { background: #fff3e0; color: #e65100; }
-    .score-weak { background: #fbe9e7; color: #c62828; }
-
-    .btn-disabled {
-        opacity: 0.5;
-        cursor: not-allowed !important;
-        pointer-events: none;
-    }
-
-    .btn-disabled:hover {
-        transform: none !important;
-        box-shadow: none !important;
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-        background: #f8fafc;
-        border-radius: 16px;
-    }
-
-    .empty-state .empty-icon {
-        font-size: 60px;
-        color: #d0d7e2;
-        display: block;
-        margin-bottom: 16px;
-    }
-
-    .empty-state h4 {
-        color: #1a2332;
-        font-size: 18px;
-        margin-bottom: 8px;
-    }
-
-    .empty-state p {
-        color: #6b7a8f;
-        font-size: 14px;
-    }
-
-    @media (max-width: 768px) {
-        .exercise-card {
-            padding: 16px;
-        }
-        .exercise-card .card-header {
-            flex-direction: column;
-        }
-        .stats-row {
-            flex-direction: column;
-        }
-        .stat-box {
-            min-width: auto;
-        }
-        .session-title {
-            font-size: 16px;
-            padding: 10px 16px;
-        }
-        .jodit-container .jodit-toolbar {
-            flex-wrap: wrap !important;
-        }
-    }
-</style>
 @endsection
 
 @section('mohtava')
 <div class="exercises-container">
-    <div class="exercises-header">
-        <div>
-            <h2>
-                <i class="fas fa-tasks"></i>
-                انجام تکلیف برای جلسه {{ $currentSession->number }}: {{ $currentSession->name }}
-            </h2>
-            <div class="subtitle">
-                <i class="fas fa-book-open" style="margin-left:6px;color:#1e6f9f;"></i>
-                {{ $course->name }}
-            </div>
-        </div>
-        <a href="{{ route('view.coure.St', $course->id) }}" class="btn-back">
-            <i class="fas fa-arrow-right"></i>
-            بازگشت به درس
-        </a>
-    </div>
-    <div class="stats-row">
-        <div class="stat-box total">
-            <div class="number">{{ $stats['total'] }}</div>
-            <div class="label">کل تکالیف</div>
-        </div>
-        <div class="stat-box answered">
-            <div class="number">{{ $stats['answered'] }}</div>
-            <div class="label">پاسخ داده شده</div>
-        </div>
-        <div class="stat-box pending">
-            <div class="number">{{ $stats['not_answered'] }}</div>
-            <div class="label">پاسخ داده نشده</div>
-        </div>
-        <div class="stat-box scored">
-            <div class="number">{{ $stats['scored'] }}</div>
-            <div class="label">ارزیابی شده</div>
-        </div>
-    </div>
 
     @if($exercises->count() > 0)
         @foreach($sessions as $session)
@@ -483,16 +23,6 @@
             @endphp
             @if($sessionExercises->count() > 0)
                 <div class="session-section">
-                    <div class="session-title">
-                        <span>
-                            <i class="fas fa-video" style="color:#1e6f9f;"></i>
-                            جلسه {{ $session->number }}: {{ $session->name }}
-                        </span>
-                        <span class="badge-count">
-                            {{ $sessionExercises->count() }} تکلیف
-                        </span>
-                    </div>
-
                     @foreach($sessionExercises as $key => $exercise)
                         @php
                             $hasAnswer = isset($exercise->user_answer);
@@ -523,11 +53,34 @@
                         
                         <div class="exercise-card">
                             <div class="card-header">
-                                <span class="exercise-number">
-                                    <i class="fas fa-hashtag" style="color:#6b7a8f;"></i>
-                                    تکلیف {{ $key + 1 }}
-                                </span>
-                                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                                <div class="info-badges">
+                                    {{-- درس --}}
+                                    <div class="info-badge course-badge">
+                                        <span class="badge-icon">
+                                            <i class="fas fa-book-open"></i>
+                                        </span>
+                                        <span class="badge-label">درس:</span>
+                                        <span class="badge-value">{{ $course->name }}</span>
+                                    </div>
+                    
+                                    {{-- شماره جلسه --}}
+                                    <div class="info-badge session-badge">
+                                        <span class="badge-icon">
+                                            <i class="fas fa-hashtag"></i>
+                                        </span>
+                                        <span class="badge-label">جلسه:</span>
+                                        <span class="badge-value">{{ $currentSession->number }}</span>
+                                    </div>
+                    
+                                    {{-- موضوع جلسه --}}
+                                    <div class="info-badge topic-badge">
+                                        <span class="badge-icon">
+                                            <i class="fas fa-tag"></i>
+                                        </span>
+                                        <span class="badge-label">موضوع:</span>
+                                        <span class="badge-value">{{ $currentSession->name }}</span>
+                                    </div>
+                                </div>                                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                                     <span class="status-badge {{ $statusClass }}">
                                         @if($statusClass == 'scored')
                                             <i class="fas fa-check-circle"></i>

@@ -6,38 +6,6 @@
 
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-courses.css')}}">
-<style>
-    .btn-join-course {
-        padding: 10px 20px;
-        background: linear-gradient(135deg, #28a745, #20c997);
-        color: #fff;
-        border: none;
-        border-radius: 10px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 14px;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .btn-join-course:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 16px rgba(40, 167, 69, 0.3);
-        color: #fff;
-    }
-
-    .btn-join-course i {
-        font-size: 16px;
-    }
-
-    .empty-state {
-        width: 80vw;
-        margin-top: 30vh;
-        text-align: center;
-    }
-</style>
 @endsection
 
 @section('mohtava')

@@ -284,3 +284,255 @@
         justify-content: flex-start;
     }
 }
+
+    .evaluation-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .evaluation-header {
+        background: #fff;
+        border-radius: 16px;
+        padding: 24px 30px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        margin-bottom: 24px;
+        text-align: center;
+    }
+
+    .evaluation-title {
+        font-size: 22px;
+        font-weight: 700;
+        color: #1a2332;
+        margin: 0;
+    }
+
+    .evaluation-title .score {
+        color: #28a745;
+        font-size: 28px;
+    }
+
+    .evaluation-subtitle {
+        color: #6b7a8f;
+        font-size: 14px;
+        margin-top: 4px;
+    }
+
+    .evaluation-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+
+    @media (max-width: 992px) {
+        .evaluation-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .evaluation-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .accordion-item {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        overflow: hidden;
+        border: 1px solid #e8edf3;
+        transition: all 0.3s ease;
+    }
+
+    .accordion-item:hover {
+        border-color: #1e6f9f;
+    }
+
+    .accordion-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        user-select: none;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .accordion-header:hover {
+        background: #f8fafc;
+    }
+
+    .accordion-header.active {
+        background: #f0f7fe;
+        border-bottom: 2px solid #1e6f9f;
+    }
+
+    .accordion-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        color: #1a2332;
+        font-size: 15px;
+    }
+
+    .accordion-title i {
+        color: #1e6f9f;
+        font-size: 18px;
+    }
+
+    .accordion-stats {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        font-size: 13px;
+        color: #6b7a8f;
+    }
+
+    .accordion-stats .score-badge {
+        background: #e8edf3;
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-weight: 600;
+        color: #1a2332;
+    }
+
+    .accordion-icon {
+        transition: transform 0.3s ease;
+        color: #6b7a8f;
+    }
+
+    .accordion-body {
+        display: none;
+        padding: 0 20px 20px;
+        max-height: 0;
+        overflow: hidden;
+        transition: all 0.4s ease;
+    }
+
+    .accordion-body.active {
+        display: block;
+        max-height: 2000px;
+        padding: 20px;
+    }
+
+    .activity-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        direction: rtl;
+    }
+
+    .activity-table thead th {
+        text-align: right;
+        padding: 10px 12px;
+        background: #f8fafc;
+        font-weight: 700;
+        color: #1a2332;
+        border-bottom: 2px solid #e8edf3;
+    }
+
+    .activity-table tbody td {
+        padding: 10px 12px;
+        border-bottom: 1px solid #f0f4f9;
+        vertical-align: middle;
+    }
+
+    .activity-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .activity-table .score-value {
+        font-weight: 600;
+        color: #1e6f9f;
+    }
+
+    .progress-bar-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .progress-bar-wrapper .progress-bar {
+        flex: 1;
+        height: 8px;
+        background: #e8edf3;
+        border-radius: 4px;
+        overflow: hidden;
+        min-width: 60px;
+    }
+
+    .progress-bar-wrapper .progress-bar .fill {
+        height: 100%;
+        background: linear-gradient(90deg, #1e6f9f, #4caf50);
+        border-radius: 4px;
+        transition: width 0.8s ease;
+    }
+
+    .progress-label {
+        font-size: 12px;
+        color: #6b7a8f;
+        min-width: 45px;
+        font-weight: 600;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 30px 20px;
+        color: #6b7a8f;
+    }
+
+    .empty-state i {
+        font-size: 32px;
+        color: #d0d7e2;
+        display: block;
+        margin-bottom: 12px;
+    }
+
+    .chart-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        padding: 20px;
+        border: 1px solid #e8edf3;
+    }
+
+    .chart-container {
+        width: 100%;
+        min-height: 350px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .evaluation-container {
+            padding: 10px;
+        }
+        .evaluation-header {
+            padding: 16px;
+        }
+        .evaluation-title {
+            font-size: 18px;
+        }
+        .accordion-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .accordion-stats {
+            flex-wrap: wrap;
+            width: 100%;
+            justify-content: space-between;
+        }
+        .activity-table {
+            font-size: 12px;
+        }
+        .activity-table thead th,
+        .activity-table tbody td {
+            padding: 6px 8px;
+        }
+        .progress-bar-wrapper {
+            flex-wrap: wrap;
+        }
+    }

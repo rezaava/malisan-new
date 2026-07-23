@@ -7,106 +7,7 @@
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-course.css')}}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-    .session-action-buttons {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
 
-    .action-icon-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 38px;
-        height: 38px;
-        border-radius: 10px;
-        background: #f0f4f9;
-        color: #4a5a6e;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        font-size: 16px;
-        position: relative;
-    }
-
-    .action-icon-btn:hover {
-        background: #1e6f9f;
-        color: #fff;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(30, 111, 159, 0.3);
-    }
-
-    .action-icon-btn[data-tooltip]:hover::after {
-        content: attr(data-tooltip);
-        position: absolute;
-        bottom: -32px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #1a2332;
-        color: #fff;
-        padding: 4px 12px;
-        border-radius: 6px;
-        font-size: 11px;
-        font-weight: 500;
-        white-space: nowrap;
-        z-index: 10;
-    }
-
-    .action-icon-btn.disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        pointer-events: none;
-    }
-
-    .action-icon-btn.hidden-btn {
-        display: none !important;
-    }
-
-    /* ===== استایل دکمه داوری دوستان در چپ‌ها ===== */
-    .chip-item.davari {
-        background: linear-gradient(135deg, #9c27b0, #6a1b9a) !important;
-        color: #fff !important;
-    }
-
-    .chip-item.davari i {
-        color: #fff !important;
-    }
-
-    .chip-item.davari:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 20px rgba(156, 39, 176, 0.4);
-        background: linear-gradient(135deg, #ab47bc, #7b1fa2) !important;
-    }
-
-    @media (max-width: 768px) {
-        .session-action-buttons {
-            gap: 6px;
-        }
-        .action-icon-btn {
-            width: 34px;
-            height: 34px;
-            font-size: 14px;
-        }
-    }
-
-    .text-center { text-align: center; }
-    .p-5 { padding: 3rem; }
-    .m-3 { margin: 1rem; }
-    .text-muted { color: #6c757d; }
-    .fa-3x { font-size: 3em; }
-    .mb-3 { margin-bottom: 1rem; }
-    .alert-warning {
-        background-color: #fff3cd;
-        border: 1px solid #ffeaa7;
-        color: #856404;
-        padding: 0.75rem 1.25rem;
-        border-radius: 0.25rem;
-        width: 100%;
-    }
-    .alert-warning i {
-        margin-left: 0.5rem;
-    }
-</style>
 @endsection
 
 @section('mohtava')
@@ -161,7 +62,8 @@
                        data-pdf="{{ $session->file ?? '' }}"
                        data-title="{{ addslashes($session->name) }}"
                        data-number="جلسه {{ $session->number }}"
-                       onclick="changeSession(this, '{{ $session->id }}', '{{ $session->file ?? '' }}', '{{ addslashes($session->name) }}', 'جلسه {{ $session->number }}')">
+                       data-description="{{ addslashes($session->text ?? '') }}"
+                       onclick="changeSession(this, '{{ $session->id }}', '{{ $session->file ?? '' }}', '{{ addslashes($session->name) }}', 'جلسه {{ $session->number }}', '{{ addslashes($session->text ?? '') }}')">
                         <span class="session-check"><i class="fas fa-check-circle"></i></span>
                         <span class="session-title">{{ $session->name }}</span>
                         <small class="session-number">(جلسه {{ $session->number }})</small>
@@ -187,37 +89,40 @@
                     </h5>
                 </div>
                 <div class="session-action-buttons">
-                    {{-- دکمه طرح سوال --}}
-                    <a href="#" id="questionBtn" class="action-icon-btn" data-tooltip="{{ $setting->tarahi_soal_desc ?? 'طرح سوال' }}">
+                    <a href="#" id="questionBtn" class="action-icon-btn" data-tooltip="ارسال سوال">
                         <i class="fas fa-question-circle"></i>
                     </a>
 
-                    {{-- دکمه مدیریت تکالیف --}}
-                    <a href="#" id="homeworkBtn" class="action-icon-btn" data-tooltip="ارسال تکالیف">
+                    <a href="#" id="homeworkBtn" class="action-icon-btn" data-tooltip="ارسال تکلیف">
                         <i class="fas fa-file-alt"></i>
                     </a>
 
-                    {{-- دکمه ارسال گزارش --}}
-                    <a href="#" id="reportBtn" class="action-icon-btn" data-tooltip="{{ $setting->ersal_gozaresh_desc ?? 'ارسال گزارش' }}">
+                    <a href="#" id="reportBtn" class="action-icon-btn" data-tooltip="ارسال گزارش">
                         <i class="fas fa-edit"></i>
                     </a>
                 </div>
             </div>
             <div class="session-description">
-                <div class="collapsible-section">
-                    <div class="collapsible-header">
-                        <i class="fas fa-bell"></i>
-                        طرح درس یا محتوای درس
-                        <i class="fas fa-chevron-down expand-icon"></i>
-                    </div>
-                    <div class="collapsible-body" id="sessionDescription">
-                        @if($sessions->isNotEmpty() && $sessions->first()->text)
+                @php
+                    $hasDescription = false;
+                    if ($sessions->isNotEmpty()) {
+                        $firstSession = $sessions->first();
+                        $hasDescription = !empty($firstSession->text) && trim(strip_tags($firstSession->text)) !== '';
+                    }
+                @endphp
+                
+                @if($hasDescription)
+                    <div class="collapsible-section">
+                        <div class="collapsible-header">
+                            <i class="fas fa-bell"></i>
+                            طرح درس یا محتوای درس
+                            <i class="fas fa-chevron-down expand-icon"></i>
+                        </div>
+                        <div class="collapsible-body" id="sessionDescription">
                             <p>{!! $sessions->first()->text !!}</p>
-                        @else
-                            <p class="text-muted">هیچ توضیحی برای این جلسه ثبت نشده است</p>
-                        @endif
+                        </div>
                     </div>
-                </div>
+                @endif
             </div>
             <div class="session-pdf-container">
                 <div class="pdf-toolbar">
@@ -248,8 +153,9 @@
     let currentPdfUrl = '{{ $sessions->first()->file ?? "" }}';
     let currentSessionTitle = '{{ $sessions->first()->name ?? "" }}';
     let currentSessionNumber = 'جلسه {{ $sessions->first()->number ?? "" }}';
+    let currentDescription = '{{ addslashes($sessions->first()->text ?? "") }}';
 
-    function changeSession(element, sessionId, pdfUrl, title, number) {
+    function changeSession(element, sessionId, pdfUrl, title, number, description) {
         // اگر عنصر وجود نداشت، از تابع خارج شو
         if (!element) return;
         
@@ -262,6 +168,7 @@
         currentPdfUrl = pdfUrl;
         currentSessionTitle = title;
         currentSessionNumber = number;
+        currentDescription = description;
 
         // به‌روزرسانی عنوان جلسه
         const titleDisplay = document.getElementById('sessionTitleDisplay');
@@ -298,7 +205,17 @@
         }
 
         // ===== به‌روزرسانی توضیحات جلسه =====
-        // (در صورت نیاز می‌توانید توضیحات را نیز از طریق AJAX دریافت کنید)
+        const sessionDescription = document.getElementById('sessionDescription');
+        const collapsibleSection = document.querySelector('.collapsible-section');
+        
+        if (sessionDescription && collapsibleSection) {
+            if (description && description.trim() !== '' && description.trim() !== 'null') {
+                sessionDescription.innerHTML = `<p>${description}</p>`;
+                collapsibleSection.style.display = 'block';
+            } else {
+                collapsibleSection.style.display = 'none';
+            }
+        }
 
         // ==========================================
         // تنظیم دکمه‌ها بر اساس وضعیت دسترسی جلسه

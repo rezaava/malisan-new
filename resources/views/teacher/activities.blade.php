@@ -6,9 +6,6 @@
 
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-activities.css')}}">
-<style>
-
-</style>
 @endsection
 
 @section('mohtava')

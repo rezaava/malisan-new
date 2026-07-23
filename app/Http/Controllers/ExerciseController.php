@@ -67,21 +67,7 @@ class ExerciseController extends Controller
             $exercise['user_answer'] = $answer;
         }
         
-        // آمار تکالیف
-        $stats = [
-            'total' => $exercises->count(),
-            'answered' => $exercises->filter(function($e) {
-                return isset($e->user_answer);
-            })->count(),
-            'not_answered' => $exercises->filter(function($e) {
-                return !isset($e->user_answer);
-            })->count(),
-            'scored' => $exercises->filter(function($e) {
-                return isset($e->user_answer) && $e->user_answer->status == 'scored';
-            })->count(),
-        ];
-        
-        return view('student.exercises', compact('course', 'sessions', 'exercises', 'stats', 'currentSession'));
+        return view('student.exercises', compact('course', 'sessions', 'exercises', 'currentSession'));
     }
 
     /**

@@ -1,0 +1,294 @@
+    .exam-container {
+        max-width: 900px;
+        margin: 20px auto;
+        padding: 0 20px;
+    }
+
+    .exam-card {
+        background: #fff;
+        border-radius: 24px;
+        box-shadow: 0 2px 30px rgba(0, 0, 0, 0.06);
+        padding: 30px 35px;
+    }
+
+    .exam-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #f0f4f9;
+        margin-bottom: 20px;
+    }
+
+    .exam-header .exam-info h4 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: #1a2332;
+    }
+
+    .exam-header .exam-info h4 i {
+        color: #1e6f9f;
+        margin-left: 8px;
+    }
+
+    .exam-header .exam-info .exam-meta {
+        font-size: 13px;
+        color: #6b7a8f;
+        margin-top: 4px;
+    }
+
+    .exam-header .exam-info .exam-meta span {
+        margin-left: 16px;
+    }
+
+    .exam-header .exam-timer {
+        background: #f0f4f9;
+        padding: 8px 20px;
+        border-radius: 12px;
+        font-size: 18px;
+        font-weight: 700;
+        color: #1e6f9f;
+        direction: ltr;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .exam-header .exam-timer i {
+        color: #f44336;
+        font-size: 16px;
+    }
+
+    .exam-header .exam-timer.warning {
+        color: #f44336;
+        animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    .exam-progress {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
+        padding: 12px 16px;
+        background: #f8fafc;
+        border-radius: 12px;
+    }
+
+    .exam-progress .progress-text {
+        font-size: 14px;
+        color: #4a5a6e;
+    }
+
+    .exam-progress .progress-text .highlight {
+        font-weight: 700;
+        color: #1a2332;
+    }
+
+    .exam-progress .progress-bar {
+        flex: 1;
+        min-width: 100px;
+        height: 6px;
+        background: #e8edf3;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .exam-progress .progress-bar .fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4caf50, #1e6f9f);
+        border-radius: 10px;
+        transition: width 0.5s ease;
+    }
+
+    .question-number {
+        font-size: 14px;
+        color: #6b7a8f;
+        margin-bottom: 10px;
+    }
+
+    .question-number span {
+        font-weight: 700;
+        color: #1a2332;
+    }
+
+    .question-text {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1a2332;
+        line-height: 1.8;
+        padding: 16px 20px;
+        background: #f8fafc;
+        border-radius: 12px;
+        border-right: 4px solid #1e6f9f;
+        margin-bottom: 24px;
+    }
+
+    .options-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .option-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 18px;
+        border: 2px solid #e8edf3;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: #fafbfc;
+    }
+
+    .option-item:hover {
+        border-color: #1e6f9f;
+        background: #f0f7fe;
+    }
+
+    .option-item.selected {
+        border-color: #1e6f9f;
+        background: #e3f2fd;
+    }
+
+    .option-item .option-radio {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid #d0d7e2;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .option-item.selected .option-radio {
+        border-color: #1e6f9f;
+        background: #1e6f9f;
+    }
+
+    .option-item.selected .option-radio::after {
+        content: '';
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #fff;
+    }
+
+    .option-item .option-text {
+        flex: 1;
+        font-size: 15px;
+        color: #1a2332;
+    }
+
+    .feedback-box {
+        padding: 14px 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        font-weight: 600;
+        text-align: center;
+        display: none;
+    }
+
+    .feedback-box.show {
+        display: block;
+    }
+
+    .feedback-box.warning {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        color: #856404;
+    }
+
+    .exam-actions {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        padding-top: 20px;
+        border-top: 2px solid #f0f4f9;
+        flex-wrap: wrap;
+    }
+
+    .btn-exam {
+        padding: 12px 48px;
+        background: linear-gradient(135deg, #1e6f9f, #155a82);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: inherit;
+    }
+
+    .btn-exam:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(30, 111, 159, 0.3);
+    }
+
+    .btn-exam:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-exam-outline {
+        background: transparent;
+        color: #1e6f9f;
+        border: 2px solid #1e6f9f;
+    }
+
+    .btn-exam-outline:hover {
+        background: #1e6f9f;
+        color: #fff;
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+        .exam-card {
+            padding: 16px;
+        }
+        .exam-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .exam-header .exam-timer {
+            justify-content: center;
+        }
+        .exam-progress {
+            flex-direction: column;
+        }
+        .exam-progress .progress-bar {
+            width: 100%;
+        }
+        .question-text {
+            font-size: 16px;
+            padding: 12px 16px;
+        }
+        .option-item {
+            padding: 12px 16px;
+        }
+        .exam-actions {
+            flex-direction: column;
+        }
+        .btn-exam {
+            width: 100%;
+            justify-content: center;
+        }
+    }

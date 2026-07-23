@@ -1,0 +1,325 @@
+    .exercise-container {
+        max-width: 1000px;
+        margin: 30px auto;
+        padding: 0 20px;
+    }
+
+    .exercise-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+
+    .exercise-header h2 {
+        font-size: 22px;
+        font-weight: 700;
+        color: #1a2332;
+        margin: 0;
+    }
+
+    .exercise-header h2 i {
+        color: #1e6f9f;
+        margin-left: 10px;
+    }
+
+    .exercise-header .subtitle {
+        font-size: 14px;
+        color: #6b7a8f;
+        margin-top: 4px;
+    }
+
+    .btn-back {
+        padding: 10px 24px;
+        background: #f0f4f9;
+        color: #1a2332;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .btn-back:hover {
+        background: #e3e8ef;
+        transform: translateY(-2px);
+    }
+
+    .exercise-card {
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.06);
+        padding: 28px 30px;
+        margin-bottom: 24px;
+        transition: all 0.3s ease;
+        border-right: 4px solid #1e6f9f;
+    }
+
+    .exercise-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .exercise-card .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .exercise-card .card-header .exercise-number {
+        font-size: 13px;
+        font-weight: 600;
+        color: #6b7a8f;
+    }
+
+    .exercise-card .card-header .exercise-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        padding: 6px 16px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+    }
+
+    .btn-action-primary {
+        background: #e3f2fd;
+        color: #1e6f9f;
+    }
+    .btn-action-primary:hover {
+        background: #1e6f9f;
+        color: #fff;
+    }
+
+    .btn-action-success {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+    .btn-action-success:hover {
+        background: #4caf50;
+        color: #fff;
+    }
+
+    .btn-action-danger {
+        background: #ffebee;
+        color: #c62828;
+    }
+    .btn-action-danger:hover {
+        background: #f44336;
+        color: #fff;
+    }
+
+    .exercise-card .exercise-text {
+        font-size: 15px;
+        color: #1a2332;
+        line-height: 1.8;
+        margin-bottom: 12px;
+        padding: 12px 16px;
+        background: #f8fafc;
+        border-radius: 10px;
+    }
+
+    .exercise-card .exercise-file {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        background: #f0f4f9;
+        border-radius: 10px;
+        color: #1e6f9f;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .exercise-card .exercise-file:hover {
+        background: #e3f2fd;
+        transform: translateY(-2px);
+    }
+
+    .answer-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .answer-status.submitted {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+    .answer-status.not-submitted {
+        background: #ffebee;
+        color: #c62828;
+    }
+    .answer-status.scored {
+        background: #e3f2fd;
+        color: #1e6f9f;
+    }
+
+    .create-exercise-form {
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.06);
+        padding: 28px 30px;
+        margin-top: 30px;
+    }
+
+    .create-exercise-form h4 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1a2332;
+        margin-bottom: 20px;
+    }
+
+    .create-exercise-form h4 i {
+        color: #1e6f9f;
+        margin-left: 8px;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        font-size: 14px;
+        color: #1a2332;
+        margin-bottom: 6px;
+    }
+
+    .form-group label .required {
+        color: #f44336;
+        margin-right: 3px;
+    }
+
+    .btn-submit {
+        padding: 12px 40px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 15px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #1e6f9f, #155a82);
+        color: #fff;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(30, 111, 159, 0.3);
+    }
+
+    .file-input-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+    }
+
+    .file-input-wrapper input[type="file"] {
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    .file-input-wrapper .file-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: #f0f4f9;
+        border: 2px dashed #c5cdd8;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        color: #4a5a6e;
+    }
+
+    .file-input-wrapper .file-label:hover {
+        border-color: #1e6f9f;
+        background: #e3f2fd;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: #f8fafc;
+        border-radius: 20px;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 60px;
+        color: #d0d7e2;
+        margin-bottom: 20px;
+        display: block;
+    }
+
+    .empty-state h4 {
+        color: #1a2332;
+        font-size: 18px;
+        margin-bottom: 8px;
+    }
+
+    .empty-state p {
+        color: #6b7a8f;
+        font-size: 14px;
+    }
+
+    .jodit-container {
+        border-radius: 12px !important;
+        overflow: hidden;
+    }
+
+    .jodit-container .jodit-toolbar {
+        background: #f8fafc !important;
+        border-bottom: 1px solid #e8edf3 !important;
+    }
+
+    .jodit-container .jodit-wysiwyg {
+        padding: 12px 16px !important;
+        font-family: 'Vazir', Tahoma, Arial, sans-serif !important;
+        font-size: 14px !important;
+        direction: rtl !important;
+    }
+
+    @media (max-width: 768px) {
+        .exercise-card {
+            padding: 18px 16px;
+        }
+        .create-exercise-form {
+            padding: 18px 16px;
+        }
+    }
