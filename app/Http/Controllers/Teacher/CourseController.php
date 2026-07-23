@@ -1101,11 +1101,13 @@ class CourseController extends Controller
             'azmon_nomre' => 'nullable|numeric|min:0|max:100',
             'max_soal' => 'nullable|numeric|min:0',
             'max_taklif' => 'nullable|numeric|min:0',
-            'max_seminar' => 'nullable|numeric|min:0',
             'min_w_khod' => 'nullable|numeric|min:0',
             'q_num' => 'nullable|numeric|min:0',
             'sath_khod' => 'nullable|in:1,2,3',
-            'quiz_num' => 'nullable|numeric|min:0',
+            'hozor_ghayab_nomre' => 'nullable|numeric|min:0|max:100',
+            'miyan_term_nomre' => 'nullable|numeric|min:0|max:100',
+            'kar_amali_nomre' => 'nullable|numeric|min:0|max:100',
+            'payan_term_nomre' => 'nullable|numeric|min:0|max:100',
             'sath_quiz' => 'nullable|in:1,2,3',
         ]);
 
@@ -1191,13 +1193,17 @@ class CourseController extends Controller
             // ==========================================
             // فیلدهای چک‌باکس (boolean) - اصلاح شده
             // ==========================================
-            // بررسی صحیح چک‌باکس‌ها
+            
+            // بخش فعالیت‌ها - اینها به درستی کار می‌کنند
             $setting->soal_last = $request->has('soal_last') ? 1 : 0;
             $setting->gozaresh_last = $request->has('gozaresh_last') ? 1 : 0;
             $setting->taklif_last = $request->has('taklif_last') ? 1 : 0;
-            $setting->show_khod = $request->has('show_khod') ? 1 : 0;
-            $setting->natije = $request->has('natije') ? 1 : 0;
-            $setting->show_quiz = $request->has('show_quiz') ? 1 : 0;
+            
+            // بخش خودآزمایی - اصلاح: بررسی مقدار واقعی چک‌باکس
+            // چون input hidden با name یکسان وجود دارد، باید مقدار ارسالی را بررسی کنیم
+            $setting->show_khod = $request->input('show_khod', 0) == 1 ? 1 : 0;
+            $setting->natije = $request->input('natije', 0) == 1 ? 1 : 0;
+            $setting->show_quiz = $request->input('show_quiz', 0) == 1 ? 1 : 0;
 
             $setting->save();
 
