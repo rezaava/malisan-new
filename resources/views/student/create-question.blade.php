@@ -14,16 +14,41 @@
 @section('mohtava')
 <div class="question-container">
     <div class="question-card">
-        {{-- ===== HEADER با دکمه‌ها ===== --}}
         <div class="question-header">
             <div class="header-left">
+                
+                {{-- ===== دیزاین جدید با info-badges ===== --}}
+                <div class="info-badges">
                 <h4>
-                    طرح سوال برای جلسه {{ $session->number }}: {{ $session->name }}
+                    طرح سوال
                     <button class="help-icon" onclick="openSettingModal()" title="راهنمای طرح سوال">
                         <i class="fas fa-question"></i>
                     </button>
                 </h4>
-                <p>سوال خود را با دقت وارد کنید و گزینه صحیح را مشخص نمایید</p>
+                    <div class="info-badge course-badge">
+                        <span class="badge-icon">
+                            <i class="fas fa-book-open"></i>
+                        </span>
+                        <span class="badge-label">درس:</span>
+                        <span class="badge-value">{{ $course->name ?? 'عنوان درس' }}</span>
+                    </div>
+
+                    <div class="info-badge session-badge">
+                        <span class="badge-icon">
+                            <i class="fas fa-hashtag"></i>
+                        </span>
+                        <span class="badge-label">جلسه:</span>
+                        <span class="badge-value">{{ $session->number }}</span>
+                    </div>
+
+                    <div class="info-badge topic-badge">
+                        <span class="badge-icon">
+                            <i class="fas fa-tag"></i>
+                        </span>
+                        <span class="badge-label">موضوع:</span>
+                        <span class="badge-value">{{ $session->name }}</span>
+                    </div>
+                </div>
             </div>
             <div class="header-actions">
                 {{-- دکمه سوالات دوستان --}}
@@ -115,7 +140,7 @@
     <div class="modal-box">
         <div class="modal-header">
             <h4>
-                <i class="fas fa-users"></i>
+                <i class="fas fa-users" style="color:#6c5ce7;"></i>
                 سوالات دوستان
             </h4>
             <button class="modal-close-btn" onclick="closeModal('friendsQuestionsModal')">
@@ -126,7 +151,7 @@
             {{-- محتوا توسط جاوااسکریپت پر می‌شود --}}
             <div class="loading-container">
                 <i class="fas fa-spinner fa-spin fa-2x loading-spinner"></i>
-                <p class="loading-text">در حال بارگذاری...</p>
+                <p class="loading-text">در حال بارگذاری سوالات دوستان...</p>
             </div>
         </div>
     </div>
@@ -139,7 +164,7 @@
     <div class="modal-box">
         <div class="modal-header">
             <h4>
-                <i class="fas fa-user"></i>
+                <i class="fas fa-user" style="color:#1e6f9f;"></i>
                 سوالات من در این جلسه
             </h4>
             <button class="modal-close-btn" onclick="closeModal('myQuestionsModal')">
@@ -150,7 +175,7 @@
             {{-- محتوا توسط جاوااسکریپت پر می‌شود --}}
             <div class="loading-container">
                 <i class="fas fa-spinner fa-spin fa-2x loading-spinner"></i>
-                <p class="loading-text">در حال بارگذاری...</p>
+                <p class="loading-text">در حال بارگذاری سوالات من...</p>
             </div>
         </div>
     </div>
@@ -163,7 +188,7 @@
     <div class="modal-box">
         <div class="modal-header">
             <h4>
-                <i class="fas fa-info-circle"></i>
+                <i class="fas fa-info-circle" style="color:#ff9800;"></i>
                 راهنمای طرح سوال
             </h4>
             <button class="modal-close-btn" onclick="closeModal('settingModal')">
@@ -421,8 +446,6 @@
                                 q.answer3,
                                 q.answer4
                             ];
-                            
-                            const statusBadge = getStatusBadge(q.status);
                             
                             html += `
                                 <div class="question-list-item">

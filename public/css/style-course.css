@@ -1657,3 +1657,72 @@
             padding: 12px 14px;
         }
     }
+
+    /* ===== INFO BADGES ===== */
+    .info-badges {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 12px;
+        margin-top: 14px;
+    }
+
+    .info-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #f8fafc;
+        padding: 8px 16px;
+        border-radius: 30px;
+        font-size: 13px;
+        color: #1a2332;
+        border: 1px solid #e8edf3;
+        transition: all 0.3s ease;
+    }
+
+    .info-badge {
+        background: #f0f7fe;
+        border-color: #1e6f9f;
+    }
+
+    .info-badge .badge-icon {
+        width: 28px;
+        height: 28px;
+        background: #e3f2fd;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #1e6f9f;
+        font-size: 12px;
+        flex-shrink: 0;
+    }
+
+    .info-badge .badge-label {
+        color: #6b7a8f;
+        font-weight: 500;
+    }
+
+    .info-badge .badge-value {
+        font-weight: 600;
+        color: #1a2332;
+    }
+
+    .info-badge.course-badge {
+        background: linear-gradient(135deg, #f0f7fe, #e3f2fd);
+        border-color: #1e6f9f;
+    }
+
+    .info-badge.course-badge .badge-icon {
+        background: #1e6f9f;
+        color: #fff;
+    }
+
+    .info-badge.session-badge .badge-icon {
+        background: #fff3e0;
+        color: #e65100;
+    }
+
+    .info-badge.topic-badge .badge-icon {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }

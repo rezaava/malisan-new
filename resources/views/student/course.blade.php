@@ -7,7 +7,6 @@
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-course.css')}}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
 @endsection
 
 @section('mohtava')
@@ -80,13 +79,36 @@
         <div class="session-content">
             <div class="session-content-header">
                 <div class="session-title-display">
-                    <h5 id="sessionTitleDisplay">
-                        @if($sessions->isNotEmpty())
-                            جلسه {{ $sessions->first()->number }} : {{ $sessions->first()->name }}
-                        @else
-                            هیچ جلسه‌ای انتخاب نشده است
-                        @endif
-                    </h5>
+                    {{-- ===== دیزاین جدید با info-badges ===== --}}
+                    <div class="info-badges">
+                        <div class="info-badge session-badge">
+                            <span class="badge-icon">
+                                <i class="fas fa-hashtag"></i>
+                            </span>
+                            <span class="badge-label">جلسه:</span>
+                            <span class="badge-value" id="sessionNumberDisplay">
+                                @if($sessions->isNotEmpty())
+                                    {{ $sessions->first()->number }}
+                                @else
+                                    <span class="empty">-</span>
+                                @endif
+                            </span>
+                        </div>
+
+                        <div class="info-badge topic-badge">
+                            <span class="badge-icon">
+                                <i class="fas fa-tag"></i>
+                            </span>
+                            <span class="badge-label">موضوع:</span>
+                            <span class="badge-value" id="sessionNameDisplay">
+                                @if($sessions->isNotEmpty())
+                                    {{ $sessions->first()->name }}
+                                @else
+                                    <span class="empty">هیچ جلسه‌ای انتخاب نشده است</span>
+                                @endif
+                            </span>
+                        </div>
+                    </div>
                 </div>
                 <div class="session-action-buttons">
                     <a href="#" id="questionBtn" class="action-icon-btn" data-tooltip="ارسال سوال">
@@ -120,6 +142,17 @@
                         </div>
                         <div class="collapsible-body" id="sessionDescription">
                             <p>{!! $sessions->first()->text !!}</p>
+                        </div>
+                    </div>
+                @else
+                    <div class="collapsible-section" style="display:none;">
+                        <div class="collapsible-header">
+                            <i class="fas fa-bell"></i>
+                            طرح درس یا محتوای درس
+                            <i class="fas fa-chevron-down expand-icon"></i>
+                        </div>
+                        <div class="collapsible-body" id="sessionDescription">
+                            <p class="text-muted">هیچ توضیحی برای این جلسه ثبت نشده است</p>
                         </div>
                     </div>
                 @endif
@@ -170,19 +203,35 @@
         currentSessionNumber = number;
         currentDescription = description;
 
-        // به‌روزرسانی عنوان جلسه
-        const titleDisplay = document.getElementById('sessionTitleDisplay');
-        if (titleDisplay) {
-            titleDisplay.innerHTML = `<h5>${number} : ${title}</h5>`;
+        // ===== به‌روزرسانی شماره جلسه =====
+        const sessionNumberDisplay = document.getElementById('sessionNumberDisplay');
+        if (sessionNumberDisplay) {
+            // استخراج عدد از "جلسه 12"
+            const numberMatch = number.match(/\d+/);
+            sessionNumberDisplay.textContent = numberMatch ? numberMatch[0] : '-';
+        }
+
+        // ===== به‌روزرسانی موضوع جلسه =====
+        const sessionNameDisplay = document.getElementById('sessionNameDisplay');
+        if (sessionNameDisplay) {
+            sessionNameDisplay.textContent = title || 'هیچ جلسه‌ای انتخاب نشده است';
         }
 
         // ===== به‌روزرسانی PDF Viewer =====
         const pdfViewer = document.getElementById('pdfViewer');
         if (pdfViewer) {
             if (pdfUrl) {
-                pdfViewer.outerHTML = `<object id="pdfViewer" data="${pdfUrl}" type="application/pdf" width="100%" height="550px">
-                    <object width="100%" height="550" data="https://docs.google.com/gview?embedded=true&url=${pdfUrl}"></object>
-                </object>`;
+                // اگر PDF با URL کامل است
+                if (pdfUrl.startsWith('http')) {
+                    pdfViewer.outerHTML = `<object id="pdfViewer" data="${pdfUrl}" type="application/pdf" width="100%" height="550px">
+                        <object width="100%" height="550" data="https://docs.google.com/gview?embedded=true&url=${pdfUrl}"></object>
+                    </object>`;
+                } else {
+                    // اگر PDF با مسیر نسبی است
+                    pdfViewer.outerHTML = `<object id="pdfViewer" data="/files/session${pdfUrl}" type="application/pdf" width="100%" height="550px">
+                        <object width="100%" height="550" data="https://docs.google.com/gview?embedded=true&url=/files/session${pdfUrl}"></object>
+                    </object>`;
+                }
             } else {
                 pdfViewer.innerHTML = `
                     <div class="text-center p-5">
@@ -197,7 +246,8 @@
         const pdfOpenBtn = document.getElementById('pdfOpenBtn');
         if (pdfOpenBtn) {
             if (pdfUrl) {
-                pdfOpenBtn.setAttribute('href', pdfUrl);
+                const fullPdfUrl = pdfUrl.startsWith('http') ? pdfUrl : '/files/session' + pdfUrl;
+                pdfOpenBtn.setAttribute('href', fullPdfUrl);
                 pdfOpenBtn.style.display = 'inline-flex';
             } else {
                 pdfOpenBtn.style.display = 'none';
@@ -209,10 +259,13 @@
         const collapsibleSection = document.querySelector('.collapsible-section');
         
         if (sessionDescription && collapsibleSection) {
-            if (description && description.trim() !== '' && description.trim() !== 'null') {
+            const hasValidDescription = description && description.trim() !== '' && description.trim() !== 'null';
+            
+            if (hasValidDescription) {
                 sessionDescription.innerHTML = `<p>${description}</p>`;
                 collapsibleSection.style.display = 'block';
             } else {
+                sessionDescription.innerHTML = '<p class="text-muted">هیچ توضیحی برای این جلسه ثبت نشده است</p>';
                 collapsibleSection.style.display = 'none';
             }
         }

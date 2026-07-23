@@ -41,15 +41,16 @@
             @endif
         @endif
         
-        @if (Auth::user()->hasRole('admin'))
-            <a href="{{ route('admin_angizesh') }}" class="menu-item">
+        @if (Auth::user()->hasRole('admin') && !$isStudentRoute)
+            <a href="{{ route('admin_angizesh') }}" class="menu-item {{ request()->routeIs('admin_angizesh') ? 'active-menu' : '' }}">
                 <i class="fas fa-comments"></i> <span>پیام انگیزشی</span>
             </a>
         @endif
 
+
         <div class="menu-divider"></div>
         
-        @if (Auth::user()->hasRole('teacher'))
+        @if (Auth::user()->hasRole('teacher|admin'))
             {{-- تغییر نقش --}}
             @if($isTeacherRoute)
                 <a href="{{ route('index_student') }}" class="menu-item">

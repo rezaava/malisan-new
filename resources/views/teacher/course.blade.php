@@ -70,7 +70,11 @@
         <div class="sessions-sidebar">
             <div class="sessions-header">
                 <h5>جلسه های ارائه شده</h5>
-                <button class="add-session-btn" onclick="openModal('create')">
+                <button class="add-session-btn" 
+                        data-bs-toggle="tooltip" 
+                        data-bs-placement="top" 
+                        title="ایجاد جلسه درس جدید"
+                        onclick="openModal('create')">
                     <i class="fas fa-plus"></i>
                 </button>
             </div>
