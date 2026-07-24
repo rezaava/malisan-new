@@ -168,6 +168,8 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
             Route::post('/score', [ExerciseController::class, 'score'])->name('exercise.score');
             Route::get('/correction/{courseId}', [CourseController::class, 'exerciseCorrection'])->name('exercises.correction');
             Route::get('/answers2/{exerciseId}', [CourseController::class, 'getExerciseAnswers'])->name('exercises.answers');
+            Route::get('/questions/{sessionId}', [CourseController::class, 'getSessionQuestions'])->name('teacher.sessions.questions');
+            Route::get('/discussions/{sessionId}', [CourseController::class, 'getSessionDiscussions'])->name('teacher.sessions.discussions');
             Route::post('/score/{answerId}', [CourseController::class, 'scoreExerciseAnswer'])->name('exercises.score');
         });
 

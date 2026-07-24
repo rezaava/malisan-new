@@ -2206,18 +2206,16 @@ class CourseController extends Controller
     {
         $course = Course::findOrFail($courseId);
         
-        // دریافت تمام جلسات درس به همراه تکالیف آنها
-        $sessions = Session::where('course_id', $courseId)
-            ->with(['exercises' => function($query) {
-                $query->withCount('exerciseAnswers'); // تعداد پاسخ‌ها - استفاده از نام صحیح رابطه
-            }])
+        $sessionsWithExercises = Session::where('course_id', $courseId)
+            ->with([
+                'exercises' => function($query) {
+                    $query->withCount('exerciseAnswers');
+                }
+            ])
+            ->withCount(['questions', 'discussions'])
             ->orderBy('number', 'asc')
             ->get();
         
-        // فقط جلساتی که تکلیف دارند
-        $sessionsWithExercises = $sessions->filter(function($session) {
-            return $session->exercises->count() > 0;
-        });
         
         return view('teacher.exercise-correction', compact('course', 'sessionsWithExercises'))->with([
             'pageTitle' => 'تصحیح تکالیف',
@@ -2255,6 +2253,54 @@ class CourseController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'خطا در دریافت پاسخ‌ها: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * دریافت سوالات یک جلسه به صورت JSON
+     */
+    public function getSessionQuestions($sessionId)
+    {
+        try {
+            $session = Session::with(['questions.user'])->findOrFail($sessionId);
+            
+            $questions = $session->questions()->with('user')->orderBy('created_at', 'desc')->get();
+            
+            return response()->json([
+                'success' => true,
+                'questions' => $questions,
+                'total' => $questions->count()
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Get session questions failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در دریافت سوالات: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * دریافت گزارش‌های یک جلسه به صورت JSON
+     */
+    public function getSessionDiscussions($sessionId)
+    {
+        try {
+            $session = Session::with(['discussions.user'])->findOrFail($sessionId);
+            
+            $discussions = $session->discussions()->with('user')->orderBy('created_at', 'desc')->get();
+            
+            return response()->json([
+                'success' => true,
+                'discussions' => $discussions,
+                'total' => $discussions->count()
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Get session discussions failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در دریافت گزارش‌ها: ' . $e->getMessage()
             ], 500);
         }
     }
