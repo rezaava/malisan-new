@@ -7,6 +7,7 @@
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-grades-list.css')}}">
 <link rel="stylesheet" href="{{asset('css/badge.css')}}">
+<link rel="stylesheet" href="{{asset('css/style-course.css')}}">
 @endsection
 
 @section('mohtava')
@@ -19,7 +20,12 @@
             <span class="badge-label">نمرات دانشجویان در درس:</span>
             <span class="badge-value">{{ $course->name ?? 'عنوان درس' }}</span>
         </div>
-        @include('layout.backbtn')
+        <div>
+            @include('layout.backbtn')
+            <a href="{{ route('courses.setting',$course->id) }}?open_section=barmbandi" class="action-btn settings-btn">
+                <i class="fas fa-cog"></i>
+            </a>
+        </div>
     </div>
 
     <div class="table-wrapper">

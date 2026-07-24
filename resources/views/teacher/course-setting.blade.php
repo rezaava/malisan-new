@@ -6,8 +6,6 @@
 
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-student-setting.css')}}">
-<link rel="stylesheet" href="{{asset('css/badge.css')}}">
-
 @endsection
 
 @section('mohtava')
@@ -32,13 +30,14 @@
             <!-- ==========================================
                  بارم بندی
                  ========================================== -->
-            <div class="accordion-item">
+            <div class="accordion-item {{ Request::has('open_section') && Request::get('open_section') == 'barmbandi' ? 'active' : '' }}">
                 <div class="accordion-header" onclick="toggleAccordion(this)">
                     <i class="fas fa-balance-scale"></i>
                     <span>بارم بندی (مجموع : ۱۰۰)</span>
                     <i class="fas fa-chevron-down accordion-icon"></i>
                 </div>
-                <div class="accordion-body">
+                <div class="accordion-body {{ Request::has('open_section') && Request::get('open_section') == 'barmbandi' ? 'active' : '' }}" 
+                     style="{{ Request::has('open_section') && Request::get('open_section') == 'barmbandi' ? 'display: block; max-height: 2000px; padding-top: 20px; padding-bottom: 20px;' : '' }}">
                     <table class="settings-table">
                         <thead>
                             <tr>
