@@ -252,14 +252,6 @@ class StudentCourseController extends Controller
                 ], 404);
             }
 
-            // بررسی خصوصی بودن دوره
-            if ($course->private == 1) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'این دوره خصوصی است و امکان عضویت با کد وجود ندارد'
-                ], 403);
-            }
-
             // بررسی آرشیو بودن دوره
             if ($course->archive == 1) {
                 return response()->json([
@@ -269,20 +261,53 @@ class StudentCourseController extends Controller
             }
 
             // بررسی تکراری بودن عضویت
-            $exists = $user->courses()->where('course_id', $course->id)->exists();
-            if ($exists) {
+            $existingMembership = $user->courses()->where('course_id', $course->id)->first();
+            if ($existingMembership) {
+                // اگر کاربر قبلاً درخواست داده و وضعیت pending است
+                if ($existingMembership->pivot->status == 2) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'درخواست شما قبلاً ثبت شده و در انتظار تأیید است'
+                    ], 409);
+                }
+                // اگر کاربر قبلاً عضو شده است
                 return response()->json([
                     'success' => false,
                     'message' => 'شما قبلاً در این کلاس عضو هستید'
                 ], 409);
             }
 
-            // عضویت دانشجو در دوره
-            $course->users()->attach($user, ['role_id' => $studentRole->id]);
+            // بررسی خصوصی بودن دوره
+            if ($course->private == 1) {
+                // برای دوره‌های خصوصی، عضویت با وضعیت pending (2) ثبت می‌شود
+                $status = 2; // pending request
+                
+                // عضویت دانشجو در دوره با وضعیت pending
+                $course->users()->attach($user, [
+                    'role_id' => $studentRole->id,
+                    'status' => $status
+                ]);
 
-            // ==========================================
+                DB::commit();
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'درخواست شما برای استاد درس ارسال شد. لطفاً تا زمان تأیید ایشان صبر کنید. به محض تأیید، دسترسی شما به درس فعال خواهد شد.',
+                    'course_name' => $course->name,
+                    'status' => 'pending'
+                ]);
+            }
+
+            // برای دوره‌های عمومی، عضویت با وضعیت approved (1) ثبت می‌شود
+            $status = 1; // approved
+
+            // عضویت دانشجو در دوره
+            $course->users()->attach($user, [
+                'role_id' => $studentRole->id,
+                'status' => $status
+            ]);
+
             // ایجاد Scoring برای دانشجو با مقادیر پیش‌فرض ۰
-            // ==========================================
             $scoring = Scoring::create([
                 'course_id' => $course->id,
                 'user_id' => $user->id,
@@ -304,7 +329,7 @@ class StudentCourseController extends Controller
                 's_4' => 0,
             ]);
 
-            // همچنین اطمینان از وجود Setting برای دوره (اگر وجود نداشت)
+            // اطمینان از وجود Setting برای دوره (اگر وجود نداشت)
             Setting::firstOrCreate(
                 ['course_id' => $course->id],
                 ['course_id' => $course->id]
@@ -316,6 +341,7 @@ class StudentCourseController extends Controller
                 'success' => true,
                 'message' => 'عضویت با موفقیت انجام شد',
                 'course_name' => $course->name,
+                'status' => 'approved',
                 'redirect' => route('view.coure.St', $course->id)
             ]);
             

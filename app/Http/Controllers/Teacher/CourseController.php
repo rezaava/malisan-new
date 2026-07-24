@@ -859,40 +859,38 @@ class CourseController extends Controller
     public function destroyUser($userId, $courseId)
     {
         try {
+            $user = User::findOrFail($userId);
+            $course = Course::findOrFail($courseId);
+            
             // پیدا کردن رکورد عضویت دانشجو در دوره
             $courseUser = CourseUser::where('user_id', $userId)
                 ->where('course_id', $courseId)
                 ->first();
 
             if (!$courseUser) {
-                return redirect()->back()->with('error', 'این دانشجو در این دوره عضویت ندارد');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'این دانشجو در این دوره عضویت ندارد'
+                ]);
             }
-
-            // دریافت اطلاعات برای لاگ
-            $user = User::find($userId);
-            $course = Course::find($courseId);
 
             // انجام Soft Delete
             $courseUser->delete();
 
-            // لاگ کردن (اختیاری)
-            \Log::info("Student removed from course", [
-                'student_id' => $userId,
-                'student_name' => $user->name . ' ' . $user->family,
-                'course_id' => $courseId,
-                'course_name' => $course->name,
-                'teacher_id' => Auth::id(),
-                'teacher_name' => Auth::user()->name . ' ' . Auth::user()->family,
-                'removed_at' => now()
+            return response()->json([
+                'success' => true,
+                'message' => 'دانشجو با موفقیت از دوره اخراج شد'
             ]);
-
-            return redirect()->back()->with('success', 'دانشجو با موفقیت از دوره اخراج شد');
 
         } catch (\Exception $e) {
             \Log::error('Remove student failed: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'خطا در اخراج دانشجو: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در اخراج دانشجو: ' . $e->getMessage()
+            ]);
         }
     }
+
 
     /**
      * تغییر وضعیت فعال/غیرفعال (private)
@@ -1003,6 +1001,9 @@ class CourseController extends Controller
     public function restoreUser($userId, $courseId)
     {
         try {
+            $user = User::findOrFail($userId);
+            $course = Course::findOrFail($courseId);
+            
             // پیدا کردن رکورد حذف شده
             $courseUser = CourseUser::withTrashed()
                 ->where('user_id', $userId)
@@ -1010,29 +1011,33 @@ class CourseController extends Controller
                 ->first();
 
             if (!$courseUser) {
-                return redirect()->back()->with('error', 'این دانشجو در این دوره وجود ندارد');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'این دانشجو در این دوره وجود ندارد'
+                ]);
             }
 
             if (!$courseUser->trashed()) {
-                return redirect()->back()->with('error', 'این دانشجو اخراج نشده است');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'این دانشجو اخراج نشده است'
+                ]);
             }
 
             // بازگرداندن
             $courseUser->restore();
 
-            // لاگ کردن
-            \Log::info("Student restored to course", [
-                'student_id' => $userId,
-                'course_id' => $courseId,
-                'teacher_id' => Auth::id(),
-                'restored_at' => now()
+            return response()->json([
+                'success' => true,
+                'message' => 'دانشجو با موفقیت به دوره بازگردانده شد'
             ]);
-
-            return redirect()->back()->with('success', 'دانشجو با موفقیت به دوره بازگردانده شد');
 
         } catch (\Exception $e) {
             \Log::error('Restore student failed: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'خطا در بازگرداندن دانشجو: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در بازگرداندن دانشجو: ' . $e->getMessage()
+            ]);
         }
     }
 

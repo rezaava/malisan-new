@@ -187,9 +187,11 @@
                 closeJoinModal();
                 
                 // ریدایرکت به صفحه دوره
-                setTimeout(() => {
-                    window.location.href = data.redirect || '/dashboard';
-                }, 1500);
+                if (data.redirect) {
+                    setTimeout(() => {
+                        window.location.href = data.redirect;
+                    }, 1500);
+                }
             } else {
                 // خطا
                 showToast(data.message, 'error');

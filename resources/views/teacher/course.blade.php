@@ -7,7 +7,358 @@
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-course.css')}}">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.css">
+<style>
+    /* ===== استایل فریم محتوای آموزشی ===== */
+    .content-frame {
+        border: 2px solid #e8edf4;
+        border-radius: 16px;
+        overflow: hidden;
+        margin-bottom: 20px;
+        background: #fafcff;
+        transition: all 0.3s ease;
+    }
+    .content-frame:hover {
+        border-color: #1e6f9f;
+        box-shadow: 0 4px 20px rgba(30, 111, 159, 0.08);
+    }
+    .content-frame-title {
+        background: linear-gradient(135deg, #1e6f9f, #0d4b6e);
+        color: #fff;
+        padding: 14px 20px;
+        font-size: 15px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        letter-spacing: 0.3px;
+    }
+    .content-frame-title i {
+        font-size: 18px;
+        color: #ffd700;
+    }
+    .content-frame-body {
+        padding: 20px 20px 10px 20px;
+        background: #fff;
+    }
+    .content-frame-body .form-group:last-child {
+        margin-bottom: 0;
+    }
+    .content-frame-body .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+    @media (max-width: 576px) {
+        .content-frame-body .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
 
+    /* ===== سایر استایل‌های موجود ===== */
+    .required {
+        color: #f44336;
+        margin-right: 3px;
+    }
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+    }
+    .modal-overlay.active {
+        display: flex;
+    }
+    .modal-box {
+        background: #fff;
+        border-radius: 20px;
+        max-width: 800px;
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+        animation: modalSlideIn 0.3s ease;
+    }
+    @keyframes modalSlideIn {
+        from { transform: translateY(-30px) scale(0.96); opacity: 0; }
+        to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px 24px;
+        border-bottom: 2px solid #f0f4f9;
+        position: sticky;
+        top: 0;
+        background: #fff;
+        z-index: 10;
+        border-radius: 20px 20px 0 0;
+    }
+    .modal-header h4 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: #1a2332;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .modal-header h4 i {
+        color: #1e6f9f;
+        font-size: 20px;
+    }
+    .modal-close-btn {
+        background: none;
+        border: none;
+        font-size: 22px;
+        color: #6b7a8f;
+        cursor: pointer;
+        padding: 5px 8px;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+    .modal-close-btn:hover {
+        background: #fee8e8;
+        color: #f44336;
+    }
+    .modal-form {
+        padding: 24px;
+    }
+    .form-group {
+        margin-bottom: 18px;
+    }
+    .form-group label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: #1a2332;
+        margin-bottom: 6px;
+    }
+    .form-control {
+        width: 100%;
+        padding: 10px 14px;
+        border: 2px solid #e8edf4;
+        border-radius: 10px;
+        font-size: 14px;
+        transition: all 0.2s;
+        background: #fafcff;
+    }
+    .form-control:focus {
+        border-color: #1e6f9f;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(30, 111, 159, 0.15);
+    }
+    .file-upload-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .file-upload-input {
+        display: none;
+    }
+    .file-upload-label {
+        background: #f0f4f9;
+        border: 2px dashed #c0d0e0;
+        border-radius: 10px;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        color: #1e6f9f;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .file-upload-label:hover {
+        background: #e3edf7;
+        border-color: #1e6f9f;
+    }
+    .file-name {
+        font-size: 13px;
+        color: #6b7a8f;
+        padding: 5px 10px;
+        background: #f8fafc;
+        border-radius: 8px;
+        flex: 1;
+        min-width: 120px;
+    }
+    .existing-file {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 10px;
+        padding: 10px 16px;
+        background: #f0f7ff;
+        border-radius: 10px;
+        border-right: 4px solid #1e6f9f;
+        flex-wrap: wrap;
+    }
+    .existing-file .file-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #1a2332;
+        flex: 1;
+    }
+    .existing-file .file-info i {
+        color: #f44336;
+        font-size: 20px;
+    }
+    .btn-sm {
+        padding: 5px 14px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s;
+    }
+    .btn-sm-danger {
+        background: #fee8e8;
+        color: #f44336;
+    }
+    .btn-sm-danger:hover {
+        background: #fdd0d0;
+    }
+    .btn-sm-primary {
+        background: #e3edf7;
+        color: #1e6f9f;
+    }
+    .btn-sm-primary:hover {
+        background: #c5d9ed;
+    }
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+    }
+    .checkbox-label input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: #1e6f9f;
+        cursor: pointer;
+    }
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding-top: 16px;
+        border-top: 2px solid #f0f4f9;
+        margin-top: 10px;
+    }
+    .btn-submit {
+        padding: 10px 24px;
+        border-radius: 10px;
+        border: none;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #1e6f9f, #0d4b6e);
+        color: #fff;
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(30, 111, 159, 0.3);
+    }
+    .btn-outline {
+        background: #f0f4f9;
+        color: #1a2332;
+    }
+    .btn-outline:hover {
+        background: #e0e8f0;
+    }
+    .btn-danger {
+        background: linear-gradient(135deg, #f44336, #d32f2f);
+        color: #fff;
+    }
+    .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(244, 67, 54, 0.3);
+    }
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+    @media (max-width: 576px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        .modal-box {
+            width: 98%;
+            max-height: 95vh;
+        }
+        .modal-form {
+            padding: 16px;
+        }
+        .content-frame-body {
+            padding: 14px;
+        }
+    }
+
+    /* ===== استایل مودال‌های دیگر ===== */
+    .modal-box[style*="max-width: 700px;"] .modal-body {
+        padding: 20px 24px 24px;
+    }
+    .btn-settings {
+        padding: 10px 22px;
+        border-radius: 10px;
+        border: none;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #fff;
+        background: linear-gradient(135deg, #1e6f9f, #0d4b6e);
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+    .btn-settings:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(30, 111, 159, 0.25);
+        color: #fff;
+    }
+    .btn-close-modal {
+        padding: 10px 22px;
+        border-radius: 10px;
+        border: 2px solid #e8edf4;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #fff;
+        color: #1a2332;
+        transition: all 0.2s;
+    }
+    .btn-close-modal:hover {
+        background: #f0f4f9;
+    }
+</style>
 @endsection
 
 @section('mohtava')
@@ -120,17 +471,12 @@
                     </h5>
                 </div>
                 <div class="session-action-buttons">
-                    {{-- ===== دکمه ثبت سوال (اضافه شده) ===== --}}
                     <a href="#" id="questionTeacherBtn" class="action-icon-btn" data-tooltip="ثبت سوال">
                         <i class="fas fa-question-circle"></i>
                     </a>
-
-                    {{-- دکمه مدیریت تکالیف --}}
                     <a href="#" id="homeworkTeacherBtn" class="action-icon-btn" data-tooltip="مدیریت تکالیف">
                         <i class="fas fa-file-alt"></i>
                     </a>
-
-                    {{-- دکمه مدیریت گزارش --}}
                     <button class="action-icon-btn" onclick="openProfExModal()" data-tooltip="مدیریت گزارش">
                         <i class="fas fa-list-ul"></i>
                     </button>
@@ -192,7 +538,6 @@
         </div>
         <div class="modal-body">
             <div style="padding:10px 0;">
-                {{-- نمایش توضیحات فعلی --}}
                 <div style="background:#f8fafc;border-radius:12px;padding:20px;border-right:4px solid #1e6f9f;margin-bottom:16px;">
                     <p style="font-size:14px;line-height:2;color:#1a2332;margin:0;font-weight:600;color:#1e6f9f;">
                         <i class="fas fa-quote-right" style="margin-left:6px;"></i>
@@ -203,7 +548,6 @@
                     </div>
                 </div>
                 
-                {{-- دکمه ویرایش --}}
                 <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;padding-bottom:16px;border-bottom:2px solid #f0f4f9;margin-bottom:16px;">
                     <button class="btn-settings" onclick="openEditReportModal()" style="background:linear-gradient(135deg,#ff9800,#e65100);">
                         <i class="fas fa-edit"></i>
@@ -215,7 +559,6 @@
                     </button>
                 </div>
                 
-                {{-- توضیحات پایینی --}}
                 <div style="background:#e3f2fd;border-radius:12px;padding:16px 20px;font-size:13px;color:#1a2332;">
                     <i class="fas fa-info-circle" style="color:#1e6f9f;"></i>
                     <strong>توجه:</strong> در صورت عدم تکمیل این بخش، توضیحات پیش فرض ثبت شده در تنظیمات به دانشجو نمایش داده خواهد شد.
@@ -272,7 +615,7 @@
 </div>
 
 {{-- ========================================== --}}
-{{-- MODAL برای ایجاد/ویرایش جلسه --}}
+{{-- MODAL برای ایجاد/ویرایش جلسه (با فریم محتوای آموزشی) --}}
 {{-- ========================================== --}}
 <div class="modal-overlay" id="sessionModal">
     <div class="modal-box">
@@ -286,7 +629,7 @@
             </button>
         </div>
 
-        <form class="modal-form" id="sessionForm" method="POST" enctype="multipart/form-data">
+        <form class="modal-form pt-0" id="sessionForm" method="POST" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="session_id" id="sessionId" value="">
             <input type="hidden" name="course_id" value="{{ $course->id }}">
@@ -302,57 +645,70 @@
                        placeholder="عنوان جلسه را وارد کنید" required>
             </div>
 
+            {{-- ===== طرح درس یا محتوای درس (خارج از فریم) ===== --}}
             <div class="form-group">
                 <label>طرح درس یا محتوای درس (اختیاری)</label>
                 <textarea class="jodit-editor" name="text" id="modalEditor" 
                           placeholder="متن جلسه را وارد کنید..."></textarea>
             </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="modalLink">لینک درس (اختیاری)</label>
-                    <input type="text" class="form-control" name="link" id="modalLink" 
-                           placeholder="https://example.com">
+            {{-- ===== فریم محتوای آموزشی ===== --}}
+            <div class="content-frame">
+                <div class="content-frame-title">
+                    <i class="fas fa-graduation-cap"></i>
+                    محتوای آموزشی جلسه (انتخاب حداقل یک گزینه الزامی است.)
                 </div>
-                <div class="form-group">
-                    <label for="modalMajazi">لینک فیلم ضبط شده (اختیاری)</label>
-                    <input type="text" class="form-control" name="majazi" id="modalMajazi" 
-                           placeholder="https://example.com">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="modalAparat">لینک آپارات (اختیاری)</label>
-                <input type="text" class="form-control" name="aparat" id="modalAparat" 
-                       placeholder="کد اسکریپت آپارات را وارد کنید">
-                <small style="color: #6b7a8f; font-size: 12px;">کد اسکریپت آپارات را به همراه iframe یا embed کپی کنید</small>
-            </div>
-
-            <div class="form-group">
-                <label>بارگذاری محتوای درس (اختیاری)</label>
-                <div class="file-upload-wrapper">
-                    <input type="file" id="modalFileUpload" name="file" class="file-upload-input" 
-                           accept=".pdf,.doc,.docx,.ppt,.pptx">
-                    <label for="modalFileUpload" class="file-upload-label">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <span>انتخاب فایل</span>
-                    </label>
-                    <span class="file-name" id="modalFileName">هیچ فایلی انتخاب نشده است</span>
-                </div>
-                <small style="color: #6b7a8f; font-size: 12px; display: block; margin-top: 5px;">
-                    فرمت‌های مجاز: PDF، Word، PowerPoint | حداکثر حجم: 20 مگابایت
-                </small>
-                <div id="modalExistingFile" style="display:none;" class="existing-file">
-                    <div class="file-info">
-                        <i class="fas fa-file-pdf"></i>
-                        <span id="modalExistingFileName">فایل موجود</span>
+                <div class="content-frame-body">
+                    {{-- لینک درس --}}
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="modalLink">لینک درس (اختیاری)</label>
+                            <input type="text" class="form-control" name="link" id="modalLink" 
+                                   placeholder="https://example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="modalMajazi">لینک فیلم ضبط شده (اختیاری)</label>
+                            <input type="text" class="form-control" name="majazi" id="modalMajazi" 
+                                   placeholder="https://example.com">
+                        </div>
                     </div>
-                    <button type="button" class="btn-sm btn-sm-danger" onclick="deleteExistingFile()">
-                        <i class="fas fa-trash-alt"></i> حذف
-                    </button>
-                    <a href="#" id="modalExistingFileLink" class="btn-sm btn-sm-primary" target="_blank">
-                        <i class="fas fa-eye"></i> مشاهده
-                    </a>
+
+                    {{-- لینک آپارات --}}
+                    <div class="form-group">
+                        <label for="modalAparat">لینک آپارات (اختیاری)</label>
+                        <input type="text" class="form-control" name="aparat" id="modalAparat" 
+                               placeholder="کد اسکریپت آپارات را وارد کنید">
+                        <small style="color: #6b7a8f; font-size: 12px;">کد اسکریپت آپارات را به همراه iframe یا embed کپی کنید</small>
+                    </div>
+
+                    {{-- بارگذاری فایل --}}
+                    <div class="form-group">
+                        <label>بارگذاری محتوای درس (اختیاری)</label>
+                        <div class="file-upload-wrapper">
+                            <input type="file" id="modalFileUpload" name="file" class="file-upload-input" 
+                                   accept=".pdf,.doc,.docx,.ppt,.pptx">
+                            <label for="modalFileUpload" class="file-upload-label">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <span>انتخاب فایل</span>
+                            </label>
+                            <span class="file-name" id="modalFileName">هیچ فایلی انتخاب نشده است</span>
+                        </div>
+                        <small style="color: #6b7a8f; font-size: 12px; display: block; margin-top: 5px;">
+                            فرمت‌های مجاز: PDF، Word، PowerPoint | حداکثر حجم: 20 مگابایت
+                        </small>
+                        <div id="modalExistingFile" style="display:none;" class="existing-file">
+                            <div class="file-info">
+                                <i class="fas fa-file-pdf"></i>
+                                <span id="modalExistingFileName">فایل موجود</span>
+                            </div>
+                            <button type="button" class="btn-sm btn-sm-danger" onclick="deleteExistingFile()">
+                                <i class="fas fa-trash-alt"></i> حذف
+                            </button>
+                            <a href="#" id="modalExistingFileLink" class="btn-sm btn-sm-primary" target="_blank">
+                                <i class="fas fa-eye"></i> مشاهده
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -382,6 +738,10 @@
     </div>
 </div>
 
+
+@endsection
+
+@section('js')
 <script src="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.js"></script>
 
 <script>
@@ -398,6 +758,26 @@
     let reportJoditEditor = null;
     let currentReportDesc = '';
     const courseId = '{{ $course->id }}';
+    
+    // ==========================================
+    // اعتبارسنجی فرم جلسه - حداقل یک گزینه محتوای آموزشی
+    // ==========================================
+    document.getElementById('sessionForm').addEventListener('submit', function(e) {
+        const link = document.getElementById('modalLink').value.trim();
+        const majazi = document.getElementById('modalMajazi').value.trim();
+        const aparat = document.getElementById('modalAparat').value.trim();
+        const file = document.getElementById('modalFileUpload').files[0];
+        const existingFile = document.getElementById('modalExistingFile').style.display !== 'none';
+    
+        // بررسی اینکه حداقل یکی از گزینه‌ها پر شده باشد
+        if (!link && !majazi && !aparat && !file && !existingFile) {
+            e.preventDefault();
+            alert('لطفاً حداقل یکی از گزینه‌های محتوای آموزشی (لینک درس، لینک فیلم ضبط شده، لینک آپارات یا بارگذاری فایل) را انتخاب کنید.');
+            return false;
+        }
+    
+        return true;
+    });
 
     // ==========================================
     // توابع مودال جلسات
@@ -654,13 +1034,11 @@
             }
         }
 
-        // ===== تنظیم دکمه ثبت سوال =====
         const questionTeacherBtn = document.getElementById('questionTeacherBtn');
         if (questionTeacherBtn) {
             questionTeacherBtn.setAttribute('href', `/teacher/questions/create/${sessionId}`);
         }
 
-        // ===== تنظیم دکمه مدیریت تکالیف =====
         const homeworkTeacherBtn = document.getElementById('homeworkTeacherBtn');
         if (homeworkTeacherBtn) {
             homeworkTeacherBtn.setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
@@ -1027,13 +1405,11 @@
         if (firstSession) {
             const sessionId = firstSession.dataset.session;
             
-            // دکمه ثبت سوال
             const questionTeacherBtn = document.getElementById('questionTeacherBtn');
             if (questionTeacherBtn) {
                 questionTeacherBtn.setAttribute('href', `/teacher/questions/create/${sessionId}`);
             }
             
-            // دکمه مدیریت تکالیف
             const homeworkTeacherBtn = document.getElementById('homeworkTeacherBtn');
             if (homeworkTeacherBtn) {
                 homeworkTeacherBtn.setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);

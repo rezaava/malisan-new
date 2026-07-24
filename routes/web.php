@@ -94,7 +94,7 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         Route::post('/student-profile/{id}', [CourseController::class, 'updateStudentProfile'])->name('studentProfile.update');
 
         Route::get('/students-list/{id}', [CourseController::class, 'studentsList'])->name('studentsList');
-        Route::get('/students/remove/{userId}/{courseId}', [CourseController::class, 'destroyUser'])->name('students.remove');
+        Route::post('/students/remove/{userId}/{courseId}', [CourseController::class, 'destroyUser'])->name('students.remove');
         Route::post('/students/restore/{userId}/{courseId}', [CourseController::class, 'restoreUser'])->name('students.restore');
         Route::get('/students/removed/{courseId}', [CourseController::class, 'removedStudents'])->name('students.removed');
 
@@ -175,6 +175,10 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         // ===== آپلود فایل =====
         Route::post('/upload/image', [FileController::class, 'uploadImage'])->name('upload.image');
         Route::post('/upload/video', [FileController::class, 'uploadVideo'])->name('upload.video');
+
+        Route::get('/pending-requests/{courseId}', [TeacherSiteController::class, 'pendingRequests'])->name('courses.pending.requests');
+        Route::post('/approve-request/{courseId}/{userId}', [TeacherSiteController::class, 'approveRequest'])->name('courses.approve.request');
+        Route::post('/reject-request/{courseId}/{userId}', [TeacherSiteController::class, 'rejectRequest'])->name('courses.reject.request');
     });
 
     // ==========================================

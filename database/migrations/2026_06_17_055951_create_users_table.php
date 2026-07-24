@@ -43,6 +43,7 @@ return new class extends Migration
             $table->string('turn', 191)->nullable()->comment('dore');
             $table->string('password', 191);
             $table->text('aneto_token')->nullable();
+            $table->rememberToken();
             $table->timestamps();
         });
     }

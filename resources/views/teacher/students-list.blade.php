@@ -7,6 +7,7 @@
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-students-list.css')}}">
 <link rel="stylesheet" href="{{asset('css/badge.css')}}">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 @endsection
 
 @section('mohtava')
@@ -91,7 +92,7 @@
                         </td>
                         <td>
                             <button type="button" class="action-btn remove-btn" 
-                                    onclick="removeStudent({{ $user->id }}, {{ $course->id }}, '{{ addslashes($user->name . ' ' . $user->family) }}')"
+                                    onclick="removeStudent(this, {{ $user->id }}, {{ $course->id }}, '{{ addslashes($user->name . ' ' . $user->family) }}')"
                                     title="اخراج">
                                 <i class="fas fa-user-minus"></i>
                             </button>
@@ -253,6 +254,7 @@
     // ============================================
     let _adjStudentId = null;
     let _evtStudentId = null;
+    const courseId = {{ $course->id ?? 0 }};
 
     // ============================================
     // مودال دانشجویان اخراج شده
@@ -274,9 +276,16 @@
         const container = document.getElementById('removedStudentsList');
         container.innerHTML = '<div class="text-center" style="padding:20px;"><i class="fas fa-spinner fa-spin" style="font-size:24px;color:#1e6f9f;"></i><p>در حال بارگذاری...</p></div>';
 
-        fetch('/teacher/courses/students/removed/{{ $course->id }}')
-            .then(response => response.json())
+        fetch(`/teacher/courses/students/removed/${courseId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('خطا در دریافت اطلاعات');
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('Removed students:', data);
+                
                 if (!data.success) {
                     container.innerHTML = `
                         <div class="empty-removed">
@@ -323,7 +332,7 @@
                             <td class="col-main">${userName}</td>
                             <td>${deletedAt}</td>
                             <td>
-                                <button class="restore-btn" onclick="restoreStudent(${item.user_id}, ${item.course_id})">
+                                <button class="restore-btn" onclick="restoreStudent(this, ${item.user_id}, ${item.course_id})">
                                     <i class="fas fa-undo"></i>
                                     برگرداندن
                                 </button>
@@ -340,36 +349,51 @@
                 container.innerHTML = html;
 
                 // بروزرسانی تعداد در Badge
-                document.getElementById('removedCountBadge').textContent = data.data.length;
-
+                const badge = document.getElementById('removedCountBadge');
+                if (badge) {
+                    badge.textContent = data.data.length;
+                }
             })
             .catch(error => {
-                console.error('Error:', error);
+                console.error('Error loading removed students:', error);
                 container.innerHTML = `
                     <div class="empty-removed">
                         <i class="fas fa-exclamation-triangle"></i>
                         <p>خطا در ارتباط با سرور</p>
+                        <small style="color:#999;">${error.message}</small>
                     </div>
                 `;
             });
     }
 
-    function restoreStudent(userId, courseId) {
+    function restoreStudent(button, userId, courseId) {
         if (!confirm('آیا از بازگرداندن این دانشجو به دوره اطمینان دارید؟')) {
             return;
+        }
+
+        const btn = button;
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         }
 
         fetch(`/teacher/courses/students/restore/${userId}/${courseId}`, {
             method: 'POST',
             headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json'
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('خطا در ارتباط با سرور');
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
-                showToast(data.message, 'success');
+                showToast(data.message || 'دانشجو با موفقیت بازگردانده شد', 'success');
                 // بارگذاری مجدد لیست
                 loadRemovedStudents();
                 // بروزرسانی تعداد در Badge
@@ -377,12 +401,20 @@
                     location.reload();
                 }, 1500);
             } else {
-                showToast(data.message, 'error');
+                showToast(data.message || 'خطا در بازگرداندن دانشجو', 'error');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-undo"></i> برگرداندن';
+                }
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            showToast('خطا در ارتباط با سرور', 'error');
+            console.error('Error restoring student:', error);
+            showToast('خطا در ارتباط با سرور: ' + error.message, 'error');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-undo"></i> برگرداندن';
+            }
         });
     }
 
@@ -413,7 +445,12 @@
         tbody.innerHTML = '<tr class="empty-row"><td colspan="3">در حال بارگذاری...</td></tr>';
         
         fetch('/teacher/courses/adjectives/' + studentId)
-            .then(r => r.json())
+            .then(r => {
+                if (!r.ok) {
+                    throw new Error('خطا در دریافت اطلاعات');
+                }
+                return r.json();
+            })
             .then(data => {
                 if (!data || !data.length) {
                     tbody.innerHTML = '<tr class="empty-row"><td colspan="3">هیچ صفتی ثبت نشده است</td></tr>';
@@ -443,14 +480,20 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json'
             },
             body: JSON.stringify({
                 student_id: _adjStudentId,
                 adjective: val
             })
         })
-        .then(r => r.json())
+        .then(r => {
+            if (!r.ok) {
+                throw new Error('خطا در ارتباط با سرور');
+            }
+            return r.json();
+        })
         .then(data => {
             if (data.success) {
                 showFlash('adjFlash', 'صفت با موفقیت ثبت شد', 'success');
@@ -510,7 +553,12 @@
         tbody.innerHTML = '<tr class="empty-row"><td colspan="3">در حال بارگذاری...</td></tr>';
         
         fetch('/teacher/courses/events/' + studentId)
-            .then(r => r.json())
+            .then(r => {
+                if (!r.ok) {
+                    throw new Error('خطا در دریافت اطلاعات');
+                }
+                return r.json();
+            })
             .then(data => {
                 if (!data || !data.length) {
                     tbody.innerHTML = '<tr class="empty-row"><td colspan="3">هیچ رویدادی ثبت نشده است</td></tr>';
@@ -540,14 +588,20 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json'
             },
             body: JSON.stringify({
                 student_id: _evtStudentId,
                 event: val
             })
         })
-        .then(r => r.json())
+        .then(r => {
+            if (!r.ok) {
+                throw new Error('خطا در ارتباط با سرور');
+            }
+            return r.json();
+        })
         .then(data => {
             if (data.success) {
                 showFlash('evtFlash', 'رویداد با موفقیت ثبت شد', 'success');
@@ -583,35 +637,84 @@
     // ============================================
     // اخراج دانشجو
     // ============================================
-    function removeStudent(userId, courseId, userName) {
-        if (confirm(`آیا از اخراج دانشجو "${userName}" از این دوره اطمینان دارید؟`)) {
-            fetch(`/teacher/courses/students/remove/${userId}/${courseId}`, {
-                method: 'get',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showToast(data.message, 'success');
-                    // بروزرسانی تعداد در Badge
-                    const badge = document.getElementById('removedCountBadge');
-                    if (badge) {
-                        const current = parseInt(badge.textContent) || 0;
-                        badge.textContent = current + 1;
-                    }
-                    location.reload();
-                } else {
-                    showToast(data.message, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showToast('خطا در ارتباط با سرور', 'error');
-            });
+    function removeStudent(button, userId, courseId, userName) {
+        if (!confirm(`آیا از اخراج دانشجو "${userName}" از این دوره اطمینان دارید؟`)) {
+            return;
         }
+
+        const btn = button;
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        }
+
+        fetch(`/teacher/courses/students/remove/${userId}/${courseId}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('خطا در ارتباط با سرور');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showToast(data.message || 'دانشجو با موفقیت اخراج شد', 'success');
+                
+                // بروزرسانی تعداد در Badge
+                const badge = document.getElementById('removedCountBadge');
+                if (badge) {
+                    const current = parseInt(badge.textContent) || 0;
+                    badge.textContent = current + 1;
+                }
+                
+                // حذف ردیف از جدول
+                if (btn) {
+                    const row = btn.closest('tr');
+                    if (row) {
+                        row.style.opacity = '0.5';
+                        row.style.transition = 'opacity 0.3s';
+                        setTimeout(() => {
+                            row.remove();
+                            // اگر ردیفی باقی نماند، پیام خالی نمایش داده شود
+                            const tbody = row.closest('tbody');
+                            if (tbody && tbody.children.length === 0) {
+                                const table = tbody.closest('table');
+                                if (table) {
+                                    const emptyRow = document.createElement('tr');
+                                    emptyRow.innerHTML = `
+                                        <td colspan="20" style="text-align:center;padding:40px;color:#6b7a8f;">
+                                            <i class="fas fa-users" style="font-size:32px;display:block;margin-bottom:12px;color:#d0d7e2;"></i>
+                                            هیچ دانشجویی در این درس ثبت‌نام نکرده است
+                                        </td>
+                                    `;
+                                    tbody.appendChild(emptyRow);
+                                }
+                            }
+                        }, 500);
+                    }
+                }
+            } else {
+                showToast(data.message || 'خطا در اخراج دانشجو', 'error');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-user-minus"></i>';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error removing student:', error);
+            showToast('خطا در ارتباط با سرور: ' + error.message, 'error');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-user-minus"></i>';
+            }
+        });
     }
 
     // ============================================
@@ -619,19 +722,27 @@
     // ============================================
     function showFlash(id, msg, type) {
         const el = document.getElementById(id);
+        if (!el) return;
         el.textContent = msg;
         el.className = 'flash-message ' + type;
     }
 
     function hideFlash(id) {
         const el = document.getElementById(id);
+        if (!el) return;
         el.className = 'flash-message';
         el.textContent = '';
     }
 
     function showToast(message, type) {
+        // حذف توست قبلی اگر وجود دارد
+        const existingToast = document.querySelector('.toast-custom');
+        if (existingToast) {
+            existingToast.remove();
+        }
+
         const toast = document.createElement('div');
-        toast.className = `toast toast-${type}`;
+        toast.className = `toast-custom toast-${type}`;
         toast.textContent = message;
         toast.style.cssText = `
             position: fixed;
@@ -646,13 +757,51 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             background: ${type === 'success' ? '#28a745' : '#dc3545'};
             direction: rtl;
+            max-width: 400px;
         `;
         document.body.appendChild(toast);
+        
         setTimeout(() => {
             toast.style.opacity = '0';
             toast.style.transition = 'opacity 0.3s';
             setTimeout(() => toast.remove(), 300);
         }, 3000);
     }
+
+    // اضافه کردن انیمیشن slideIn
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from {
+                transform: translateX(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // ============================================
+    // بارگذاری اولیه تعداد دانشجویان اخراج شده
+    // ============================================
+    document.addEventListener('DOMContentLoaded', function() {
+        // بارگذاری تعداد دانشجویان اخراج شده
+        fetch(`/teacher/courses/students/removed/${courseId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.data) {
+                    const badge = document.getElementById('removedCountBadge');
+                    if (badge) {
+                        badge.textContent = data.data.length;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error loading removed count:', error);
+            });
+    });
 </script>
 @endsection
