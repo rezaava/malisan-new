@@ -6,12 +6,19 @@
 
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-students-list.css')}}">
+<link rel="stylesheet" href="{{asset('css/badge.css')}}">
 @endsection
 
 @section('mohtava')
 <div class="students-container">
     <div class="students-header">
-        <h4 class="students-title">دانشجویان درس : <span>{{ $course->name ?? 'عنوان درس' }}</span></h4>
+        <div class="info-badge course-badge">
+            <span class="badge-icon">
+                <i class="fas fa-book-open"></i>
+            </span>
+            <span class="badge-label">فعالیت دانشجویان در درس:</span>
+            <span class="badge-value">{{ $course->name ?? 'عنوان درس' }}</span>
+        </div>
         <div style="display:flex; gap:10px; flex-wrap:wrap;">
             <a href="/export/students?course_id={{ $course->id ?? 0 }}" class="export-btn">
                 <i class="fas fa-file-excel"></i>

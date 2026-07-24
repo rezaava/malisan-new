@@ -7,21 +7,20 @@
 @section('head')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="{{ asset('css/azmon-list.css') }}">
+<link rel="stylesheet" href="{{asset('css/badge.css')}}">
+
 @endsection
 
 @section('mohtava')
 <div class="azmon-container">
     {{-- ===== HEADER ===== --}}
     <div class="azmon-header">
-        <div>
-            <h2>
-                <i class="fas fa-tasks"></i>
-                لیست آزمون‌ها
-            </h2>
-            <div class="subtitle">
-                <i class="fas fa-book-open" style="margin-left:6px;color:#1e6f9f;"></i>
-                {{ $course->name ?? 'دوره' }}
-            </div>
+        <div class="info-badge course-badge">
+            <span class="badge-icon">
+                <i class="fas fa-book-open"></i>
+            </span>
+            <span class="badge-label">لیست آزمون‌ها در درس:</span>
+            <span class="badge-value">{{ $course->name ?? 'عنوان درس' }}</span>
         </div>
         <div>
             <a href="{{ route('azmon.create', ['id' => $course->id]) }}" class="btn-create-azmon">

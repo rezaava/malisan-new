@@ -6,15 +6,20 @@
 
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-question-bank.css')}}">
+<link rel="stylesheet" href="{{asset('css/badge.css')}}">
 @endsection
 
 @section('mohtava')
 <div class="bank-container">
     <!-- هدر -->
     <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3 flex-wrap gap-2">
-        <h4 class="fw-bold mb-0 text-dark">
-            بانک سوالات : <span class="text-primary">{{ $course->name ?? 'عنوان درس' }}</span>
-        </h4>
+        <div class="info-badge course-badge">
+            <span class="badge-icon">
+                <i class="fas fa-book-open"></i>
+            </span>
+            <span class="badge-label">بانک سوالات در درس:</span>
+            <span class="badge-value">{{ $course->name ?? 'عنوان درس' }}</span>
+        </div>
         <div>
             @include('layout.backbtn')
         </div>

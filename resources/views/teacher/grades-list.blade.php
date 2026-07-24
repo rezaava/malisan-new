@@ -6,12 +6,19 @@
 
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-grades-list.css')}}">
+<link rel="stylesheet" href="{{asset('css/badge.css')}}">
 @endsection
 
 @section('mohtava')
 <div class="grades-container">
     <div class="grades-header">
-        <h4 class="grades-title">نمرات دانشجویان : <span>{{ $course->name ?? 'عنوان درس' }}</span></h4>
+        <div class="info-badge course-badge">
+            <span class="badge-icon">
+                <i class="fas fa-book-open"></i>
+            </span>
+            <span class="badge-label">نمرات دانشجویان در درس:</span>
+            <span class="badge-value">{{ $course->name ?? 'عنوان درس' }}</span>
+        </div>
         @include('layout.backbtn')
     </div>
 

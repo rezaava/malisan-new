@@ -7,31 +7,28 @@
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-course.css')}}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+<link rel="stylesheet" href="{{asset('css/badge.css')}}">
 @endsection
 
 @section('mohtava')
 <div class="course-detail-container">
-    <div class="course-header">
-        <h4 class="course-title-main">{{ $course->name ?? 'عنوان درس' }}</h4>
-    </div>
-
-    <div class="course-actions-bar">
-        <a href="{{ route('view.coure', $course->id) }}" class="action-btn back-btn">
-            <i class="fas fa-arrow-right"></i>
-        </a>
-    </div>
 
     <div class="correction-container">
         <div class="correction-header">
-            <h3>
-                <i class="fas fa-check-double"></i>
-                تصحیح تکالیف
-            </h3>
-            <span class="badge-count">
-                <i class="fas fa-file-alt"></i>
-                {{ $sessionsWithExercises->count() }} جلسه با تکلیف
-            </span>
+            <div class="info-badge course-badge">
+                <span class="badge-icon">
+                    <i class="fas fa-book-open"></i>
+                </span>
+                <span class="badge-label">تصحیح تکالیف:</span>
+                <span class="badge-value">{{ $course->name ?? 'عنوان درس' }}</span>
+            </div>
+            <div>
+                <span class="badge-count">
+                    <i class="fas fa-file-alt"></i>
+                    {{ $sessionsWithExercises->count() }} جلسه با تکلیف
+                </span>
+                @include('layout.backbtn')
+            </div>
         </div>
 
         @if($sessionsWithExercises->isNotEmpty())

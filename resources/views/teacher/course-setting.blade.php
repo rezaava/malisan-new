@@ -6,14 +6,20 @@
 
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-student-setting.css')}}">
+<link rel="stylesheet" href="{{asset('css/badge.css')}}">
+
 @endsection
 
 @section('mohtava')
 <div class="settings-container">
     <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
-        <h4 class="mb-0">
-            تنظیمات درس {{ $course->name }}
-        </h4>
+        <div class="info-badge course-badge">
+            <span class="badge-icon">
+                <i class="fas fa-book-open"></i>
+            </span>
+            <span class="badge-label">تنظیمات درس:</span>
+            <span class="badge-value">{{ $course->name ?? 'عنوان درس' }}</span>
+        </div>
         <div>
             @include('layout.backbtn')
         </div>

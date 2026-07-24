@@ -6,12 +6,19 @@
 
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-student-activities.css')}}">
+<link rel="stylesheet" href="{{asset('css/badge.css')}}">
 @endsection
 
 @section('mohtava')
 <div class="activities-container">
     <div class="activities-header d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
-        <h4 class="activities-title">فعالیت دانشجویان</h4>
+        <div class="info-badge course-badge">
+            <span class="badge-icon">
+                <i class="fas fa-book-open"></i>
+            </span>
+            <span class="badge-label">فعالیت دانشجویان در درس:</span>
+            <span class="badge-value">{{ $course->name ?? 'عنوان درس' }}</span>
+        </div>
         @include('layout.backbtn')
     </div>
 

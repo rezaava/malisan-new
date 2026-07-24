@@ -6,6 +6,7 @@
 
 @section('head')
 <link rel="stylesheet" href="{{ asset('css/reports-list.css') }}">
+<link rel="stylesheet" href="{{ asset('css/badge.css') }}">
 @endsection
 
 @section('mohtava')
@@ -13,9 +14,13 @@
     {{-- HEADER --}}
     <div class="reports-header">
         <div>
-            <h2><i class="fas fa-file-alt"></i> لیست گزارش‌ها</h2>
-            <div class="subtitle"><i class="fas fa-book-open" style="margin-left:6px;color:#1e6f9f;"></i> {{ $course->name }}</div>
-        </div>
+            <div class="info-badge course-badge">
+                <span class="badge-icon">
+                    <i class="fas fa-book-open"></i>
+                </span>
+                <span class="badge-label">لیست گزارش‌ها:</span>
+                <span class="badge-value">{{ $course->name ?? 'عنوان درس' }}</span>
+            </div>        </div>
         @include('layout.backbtn')
     </div>
 
