@@ -64,14 +64,24 @@
                                 <td>
                                     <input type="number" name="taklif_seminar_nomre" id="taklif_nomre" value="{{ $setting->taklif_seminar_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="100">
                                 </td>
-                                <td></td>
+                                <td>
+                                    <div class="score-description-cell">
+                                        <i class="fas fa-info-circle"></i>
+                                        {{ $setting->taklif_seminar_desc ?? 'نمره این بخش بر اساس تعداد تکالیف یا سمینارهایی که دانشجو تا پایان ترم ارائه می دهد، محاسبه خواهد شد.' }}
+                                    </div>
+                                </td>
                             </tr>
                             <tr>
                                 <td>آزمون</td>
                                 <td>
                                     <input type="number" name="azmon_nomre" id="azmon_nomre" value="{{ $setting->azmon_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="100">
                                 </td>
-                                <td></td>
+                                <td>
+                                    <div class="score-description-cell">
+                                        <i class="fas fa-info-circle"></i>
+                                        {{ $setting->azmon_desc ?? 'نمرهٔ نهایی بر اساس تعداد آزمون هایی که دانشجو تا پایان ترم شرکت می کند، محاسبه خواهد شد.' }}
+                                    </div>
+                                </td>
                             </tr>
                             <tr>
                                 <td>حضور و غیاب</td>
@@ -79,7 +89,10 @@
                                     <input type="number" name="hozor_ghayab_nomre" id="hozor_ghayab_nomre" value="{{ $setting->hozor_ghayab_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="100">
                                 </td>
                                 <td>
-                                    <textarea name="hozor_ghayab_desc" class="form-textarea" rows="2">{{ $setting->hozor_ghayab_desc ?? 'نمره حضور و غیاب' }}</textarea>
+                                    <div class="score-description-cell">
+                                        <i class="fas fa-info-circle"></i>
+                                        {{ 'حضور و غیاب بر اساس فعالیت‌های دانشجو در هر جلسه محاسبه خواهد شد که شامل ارسال گزارش و سؤال، داوری و انجام خودآزمایی است. نمرهٔ نهایی در نظر گرفته شده، با توجه به میزان حضور و مشارکت فعال دانشجو تعیین خواهد شد.' }}
+                                    </div>
                                 </td>
                             </tr>
                             <tr>
@@ -88,7 +101,10 @@
                                     <input type="number" name="miyan_term_nomre" id="miyan_term_nomre" value="{{ $setting->miyan_term_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="100">
                                 </td>
                                 <td>
-                                    <textarea name="miyan_term_desc" class="form-textarea" rows="2">{{ $setting->miyan_term_desc ?? 'نمره میان ترم' }}</textarea>
+                                    <div class="score-description-cell">
+                                        <i class="fas fa-info-circle"></i>
+                                        اگر تمایل دارید آزمون میان‌ترم از طریق سامانه برگزار شود، در بخش «تعریف آزمون»، نوع آزمون را «میان‌ترم» انتخاب کنید.
+                                    </div>
                                 </td>
                             </tr>
                             <tr>
@@ -97,7 +113,10 @@
                                     <input type="number" name="kar_amali_nomre" id="kar_amali_nomre" value="{{ $setting->kar_amali_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="100">
                                 </td>
                                 <td>
-                                    <textarea name="kar_amali_desc" class="form-textarea" rows="2">{{ $setting->kar_amali_desc ?? 'نمره کار عملی' }}</textarea>
+                                    <div class="score-description-cell">
+                                        <i class="fas fa-info-circle"></i>
+                                        اگر نمره‌ای برای این بخش در نظر گرفتید، باید آن را به‌صورت دستی در قسمت «نمرات دانشجویان» ثبت کنید.
+                                    </div>
                                 </td>
                             </tr>
                             <tr>
@@ -106,7 +125,10 @@
                                     <input type="number" name="payan_term_nomre" id="payan_term_nomre" value="{{ $setting->payan_term_nomre ?? 6 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="100">
                                 </td>
                                 <td>
-                                    <textarea name="payan_term_desc" class="form-textarea" rows="2">{{ $setting->payan_term_desc ?? 'نمره پایان ترم' }}</textarea>
+                                    <div class="score-description-cell">
+                                        <i class="fas fa-info-circle"></i>
+اگر تمایل دارید آزمون پایان‌ترم از طریق سامانه برگزار شود، در بخش «تعریف آزمون»، نوع آزمون را «پایان‌ترم» انتخاب کنید. در غیر این صورت، نمرهٔ پایان‌ترم را باید به‌صورت دستی در قسمت «نمرات دانشجویان» وارد کنید.
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>
@@ -478,19 +500,19 @@
     // ==========================================
     function setDefaultScore() {
         // تنظیم مقادیر پیش فرض
-        document.getElementById('mostamar_nomre').value = 60;
+        document.getElementById('mostamar_nomre').value = 12;
         document.getElementById('taklif_nomre').value = 0;
         document.getElementById('azmon_nomre').value = 0;
         document.getElementById('hozor_ghayab_nomre').value = 0;
         document.getElementById('miyan_term_nomre').value = 0;
-        document.getElementById('kar_amali_nomre').value = 10;
-        document.getElementById('payan_term_nomre').value = 30;
+        document.getElementById('kar_amali_nomre').value = 0;
+        document.getElementById('payan_term_nomre').value = 88;
         
         // اعتبارسنجی و به‌روزرسانی
         validateScores();
         
         // نمایش پیام موفقیت
-        showToast('success', 'بارم بندی به حالت پیش فرض (ارزشیابی مستمر: ۶۰، کار عملی: ۱۰، پایان ترم: ۳۰) تنظیم شد');
+        showToast('success', 'بارم بندی به حالت پیش فرض (ارزشیابی مستمر: ۱۲، پایان ترم: ۸۸) تنظیم شد');
     }
 
     // ==========================================

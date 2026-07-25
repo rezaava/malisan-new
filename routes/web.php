@@ -6,7 +6,6 @@ use App\Http\Controllers\AzmonController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DiscussionController;
 use App\Http\Controllers\ExerciseController;
-use App\Http\Controllers\FileController;
 use App\Http\Controllers\JudgmentController;
 use App\Http\Controllers\QuestionReportController;
 use App\Http\Controllers\Student\StudentCourseController;
@@ -17,6 +16,7 @@ use App\Http\Controllers\Teacher\StudentEventController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\TeacherSiteController;
 use App\Http\Controllers\ExamController;
+use App\Http\Controllers\UploadController;
 use Illuminate\Support\Facades\Route;
 
 // مسیرهای احراز هویت
@@ -26,6 +26,9 @@ Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::post('/loginPost', [AuthController::class, 'loginPost'])->name('loginPost');
 Route::post('/registerPost', [AuthController::class, 'registerPost'])->name('registerPost');
+
+Route::post('/upload/video', [UploadController::class, 'uploadVideo'])->name('upload.video');
+Route::post('/upload/image', [UploadController::class, 'uploadImage'])->name('upload.image');
 
 Route::get("/", function () {
     return redirect("/login");
@@ -172,11 +175,6 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
             Route::get('/discussions/{sessionId}', [CourseController::class, 'getSessionDiscussions'])->name('teacher.sessions.discussions');
             Route::post('/score/{answerId}', [CourseController::class, 'scoreExerciseAnswer'])->name('exercises.score');
         });
-
-
-        // ===== آپلود فایل =====
-        Route::post('/upload/image', [FileController::class, 'uploadImage'])->name('upload.image');
-        Route::post('/upload/video', [FileController::class, 'uploadVideo'])->name('upload.video');
 
         Route::get('/pending-requests/{courseId}', [TeacherSiteController::class, 'pendingRequests'])->name('courses.pending.requests');
         Route::post('/approve-request/{courseId}/{userId}', [TeacherSiteController::class, 'approveRequest'])->name('courses.approve.request');
