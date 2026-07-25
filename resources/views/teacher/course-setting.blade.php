@@ -6,6 +6,46 @@
 
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-student-setting.css')}}">
+{{-- اضافه کردن استایل Jodit --}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.css">
+<style>
+    /* ===== استایل‌های Jodit ===== */
+    .jodit-container {
+        border-radius: 12px !important;
+        overflow: hidden;
+        border: 2px solid #e8edf3 !important;
+        transition: all 0.3s ease;
+    }
+
+    .jodit-container:focus-within {
+        border-color: #1e6f9f !important;
+        box-shadow: 0 0 0 4px rgba(30, 111, 159, 0.08) !important;
+    }
+
+    .jodit-container .jodit-toolbar {
+        background: #f8fafc !important;
+        border-bottom: 1px solid #e8edf3 !important;
+        border-radius: 12px 12px 0 0 !important;
+    }
+
+    .jodit-container .jodit-workplace {
+        min-height: 120px;
+    }
+
+    .jodit-container .jodit-wysiwyg {
+        padding: 12px 16px !important;
+        font-family: 'Vazir', Tahoma, Arial, sans-serif !important;
+        font-size: 14px !important;
+        direction: rtl !important;
+        min-height: 120px !important;
+    }
+
+    @media (max-width: 768px) {
+        .jodit-container .jodit-toolbar {
+            flex-wrap: wrap !important;
+        }
+    }
+</style>
 @endsection
 
 @section('mohtava')
@@ -33,7 +73,7 @@
             <div class="accordion-item {{ Request::has('open_section') && Request::get('open_section') == 'barmbandi' ? 'active' : '' }}">
                 <div class="accordion-header" onclick="toggleAccordion(this)">
                     <i class="fas fa-balance-scale"></i>
-                    <span>بارم بندی (مجموع : ۱۰۰)</span>
+                    <span>بارم بندی</span>
                     <i class="fas fa-chevron-down accordion-icon"></i>
                 </div>
                 <div class="accordion-body {{ Request::has('open_section') && Request::get('open_section') == 'barmbandi' ? 'active' : '' }}" 
@@ -42,7 +82,7 @@
                         <thead>
                             <tr>
                                 <th style="width: 30%;">موضوع</th>
-                                <th style="width: 20%;">امتیاز</th>
+                                <th style="width: 20%;">نمره</th>
                                 <th style="width: 50%;">توضیح</th>
                             </tr>
                         </thead>
@@ -50,7 +90,7 @@
                             <tr>
                                 <td>ارزشیابی مستمر</td>
                                 <td>
-                                    <input type="number" name="mostamar_nomre" id="mostamar_nomre" value="{{ $setting->mostamar_nomre ?? 12 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="100">
+                                    <input type="number" name="mostamar_nomre" id="mostamar_nomre" value="{{ $setting->mostamar_nomre ?? 12 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="20" step="0.5">
                                 </td>
                                 <td>
                                     <div class="score-description-cell">
@@ -62,7 +102,7 @@
                             <tr>
                                 <td>تکلیف یا سمینار</td>
                                 <td>
-                                    <input type="number" name="taklif_seminar_nomre" id="taklif_nomre" value="{{ $setting->taklif_seminar_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="100">
+                                    <input type="number" name="taklif_seminar_nomre" id="taklif_nomre" value="{{ $setting->taklif_seminar_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="20" step="0.5">
                                 </td>
                                 <td>
                                     <div class="score-description-cell">
@@ -74,7 +114,7 @@
                             <tr>
                                 <td>آزمون</td>
                                 <td>
-                                    <input type="number" name="azmon_nomre" id="azmon_nomre" value="{{ $setting->azmon_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="100">
+                                    <input type="number" name="azmon_nomre" id="azmon_nomre" value="{{ $setting->azmon_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="20" step="0.5">
                                 </td>
                                 <td>
                                     <div class="score-description-cell">
@@ -86,7 +126,7 @@
                             <tr>
                                 <td>حضور و غیاب</td>
                                 <td>
-                                    <input type="number" name="hozor_ghayab_nomre" id="hozor_ghayab_nomre" value="{{ $setting->hozor_ghayab_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="100">
+                                    <input type="number" name="hozor_ghayab_nomre" id="hozor_ghayab_nomre" value="{{ $setting->hozor_ghayab_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="20" step="0.5">
                                 </td>
                                 <td>
                                     <div class="score-description-cell">
@@ -98,7 +138,7 @@
                             <tr>
                                 <td>میان ترم</td>
                                 <td>
-                                    <input type="number" name="miyan_term_nomre" id="miyan_term_nomre" value="{{ $setting->miyan_term_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="100">
+                                    <input type="number" name="miyan_term_nomre" id="miyan_term_nomre" value="{{ $setting->miyan_term_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="20" step="0.5">
                                 </td>
                                 <td>
                                     <div class="score-description-cell">
@@ -110,7 +150,7 @@
                             <tr>
                                 <td>کار عملی (بازدید|آزمایشگاه|کارگاه)</td>
                                 <td>
-                                    <input type="number" name="kar_amali_nomre" id="kar_amali_nomre" value="{{ $setting->kar_amali_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="100">
+                                    <input type="number" name="kar_amali_nomre" id="kar_amali_nomre" value="{{ $setting->kar_amali_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="20" step="0.5">
                                 </td>
                                 <td>
                                     <div class="score-description-cell">
@@ -122,12 +162,12 @@
                             <tr>
                                 <td>پایان ترم</td>
                                 <td>
-                                    <input type="number" name="payan_term_nomre" id="payan_term_nomre" value="{{ $setting->payan_term_nomre ?? 6 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="100">
+                                    <input type="number" name="payan_term_nomre" id="payan_term_nomre" value="{{ $setting->payan_term_nomre ?? 8 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="20" step="0.5">
                                 </td>
                                 <td>
                                     <div class="score-description-cell">
                                         <i class="fas fa-info-circle"></i>
-اگر تمایل دارید آزمون پایان‌ترم از طریق سامانه برگزار شود، در بخش «تعریف آزمون»، نوع آزمون را «پایان‌ترم» انتخاب کنید. در غیر این صورت، نمرهٔ پایان‌ترم را باید به‌صورت دستی در قسمت «نمرات دانشجویان» وارد کنید.
+                                        اگر تمایل دارید آزمون پایان‌ترم از طریق سامانه برگزار شود، در بخش «تعریف آزمون»، نوع آزمون را «پایان‌ترم» انتخاب کنید. در غیر این صورت، نمرهٔ پایان‌ترم را باید به‌صورت دستی در قسمت «نمرات دانشجویان» وارد کنید.
                                     </div>
                                 </td>
                             </tr>
@@ -150,9 +190,9 @@
                                     ($setting->hozor_ghayab_nomre ?? 0) +
                                     ($setting->miyan_term_nomre ?? 0) +
                                     ($setting->kar_amali_nomre ?? 0) +
-                                    ($setting->payan_term_nomre ?? 6)
+                                    ($setting->payan_term_nomre ?? 8)
                                 }}
-                            </span>
+                            </span> از ۲۰
                         </span>
                         <button type="button" class="btn-default-score" onclick="setDefaultScore()">
                             <i class="fas fa-undo-alt"></i>
@@ -161,7 +201,6 @@
                     </div>
                 </div>
             </div>
-
             <!-- ==========================================
                  فعالیت ها
                  ========================================== -->
@@ -234,14 +273,20 @@
                             <tr>
                                 <td>هدایت دانشجو در بخش ارسال گزارش</td>
                                 <td>
-                                    <textarea name="ersal_gozaresh_desc" class="form-textarea" rows="3">{{ $setting->ersal_gozaresh_desc ?? 'موضوع اصلی این جلسه چه بود و چه هدفی داشت؟ لطفاً یک نکتهٔ آموزنده از مطالب ارائه شده را با بیانی دیگر (به زبان خودتان) بازنویسی کنید.' }}</textarea>
+                                    {{-- Jodit Editor --}}
+                                    <textarea class="jodit-editor" name="ersal_gozaresh_desc" id="reportDescEditor">{{ $setting->ersal_gozaresh_desc ?? 'موضوع اصلی این جلسه چه بود و چه هدفی داشت؟ لطفاً یک نکتهٔ آموزنده از مطالب ارائه شده را با بیانی دیگر (به زبان خودتان) بازنویسی کنید.' }}</textarea>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
+                    <div class="total-score">
+                        <button type="button" class="btn-default-score" onclick="setDefaultActivities()">
+                            <i class="fas fa-undo-alt"></i>
+                            فعالیت‌های پیش فرض
+                        </button>
+                    </div>
                 </div>
             </div>
-
             <!-- ==========================================
                  خودآزمایی
                  ========================================== -->
@@ -407,9 +452,128 @@
     </form>
 </div>
 @endsection
-
 @section('js')
+{{-- اضافه کردن Jodit --}}
+<script src="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.js"></script>
+
 <script>
+    // ==========================================
+    // مقداردهی Jodit Editor برای فیلد ارسال گزارش
+    // ==========================================
+    document.addEventListener('DOMContentLoaded', function() {
+        const reportEditorElement = document.getElementById('reportDescEditor');
+        if (reportEditorElement) {
+            new Jodit('#reportDescEditor', {
+                width: '100%',
+                height: 200,
+                allowResize: true,
+                allowResizeImages: true,
+                direction: 'rtl',
+                language: 'fa',
+                buttons: [
+                    'source', '|',
+                    'undo', 'redo', '|',
+                    'bold', 'italic', 'underline', 'strikethrough', '|',
+                    'font', 'fontsize', 'brush', 'paragraph', '|',
+                    'ul', 'ol', 'outdent', 'indent', '|',
+                    'align', 'hr', 'table', '|',
+                    'link', 'unlink',
+                    {
+                        name: 'uploadImage',
+                        iconURL: 'https://cdn-icons-png.flaticon.com/512/1829/1829586.png',
+                        tooltip: 'آپلود تصویر',
+                        exec: (editor) => {
+                            let input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'image/*';
+                            input.onchange = () => {
+                                let file = input.files[0];
+                                if (!file) return;
+
+                                let formData = new FormData();
+                                formData.append('file', file);
+
+                                fetch('{{ route("upload.image") }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                    },
+                                    body: formData
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.files && data.files[0].url) {
+                                        let img = document.createElement('img');
+                                        img.src = data.files[0].url;
+                                        img.style.maxWidth = '100%';
+                                        editor.s.insertNode(img);
+                                    } else {
+                                        alert('خطا در آپلود تصویر');
+                                    }
+                                })
+                                .catch(err => alert('Upload error: ' + err));
+                            };
+                            input.click();
+                        }
+                    },
+                    {
+                        name: 'uploadVideo',
+                        iconURL: 'https://cdn-icons-png.flaticon.com/512/727/727245.png',
+                        tooltip: 'آپلود ویدیو',
+                        exec: (editor) => {
+                            let input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'video/*';
+                            input.onchange = () => {
+                                let file = input.files[0];
+                                if (!file) return;
+
+                                let formData = new FormData();
+                                formData.append('file', file);
+
+                                fetch('{{ route("upload.video") }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                    },
+                                    body: formData
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.files && data.files[0].url) {
+                                        let wrapper = document.createElement('div');
+                                        wrapper.classList.add('video-wrapper');
+
+                                        let video = document.createElement('video');
+                                        video.setAttribute('controls', '');
+                                        video.src = data.files[0].url;
+                                        video.style.maxWidth = '100%';
+
+                                        wrapper.appendChild(video);
+                                        editor.s.insertNode(wrapper);
+                                    } else {
+                                        alert('خطا در آپلود ویدیو');
+                                    }
+                                })
+                                .catch(err => alert('Upload error: ' + err));
+                            };
+                            input.click();
+                        }
+                    },
+                    '|', 'symbols', 'emoticons', '|',
+                    'print', 'fullsize', 'preview'
+                ],
+                colors: {
+                    text: ['#000000', '#ff0000', '#00ff00', '#0000ff', '#ff00ff', '#00ffff'],
+                    background: ['#ffffff', '#ffff00', '#00ffff', '#ffcc99']
+                },
+                defaultFont: 'Vazir, Tahoma, Arial, sans-serif',
+                defaultFontSize: '14px',
+                fonts: ['Vazir', 'Tahoma', 'Arial', 'Courier New']
+            });
+        }
+    });
+
     // ==========================================
     // محاسبه مجموع نمرات
     // ==========================================
@@ -445,12 +609,12 @@
         // حذف کلاس error از همه فیلدها
         scoreInputs.forEach(input => input.classList.remove('error'));
 
-        if (total !== 100) {
+        if (total !== 20) {
             // نمایش خطا
-            if (total > 100) {
-                errorMessage.textContent = 'مجموع نمرات نمی‌تواند از ۱۰۰ بیشتر باشد (مجموع فعلی: ' + total + ')';
+            if (total > 20) {
+                errorMessage.textContent = 'مجموع نمرات نمی‌تواند از ۲۰ بیشتر باشد (مجموع فعلی: ' + total + ')';
             } else {
-                errorMessage.textContent = 'مجموع نمرات باید دقیقاً برابر با ۱۰۰ باشد (مجموع فعلی: ' + total + ')';
+                errorMessage.textContent = 'مجموع نمرات باید دقیقاً برابر با ۲۰ باشد (مجموع فعلی: ' + total + ')';
             }
             errorDiv.classList.add('show');
             totalBox.className = 'total-score error';
@@ -475,7 +639,7 @@
         document.getElementById('settingsForm').addEventListener('submit', function(e) {
             if (!validateScores()) {
                 e.preventDefault();
-                showToast('error', 'لطفاً مجموع نمرات را به ۱۰۰ برسانید');
+                showToast('error', 'لطفاً مجموع نمرات را به ۲۰ برسانید');
                 
                 // باز کردن اکیاردین بارم بندی
                 var accordionHeader = document.querySelector('.accordion-item:first-child .accordion-header');
@@ -506,13 +670,52 @@
         document.getElementById('hozor_ghayab_nomre').value = 0;
         document.getElementById('miyan_term_nomre').value = 0;
         document.getElementById('kar_amali_nomre').value = 0;
-        document.getElementById('payan_term_nomre').value = 88;
+        document.getElementById('payan_term_nomre').value = 8;
         
         // اعتبارسنجی و به‌روزرسانی
         validateScores();
         
         // نمایش پیام موفقیت
-        showToast('success', 'بارم بندی به حالت پیش فرض (ارزشیابی مستمر: ۱۲، پایان ترم: ۸۸) تنظیم شد');
+        showToast('success', 'بارم بندی به حالت پیش فرض (ارزشیابی مستمر: ۱۲، پایان ترم: ۸) تنظیم شد');
+    }
+
+    // ==========================================
+    // فعالیت‌های پیش فرض
+    // ==========================================
+    function setDefaultActivities() {
+        // تنظیم چک‌باکس‌ها
+        document.querySelectorAll('input[name="soal_last"], input[name="gozaresh_last"], input[name="taklif_last"]').forEach(function(el) {
+            el.checked = true;
+        });
+        
+        // تنظیم مقادیر عددی
+        var jalasatInput = document.querySelector('input[name="jalasat"]');
+        if (jalasatInput) jalasatInput.value = 16;
+        
+        var maxTaklifInput = document.querySelector('input[name="max_taklif"]');
+        if (maxTaklifInput) maxTaklifInput.value = 3;
+        
+        var maxSoalInput = document.querySelector('input[name="max_soal"]');
+        if (maxSoalInput) maxSoalInput.value = 3;
+        
+        // تنظیم متن طراحی سوال
+        var tarahiDesc = document.querySelector('textarea[name="tarahi_soal_desc"]');
+        if (tarahiDesc) {
+            tarahiDesc.value = 'یک سؤال خلاقانه طراحی کنید که به یادگیری دوستانتان کمک کند و به نام خودتان منتشر شود. قبل از ارسال، حتماً سؤالاتی که دیگران طرح کرده اند را مرور کنید تا از تکراری نبودن سوال خود مطمئن شوید.';
+        }
+        
+        // تنظیم متن ارسال گزارش (ادیتور)
+        var reportEditor = document.querySelector('.jodit-editor');
+        if (reportEditor) {
+            // اگر Jodit مقداردهی شده است
+            if (reportEditor.jodit) {
+                reportEditor.jodit.value = 'موضوع اصلی این جلسه چه بود و چه هدفی داشت؟ لطفاً یک نکتهٔ آموزنده از مطالب ارائه شده را با بیانی دیگر (به زبان خودتان) بازنویسی کنید.';
+            } else {
+                reportEditor.value = 'موضوع اصلی این جلسه چه بود و چه هدفی داشت؟ لطفاً یک نکتهٔ آموزنده از مطالب ارائه شده را با بیانی دیگر (به زبان خودتان) بازنویسی کنید.';
+            }
+        }
+        
+        showToast('success', 'فعالیت‌ها به حالت پیش فرض تنظیم شدند');
     }
 
     // ==========================================
@@ -627,6 +830,9 @@
         });
     });
 
+    // ==========================================
+    // نمایش Toast
+    // ==========================================
     function showToast(type, message) {
         const oldToast = document.querySelector('.custom-toast');
         if (oldToast) oldToast.remove();
