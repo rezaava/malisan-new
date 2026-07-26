@@ -6,20 +6,26 @@
 
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-course.css')}}">
+<link rel="stylesheet" href="{{asset('css/badge.css')}}">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.css">
 @endsection
 
 @section('mohtava')
 <div class="course-detail-container">
-    <div class="course-header">
-        <h4 class="course-title-main">{{ $course->name ?? 'عنوان درس' }}</h4>
-    </div>
-
     <div class="course-actions-bar">
-        <a href="{{ route('courses.setting',$course->id) }}" class="action-btn settings-btn">
-            <i class="fas fa-cog"></i>
-        </a>
-        @include('layout.backbtn')
+        <div class="info-badge course-badge">
+            <span class="badge-icon">
+                <i class="fas fa-book-open"></i>
+            </span>
+            <span class="badge-label">تصحیح تکالیف:</span>
+            <span class="badge-value">{{ $course->name ?? 'عنوان درس' }}</span>
+        </div>
+        <div>
+            <a href="{{ route('courses.setting',$course->id) }}" class="action-btn settings-btn">
+                <i class="fas fa-cog"></i>
+            </a>
+            @include('layout.backbtn')
+        </div>
     </div>
 
     <div class="course-chips">

@@ -16,8 +16,6 @@
     <div class="question-card">
         <div class="question-header">
             <div class="header-left">
-                
-                {{-- ===== دیزاین جدید با info-badges ===== --}}
                 <div class="info-badges">
                 <h4>
                     طرح سوال

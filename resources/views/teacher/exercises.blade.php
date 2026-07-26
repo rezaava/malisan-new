@@ -6,6 +6,7 @@
 
 @section('head')
 <link rel="stylesheet" href="{{ asset('css/teacher-exercises.css') }}">
+<link rel="stylesheet" href="{{ asset('css/badge.css') }}">
 @endsection
 
 @section('mohtava')
@@ -13,19 +14,22 @@
     {{-- HEADER --}}
     <div class="exercise-header">
         <div>
-            <h2>
-                <i class="fas fa-tasks"></i>
-                تمرین‌های {{ $session->name }}
-            </h2>
-            <div class="subtitle">
-                <i class="fas fa-book-open" style="margin-left:6px;color:#1e6f9f;"></i>
-                {{ $course->name }}
+            <div class="info-badge course-badge">
+                <span class="badge-icon">
+                    <i class="fas fa-book-open"></i>
+                </span>
+                <span class="badge-label">بانک سوالات در درس:</span>
+                <span class="badge-value">{{ $course->name ?? 'عنوان درس' }}</span>
+            </div>
+            <div class="info-badge topic-badge">
+                <span class="badge-icon">
+                    <i class="fas fa-tag"></i>
+                </span>
+                <span class="badge-label">موضوع:</span>
+                <span class="badge-value">{{ $session->name }}</span>
             </div>
         </div>
-        <a href="{{ route('view.coure', $course->id) }}" class="btn-back">
-            <i class="fas fa-arrow-right"></i>
-            بازگشت به درس
-        </a>
+        @include('layout.backbtn')
     </div>
 
     {{-- EXERCISES LIST --}}
