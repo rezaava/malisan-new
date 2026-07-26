@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\AdminAngizeshController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminCourseController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AzmonController;
 use App\Http\Controllers\ChatController;
@@ -36,12 +38,25 @@ Route::get("/", function () {
 
 
 Route::prefix('/admin')->middleware(['role:admin'])->group(function () {
+    Route::get('/', [AdminController::class, 'index'])->name('index_admin');
+
+    Route::prefix('/courses')->group(function () {
+        Route::get('/', [AdminCourseController::class, 'courses'])->name('courses.Ad');
+        Route::get('/view/{id}', [AdminCourseController::class, 'view'])->name('view.coure.Ad');
+    });
+
     Route::prefix('/angizesh')->group(function () {
-        Route::get('/', [AdminController::class, 'angizesh_index'])->name('admin_angizesh');
-        Route::post('/store', [AdminController::class, 'angizesh_store'])->name('admin_angizesh.store');
-        Route::put('/update/{id}', [AdminController::class, 'angizesh_update'])->name('admin_angizesh.update');
-        Route::delete('/destroy/{id}', [AdminController::class, 'angizesh_destroy'])->name('admin_angizesh.destroy');
-        Route::get('/edit/{id}', [AdminController::class, 'angizesh_edit'])->name('admin_angizesh.edit');
+        Route::get('/', [AdminAngizeshController::class, 'angizesh_index'])->name('admin_angizesh');
+        Route::post('/store', [AdminAngizeshController::class, 'angizesh_store'])->name('admin_angizesh.store');
+        Route::put('/update/{id}', [AdminAngizeshController::class, 'angizesh_update'])->name('admin_angizesh.update');
+        Route::delete('/destroy/{id}', [AdminAngizeshController::class, 'angizesh_destroy'])->name('admin_angizesh.destroy');
+        Route::get('/edit/{id}', [AdminAngizeshController::class, 'angizesh_edit'])->name('admin_angizesh.edit');
+    });
+
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/chat', [ChatController::class, 'index'])->name('admin.chat.index');
+        Route::post('/chat/send', [ChatController::class, 'send'])->name('admin.chat.send');
+        Route::get('/chat/messages/{chatId}', [ChatController::class, 'getMessages'])->name('admin.chat.messages');
     });
 });
 

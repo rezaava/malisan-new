@@ -8,7 +8,6 @@
 <link rel="stylesheet" href="{{asset('css/style-index.css')}}">
 @endsection
 
-
 @section('mohtava')
 <div class="motivation-banner">
     <div class="motivation-text-en">
@@ -42,25 +41,14 @@
                 <div class="card-text-sm">دوره در حال برگزاری</div>
             </div>
         </div>
-        @if (Auth::user()->hasRole('admin'))
-            <div class="col-md-3 col-sm-6">
-                <a href="{{ route('admin_angizesh') }}" class="card-dash shadow">
-                    <div class="card-icon"><i class="fas fa-clipboard-list"></i></div>
-                    <div class="card-title">پیام های انگیزشی</div>
-                    <div class="card-count">{{ $massage }}</div>
-                    <div class="card-text-sm">پیام های انگیزشی</div>
-                </a>
+        <div class="col-md-3 col-sm-6">
+            <div class="card-dash shadow">
+                <div class="card-icon"><i class="fas fa-clipboard-list"></i></div>
+                <div class="card-title">جعبه های یادگیری</div>
+                <div class="card-count">{{ $konkor_count }}</div>
+                <div class="card-text-sm">آزمون در حال برگزاری</div>
             </div>
-        @else
-            <div class="col-md-3 col-sm-6">
-                <div class="card-dash shadow">
-                    <div class="card-icon"><i class="fas fa-clipboard-list"></i></div>
-                    <div class="card-title">جعبه های یادگیری</div>
-                    <div class="card-count">{{ $konkor_count }}</div>
-                    <div class="card-text-sm">آزمون در حال برگزاری</div>
-                </div>
-            </div>
-        @endif
+        </div>
     </div>
 </div>
 @endsection
