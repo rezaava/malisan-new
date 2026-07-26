@@ -1,7 +1,7 @@
 @extends('layout.master')
 
 @section('title')
-ملیسان | گزارش‌های ایراد سوال
+ملیسان | گزارش‌های سوال
 @endsection
 
 @section('head')
@@ -18,38 +18,38 @@
             <span class="badge-icon">
                 <i class="fas fa-book-open"></i>
             </span>
-            <span class="badge-label">گزارش‌های ایراد سوال در درس:</span>
+            <span class="badge-label">گزارش‌های سوال در درس:</span>
             <span class="badge-value">{{ $course->name ?? 'عنوان درس' }}</span>
         </div>
         @include('layout.backbtn')
     </div>
 
-    {{-- STATS --}}
-    <div class="stats-row">
-        <div class="stat-box">
+    {{-- STATS WITH FILTER --}}
+    <div class="filter-stats" id="filterStats">
+        <div class="stat-box active" data-filter="all" onclick="filterReports('all')">
             <div class="number">{{ $stats['total'] ?? 0 }}</div>
             <div class="label">کل گزارش‌ها</div>
         </div>
-        <div class="stat-box pending">
+        <div class="stat-box pending" data-filter="pending" onclick="filterReports('pending')">
             <div class="number">{{ $stats['pending'] ?? 0 }}</div>
             <div class="label">در انتظار بررسی</div>
         </div>
-        <div class="stat-box reviewed">
+        <div class="stat-box reviewed" data-filter="reviewed" onclick="filterReports('reviewed')">
             <div class="number">{{ $stats['reviewed'] ?? 0 }}</div>
             <div class="label">بررسی شده</div>
         </div>
-        <div class="stat-box resolved">
+        <div class="stat-box resolved" data-filter="resolved" onclick="filterReports('resolved')">
             <div class="number">{{ $stats['resolved'] ?? 0 }}</div>
             <div class="label">رفع شده</div>
         </div>
-        <div class="stat-box rejected">
+        <div class="stat-box rejected" data-filter="rejected" onclick="filterReports('rejected')">
             <div class="number">{{ $stats['rejected'] ?? 0 }}</div>
             <div class="label">رد شده</div>
         </div>
     </div>
 
     {{-- REPORTS --}}
-    @if($reports->count() > 0)
+    @if($stats['total'] > 0)
         @foreach($reports as $report)
             @php
                 $statusLabels = [
@@ -78,7 +78,7 @@
                     3 => 'medium',
                 ];
             @endphp
-            <div class="report-card {{ $report->status }}">
+            <div class="report-card {{ $report->status }}" data-status="{{ $report->status }}">
                 <div class="card-header">
                     <div class="user-info">
                         <div class="avatar">{{ substr($report->user->name ?? '?', 0, 1) }}</div>
@@ -142,11 +142,11 @@
                     </div>
                 </div>
 
-                {{-- توضیح ایراد --}}
+                {{-- توضیح گزارش --}}
                 <div class="description-box">
                     <div class="d-label">
                         <i class="fas fa-exclamation-triangle"></i>
-                        توضیح ایراد:
+                        توضیح گزارش:
                     </div>
                     <div class="d-text">{{ $report->description }}</div>
                 </div>
@@ -283,7 +283,7 @@
             </div>
         @endforeach
     @else
-        <div class="empty-state">
+        <div class="empty-state-reports">
             <span class="empty-icon"><i class="fas fa-inbox"></i></span>
             <h4>هیچ گزارشی ثبت نشده است</h4>
             <p>هنوز دانشجویی برای سوالات این درس گزارشی ثبت نکرده است.</p>
@@ -310,6 +310,52 @@
 </div>
 
 <script>
+    // ===== FILTER REPORTS =====
+    function filterReports(status) {
+        // Update active state on stats
+        document.querySelectorAll('.filter-stats .stat-box').forEach(el => {
+            el.classList.remove('active');
+        });
+        document.querySelector(`.filter-stats .stat-box[data-filter="${status}"]`).classList.add('active');
+        
+        // Filter reports
+        const reportCards = document.querySelectorAll('.report-card');
+        let visibleCount = 0;
+        
+        reportCards.forEach(card => {
+            if (status === 'all') {
+                card.classList.remove('hidden');
+                visibleCount++;
+            } else {
+                if (card.dataset.status === status) {
+                    card.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    card.classList.add('hidden');
+                }
+            }
+        });
+        
+        // Show empty message if no visible reports
+        let emptyMsg = document.querySelector('.empty-state-reports');
+        if (!emptyMsg) {
+            emptyMsg = document.createElement('div');
+            emptyMsg.className = 'empty-state-reports';
+            emptyMsg.innerHTML = `
+                <span class="empty-icon"><i class="fas fa-inbox"></i></span>
+                <h4>هیچ گزارشی با این وضعیت وجود ندارد</h4>
+                <p>هیچ گزارشی با وضعیت انتخاب شده یافت نشد.</p>
+            `;
+            document.querySelector('.reports-container').appendChild(emptyMsg);
+        }
+        
+        if (visibleCount === 0) {
+            emptyMsg.style.display = 'block';
+        } else {
+            emptyMsg.style.display = 'none';
+        }
+    }
+
     // ===== UPDATE REPORT STATUS =====
     function updateReportStatus(event, reportId) {
         event.preventDefault();

@@ -97,8 +97,7 @@ class QuestionReportController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // فقط گزارش‌های pending را فیلتر کن
-        $reports = $allReports->where('status', 'pending');
+        $reports = $allReports;
 
         foreach ($reports as $report) {
             $report->scores = ScoreQuestion::where('question_id', $report->question_id)
