@@ -214,6 +214,9 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         Route::post('/chat/send', [ChatController::class, 'send'])->name('teacher.chat.send');
         Route::get('/chat/messages/{chatId}', [ChatController::class, 'getMessages'])->name('teacher.chat.messages');
     });
+    
+    Route::get('/profile', [TeacherSiteController::class, 'profile'])->name('teacher.profile');
+    Route::post('/profile/update', [StudentSiteController::class, 'updateStudentProfile'])->name('teacherProfile.update');
 });
 
 // ==========================================
@@ -221,7 +224,10 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
 // ==========================================
 Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(function () {
     Route::get('/', [StudentSiteController::class, 'index'])->name('index_student');
-
+    
+    Route::get('/profile', [StudentSiteController::class, 'profile'])->name('student.profile');
+    Route::post('/profile/update', [StudentSiteController::class, 'updateStudentProfile'])->name('studentProfile.updatest');
+    
     Route::prefix('/courses')->group(function () {
         Route::get('/', [StudentSiteController::class, 'courses'])->name('courses.st');
         Route::get('/view/{id}', [StudentCourseController::class, 'view'])->name('view.coure.St');

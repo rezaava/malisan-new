@@ -17,6 +17,11 @@ use Illuminate\Http\Request;
 
 class TeacherSiteController extends Controller
 {
+    public function profile()
+    {
+        $user = auth()->user();
+        return view('teacher.profile', compact('user'));
+    }
     public function index()
     {
         $user = Auth::user();
@@ -259,7 +264,7 @@ class TeacherSiteController extends Controller
             ], 500);
         }
     }
-    function azmoon(){
+    public function azmoon(){
         $user = Auth::user();
         // Get courses where user is a teacher
         $teacherRole = Role::where('name', 'teacher')->first();

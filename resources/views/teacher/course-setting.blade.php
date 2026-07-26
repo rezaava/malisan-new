@@ -9,6 +9,102 @@
 {{-- اضافه کردن استایل Jodit --}}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.css">
 <style>
+/* ===== استایل لینک تعریف آزمون ===== */
+.definition-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #1e6f9f;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 4px 14px;
+    border-radius: 20px;
+    background: #f0f7fe;
+    border: 1px solid #d4e4f5;
+    transition: all 0.3s ease;
+    font-size: 13px;
+    margin: 4px 0;
+}
+
+.definition-link i {
+    font-size: 14px;
+    color: #1e6f9f;
+    transition: transform 0.3s ease;
+}
+
+.definition-link:hover {
+    background: #e3effa;
+    border-color: #1e6f9f;
+    transform: translateX(-3px);
+    box-shadow: 0 4px 12px rgba(30, 111, 159, 0.15);
+}
+
+.definition-link:hover i {
+    transform: translateX(-4px);
+}
+
+.definition-link .link-arrow {
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.definition-link:hover .link-arrow {
+    transform: translateX(-5px);
+}
+
+.definition-link .link-text {
+    display: inline;
+}
+
+.definition-link .link-highlight {
+    color: #0d4a6f;
+    font-weight: 600;
+    border-bottom: 2px dashed #1e6f9f;
+    padding-bottom: 1px;
+}
+
+/* استایل لینک برای حالت دوم (پایان ترم) */
+.definition-link.payan {
+    background: #fef7f0;
+    border-color: #f5dcc8;
+    color: #a85c2a;
+}
+
+.definition-link.payan i {
+    color: #a85c2a;
+}
+
+.definition-link.payan:hover {
+    background: #fdeee3;
+    border-color: #a85c2a;
+    box-shadow: 0 4px 12px rgba(168, 92, 42, 0.15);
+}
+
+.definition-link.payan .link-highlight {
+    color: #7a401a;
+    border-bottom-color: #a85c2a;
+}
+
+/* ===== استایل پاسخ‌های توضیحات ===== */
+.score-description-cell {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+    color: #4b5563;
+    line-height: 1.7;
+}
+
+.score-description-cell > i {
+    color: #1e6f9f;
+    font-size: 16px;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.score-description-cell .desc-content {
+    flex: 1;
+}
     /* ===== استایل‌های Jodit ===== */
     .jodit-container {
         border-radius: 12px !important;
@@ -44,6 +140,91 @@
         .jodit-container .jodit-toolbar {
             flex-wrap: wrap !important;
         }
+    }
+
+    /* ===== استایل‌های اعتبارسنجی ===== */
+    .score-input.error {
+        border-color: #dc3545 !important;
+        background-color: #fff5f5 !important;
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15) !important;
+    }
+
+    .validation-error {
+        display: none;
+        background: #fff5f5;
+        border: 1px solid #fecaca;
+        border-radius: 12px;
+        padding: 14px 20px;
+        margin: 12px 0 0 0;
+        color: #991b1b;
+        font-size: 14px;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .validation-error.show {
+        display: flex;
+    }
+
+    .validation-error i {
+        font-size: 18px;
+        color: #dc2626;
+    }
+
+    .total-score.error {
+        background: #fef2f2 !important;
+        border-color: #fca5a5 !important;
+        color: #991b1b !important;
+    }
+
+    .total-score.success {
+        background: #f0fdf4 !important;
+        border-color: #86efac !important;
+        color: #166534 !important;
+    }
+
+    .total-score.error .score-text {
+        color: #991b1b !important;
+    }
+
+    .total-score.success .score-text {
+        color: #166534 !important;
+    }
+
+    /* ===== استایل مینیمم نمره ===== */
+    .min-score-badge {
+        display: inline-block;
+        font-size: 11px;
+        color: #6b7280;
+        background: #f3f4f6;
+        padding: 2px 10px;
+        border-radius: 20px;
+        margin-right: 8px;
+    }
+
+    .score-input-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .score-input-wrapper .min-label {
+        font-size: 10px;
+        color: #6b7280;
+        background: #f3f4f6;
+        padding: 1px 10px;
+        border-radius: 20px;
+    }
+
+    .score-input-wrapper .min-label.required {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .score-input-wrapper .min-label.min-error {
+        background: #fee2e2;
+        color: #991b1b;
     }
 </style>
 @endsection
@@ -88,9 +269,15 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td>ارزشیابی مستمر</td>
                                 <td>
-                                    <input type="number" name="mostamar_nomre" id="mostamar_nomre" value="{{ $setting->mostamar_nomre ?? 12 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="20" step="0.5">
+                                    ارزشیابی مستمر
+                                    <span class="min-score-badge required">حداقل ۵ نمره</span>
+                                </td>
+                                <td>
+                                    <div class="score-input-wrapper">
+                                        <input type="number" name="mostamar_nomre" id="mostamar_nomre" value="{{ $setting->mostamar_nomre ?? 12 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="20" step="0.5">
+                                        <span class="min-label required">حداقل: ۵</span>
+                                    </div>
                                 </td>
                                 <td>
                                     <div class="score-description-cell">
@@ -102,7 +289,9 @@
                             <tr>
                                 <td>تکلیف یا سمینار</td>
                                 <td>
-                                    <input type="number" name="taklif_seminar_nomre" id="taklif_nomre" value="{{ $setting->taklif_seminar_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="20" step="0.5">
+                                    <div class="score-input-wrapper">
+                                        <input type="number" name="taklif_seminar_nomre" id="taklif_nomre" value="{{ $setting->taklif_seminar_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="20" step="0.5">
+                                    </div>
                                 </td>
                                 <td>
                                     <div class="score-description-cell">
@@ -114,7 +303,9 @@
                             <tr>
                                 <td>آزمون</td>
                                 <td>
-                                    <input type="number" name="azmon_nomre" id="azmon_nomre" value="{{ $setting->azmon_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="20" step="0.5">
+                                    <div class="score-input-wrapper">
+                                        <input type="number" name="azmon_nomre" id="azmon_nomre" value="{{ $setting->azmon_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="20" step="0.5">
+                                    </div>
                                 </td>
                                 <td>
                                     <div class="score-description-cell">
@@ -126,7 +317,9 @@
                             <tr>
                                 <td>حضور و غیاب</td>
                                 <td>
-                                    <input type="number" name="hozor_ghayab_nomre" id="hozor_ghayab_nomre" value="{{ $setting->hozor_ghayab_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="20" step="0.5">
+                                    <div class="score-input-wrapper">
+                                        <input type="number" name="hozor_ghayab_nomre" id="hozor_ghayab_nomre" value="{{ $setting->hozor_ghayab_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="20" step="0.5">
+                                    </div>
                                 </td>
                                 <td>
                                     <div class="score-description-cell">
@@ -138,19 +331,32 @@
                             <tr>
                                 <td>میان ترم</td>
                                 <td>
-                                    <input type="number" name="miyan_term_nomre" id="miyan_term_nomre" value="{{ $setting->miyan_term_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="20" step="0.5">
+                                    <div class="score-input-wrapper">
+                                        <input type="number" name="miyan_term_nomre" id="miyan_term_nomre" value="{{ $setting->miyan_term_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="20" step="0.5">
+                                    </div>
                                 </td>
                                 <td>
                                     <div class="score-description-cell">
                                         <i class="fas fa-info-circle"></i>
-                                        اگر تمایل دارید آزمون میان‌ترم از طریق سامانه برگزار شود، در بخش «تعریف آزمون»، نوع آزمون را «میان‌ترم» انتخاب کنید.
+                                        <div class="desc-content">
+                                            اگر تمایل دارید آزمون میان‌ترم از طریق سامانه برگزار شود، در بخش 
+                                            <a href="/teacher/courses/azmon/list/{{ $course->id }}" class="definition-link">
+                                                <i class="fas fa-plus-circle"></i>
+                                                <span class="link-text">تعریف آزمون</span>
+                                                <span class="link-arrow">←</span>
+                                                <span class="link-highlight">میان‌ترم</span>
+                                            </a>
+                                            را انتخاب کنید.
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
                             <tr>
                                 <td>کار عملی (بازدید|آزمایشگاه|کارگاه)</td>
                                 <td>
-                                    <input type="number" name="kar_amali_nomre" id="kar_amali_nomre" value="{{ $setting->kar_amali_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="20" step="0.5">
+                                    <div class="score-input-wrapper">
+                                        <input type="number" name="kar_amali_nomre" id="kar_amali_nomre" value="{{ $setting->kar_amali_nomre ?? 0 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="20" step="0.5">
+                                    </div>
                                 </td>
                                 <td>
                                     <div class="score-description-cell">
@@ -162,12 +368,24 @@
                             <tr>
                                 <td>پایان ترم</td>
                                 <td>
-                                    <input type="number" name="payan_term_nomre" id="payan_term_nomre" value="{{ $setting->payan_term_nomre ?? 8 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="20" step="0.5">
+                                    <div class="score-input-wrapper">
+                                        <input type="number" name="payan_term_nomre" id="payan_term_nomre" value="{{ $setting->payan_term_nomre ?? 8 }}" class="form-input score-input" onkeyup="validateScores()" min="0" max="20" step="0.5">
+                                        <span class="min-label required">حداقل: ۵</span>
+                                    </div>
                                 </td>
                                 <td>
                                     <div class="score-description-cell">
                                         <i class="fas fa-info-circle"></i>
-                                        اگر تمایل دارید آزمون پایان‌ترم از طریق سامانه برگزار شود، در بخش «تعریف آزمون»، نوع آزمون را «پایان‌ترم» انتخاب کنید. در غیر این صورت، نمرهٔ پایان‌ترم را باید به‌صورت دستی در قسمت «نمرات دانشجویان» وارد کنید.
+                                        <div class="desc-content">
+                                            اگر تمایل دارید آزمون پایان‌ترم از طریق سامانه برگزار شود، در بخش 
+                                            <a href="/teacher/courses/azmon/list/{{ $course->id }}" class="definition-link payan">
+                                                <i class="fas fa-plus-circle"></i>
+                                                <span class="link-text">تعریف آزمون</span>
+                                                <span class="link-arrow">←</span>
+                                                <span class="link-highlight">پایان‌ترم</span>
+                                            </a>
+                                            را انتخاب کنید. در غیر این صورت، نمرهٔ پایان‌ترم را باید به‌صورت دستی در قسمت «نمرات دانشجویان» وارد کنید.
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -572,6 +790,9 @@
                 fonts: ['Vazir', 'Tahoma', 'Arial', 'Courier New']
             });
         }
+
+        // اجرای اعتبارسنجی اولیه
+        validateScores();
     });
 
     // ==========================================
@@ -596,32 +817,63 @@
     }
 
     // ==========================================
-    // اعتبارسنجی مجموع نمرات
+    // اعتبارسنجی مجموع نمرات با محدودیت‌های جدید
     // ==========================================
     function validateScores() {
-        var total = updateTotalDisplay();
+        var mostamar = parseFloat(document.getElementById('mostamar_nomre').value) || 0;
+        var taklif = parseFloat(document.getElementById('taklif_nomre').value) || 0;
+        var azmon = parseFloat(document.getElementById('azmon_nomre').value) || 0;
+        var hozor = parseFloat(document.getElementById('hozor_ghayab_nomre').value) || 0;
+        var miyan = parseFloat(document.getElementById('miyan_term_nomre').value) || 0;
+        var karAmali = parseFloat(document.getElementById('kar_amali_nomre').value) || 0;
+        var payan = parseFloat(document.getElementById('payan_term_nomre').value) || 0;
+        
+        var total = mostamar + taklif + azmon + hozor + miyan + karAmali + payan;
+        document.getElementById('majmo').textContent = total;
+        
         var errorDiv = document.getElementById('scoreValidationError');
         var errorMessage = document.getElementById('scoreErrorMessage');
         var totalBox = document.getElementById('totalScoreBox');
         var submitBtn = document.getElementById('submitBtn');
         var scoreInputs = document.querySelectorAll('.score-input');
-
+        
         // حذف کلاس error از همه فیلدها
         scoreInputs.forEach(input => input.classList.remove('error'));
-
+        
+        // جمع‌آوری خطاها
+        var errorMessages = [];
+        
+        // شرط 1: ارزشیابی مستمر حداقل 25% (5 نمره از 20)
+        if (mostamar < 5) {
+            errorMessages.push('ارزشیابی مستمر باید حداقل 5 نمره (25%) باشد');
+            document.getElementById('mostamar_nomre').classList.add('error');
+        }
+        
+        // شرط 2: پایان ترم حداقل 25% (5 نمره از 20)
+        if (payan < 5) {
+            errorMessages.push('پایان ترم باید حداقل 5 نمره (25%) باشد');
+            document.getElementById('payan_term_nomre').classList.add('error');
+        }
+        
+        // شرط 3: مجموع نمرات دقیقاً 20 باشد
         if (total !== 20) {
-            // نمایش خطا
             if (total > 20) {
-                errorMessage.textContent = 'مجموع نمرات نمی‌تواند از ۲۰ بیشتر باشد (مجموع فعلی: ' + total + ')';
+                errorMessages.push('مجموع نمرات نمی‌تواند از ۲۰ بیشتر باشد (مجموع فعلی: ' + total + ')');
             } else {
-                errorMessage.textContent = 'مجموع نمرات باید دقیقاً برابر با ۲۰ باشد (مجموع فعلی: ' + total + ')';
+                errorMessages.push('مجموع نمرات باید دقیقاً برابر با ۲۰ باشد (مجموع فعلی: ' + total + ')');
             }
+            // هایلایت کردن تمام فیلدها در صورت عدم تطابق مجموع
+            scoreInputs.forEach(input => input.classList.add('error'));
+        }
+        
+        // نمایش خطاها
+        if (errorMessages.length > 0) {
+            errorMessage.textContent = errorMessages.join(' | ');
             errorDiv.classList.add('show');
             totalBox.className = 'total-score error';
             submitBtn.disabled = true;
             return false;
         } else {
-            // اعتبارسنجی موفق
             errorDiv.classList.remove('show');
             totalBox.className = 'total-score success';
             submitBtn.disabled = false;
@@ -639,7 +891,7 @@
         document.getElementById('settingsForm').addEventListener('submit', function(e) {
             if (!validateScores()) {
                 e.preventDefault();
-                showToast('error', 'لطفاً مجموع نمرات را به ۲۰ برسانید');
+                showToast('error', 'لطفاً خطاهای بارم‌بندی را اصلاح کنید');
                 
                 // باز کردن اکیاردین بارم بندی
                 var accordionHeader = document.querySelector('.accordion-item:first-child .accordion-header');
@@ -660,10 +912,10 @@
     });
 
     // ==========================================
-    // بارم بندی پیش فرض
+    // بارم بندی پیش فرض (طبق بارم‌بندی 10)
     // ==========================================
     function setDefaultScore() {
-        // تنظیم مقادیر پیش فرض
+        // تنظیم مقادیر پیش فرض: ارزشیابی 12، پایان ترم 8، بقیه صفر
         document.getElementById('mostamar_nomre').value = 12;
         document.getElementById('taklif_nomre').value = 0;
         document.getElementById('azmon_nomre').value = 0;

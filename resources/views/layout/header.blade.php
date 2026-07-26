@@ -12,7 +12,15 @@
         </button>
     </div>
     <div class="top-actions">
-        <img src="{{asset(Auth::user()->image)}}" alt="پروفایل" class="profile-img">
+        @if (Auth::user()->hasRole('student'))
+        <a href="{{ route('student.profile') }}" class="top-icon-btn" title="پیام‌ها">
+            <img src="{{asset(Auth::user()->image)}}" alt="پروفایل" class="profile-img">
+        </a>
+        @else
+        <a href="{{ route('teacher.profile') }}" class="top-icon-btn" title="پیام‌ها">
+            <img src="{{asset(Auth::user()->image)}}" alt="پروفایل" class="profile-img">
+        </a>
+        @endif
         <a href="/messages" class="top-icon-btn" title="پیام‌ها">
             <i class="far fa-envelope"></i>
         </a>

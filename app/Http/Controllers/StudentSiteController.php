@@ -24,9 +24,96 @@ use Auth;
 use Carbon\Carbon;
 use DB;
 use Illuminate\Http\Request;
+use Log;
+use Validator;
 
 class StudentSiteController extends Controller
 {
+    /**
+     * نمایش پروفایل کاربر
+     */
+    public function profile()
+    {
+        $user = auth()->user();
+        return view('student.profile', compact('user'));
+    }
+    
+    /**
+     * به‌روزرسانی پروفایل کاربر
+     */
+    public function updateStudentProfile(Request $request)
+    {
+        $user = auth()->user();
+        
+        $validator = Validator::make($request->all(), [
+            'name' => 'nullable|string|max:255',
+            'family' => 'nullable|string|max:255',
+            'national' => 'nullable|string|max:20',
+            'personal' => 'nullable|string|max:50',
+            'gender' => 'nullable|in:0,1',
+            'birthdate' => 'nullable|string|max:20',
+            'city' => 'nullable|string|max:100',
+            'address' => 'nullable|string|max:500',
+            'postal' => 'nullable|string|max:20',
+            'tel' => 'nullable|string|max:15',
+            'mobile' => 'nullable|string|max:15',
+            'email' => 'nullable|email|max:255',
+            'uni_email' => 'nullable|email|max:255',
+            'social' => 'nullable|string|max:255',
+            'degree' => 'nullable|string|max:100',
+            'field' => 'nullable|string|max:100',
+            'trend' => 'nullable|string|max:100',
+            'shaba' => 'nullable|string|max:30',
+            'turn' => 'nullable|string|max:50',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'password' => 'nullable|min:8|confirmed',
+        ]);
+        
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+        
+        try {
+            $data = $request->except(['_token', '_method', 'password', 'password_confirmation', 'image']);
+            
+            // تغییر رمز عبور
+            if ($request->filled('password')) {
+                $data['password'] = bcrypt($request->password);
+            }
+            
+            // آپلود عکس
+            if ($request->hasFile('image')) {
+                // حذف عکس قبلی
+                if ($user->image && file_exists(public_path($user->image))) {
+                    unlink(public_path($user->image));
+                }
+                
+                $file = $request->file('image');
+                $fileName = time() . '_' . $user->id . '.' . $file->getClientOriginalExtension();
+                $destinationPath = public_path('files/users');
+                
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0777, true);
+                }
+                
+                $file->move($destinationPath, $fileName);
+                $data['image'] = '/files/users/' . $fileName;
+            }
+            
+            $user->update($data);
+            
+            return redirect()->back()
+                ->with('success', 'پروفایل با موفقیت به‌روزرسانی شد');
+                
+        } catch (\Exception $e) {
+            Log::error('Update profile failed: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'خطا در به‌روزرسانی پروفایل: ' . $e->getMessage())
+                ->withInput();
+        }
+    }
     public function index()
     {
         $user = Auth::user();
