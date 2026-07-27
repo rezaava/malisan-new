@@ -26,6 +26,14 @@
                 <div class="card-text-sm">پیام های انگیزشی</div>
             </a>
         </div>
+
+        <div class="col-md-3 col-sm-6">
+            <a href="{{ route('show-users-admin') }}" class="card-dash shadow">
+                <div class="card-icon"><i class="fas fa-clipboard-list"></i></div>
+                <div class="card-title">کاربران</div>
+                <div class="card-text-sm">نمایش کل کاربران</div>
+            </a>
+        </div>
     </div>
 </div>
 @endsection

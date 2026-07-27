@@ -63,6 +63,8 @@ Route::prefix('/admin')->middleware(['role:admin'])->group(function () {
         Route::get('/chat/messages/{chatId}', [ChatController::class, 'getMessages'])->name('admin.chat.messages');
         Route::post('/reset-user-password', [AdminController::class, 'resetPasswordRequest'])->name('reset-user-password');
     });
+
+    Route::get('/users', [AdminController::class, 'adminShowUsers'])->name('show-users-admin');
 });
 
 

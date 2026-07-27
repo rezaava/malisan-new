@@ -30,9 +30,9 @@ class AdminController extends Controller
     // An API that returns an http response of users specific data
     // For admin panel
     public function adminShowUsers(Request $request){
-        $users = User::select('id' ,'name', 'family', 'role', /*profile ,activities, resume, password_recovery, limitation*/);
+        $users = User::get();
 
-        return response()->json(['users'=> $users]);
+        return view('', compact('usres', $users)); //view not created yet
     }
 
     //when admin clicks on reset password for user
@@ -76,6 +76,15 @@ class AdminController extends Controller
         DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 
         return redirect()->route('login')->with(['status'=>'password changed successfully']);
+    }
+
+    public function limitUser(Request $request, $id){
+
+    }
+
+
+    public function unlimitUser(Request $request, $id){
+        
     }
 
 }
