@@ -61,10 +61,17 @@ Route::prefix('/admin')->middleware(['role:admin'])->group(function () {
         Route::get('/chat', [ChatController::class, 'index'])->name('admin.chat.index');
         Route::post('/chat/send', [ChatController::class, 'send'])->name('admin.chat.send');
         Route::get('/chat/messages/{chatId}', [ChatController::class, 'getMessages'])->name('admin.chat.messages');
-        Route::post('/reset-user-password', [AdminController::class, 'resetPasswordRequest'])->name('reset-user-password');
+        Route::post('/reset-user-password/{id}', [AdminController::class, 'resetPasswordRequest'])->name('reset-user-password');
     });
 
-    Route::get('/users', [AdminController::class, 'adminShowUsers'])->name('show-users-admin');
+    Route::prefix('users')->group(function(){
+        Route::get('/', [AdminController::class, 'adminShowUsers'])->name('show-users-admin');
+        Route::get('/limited', [AdminController::class, 'adminShowLimitedUsers'])->name('show-limited-users-admin');
+        Route::get('/limit-user/{id}', [AdminController::class, 'limitUser'])->name('limit-user');
+        Route::get('/unlimit-user/{id}', [AdminController::class, 'unlimitUser'])->name('unlimit-user');
+        });
+    
+    
 });
 
 

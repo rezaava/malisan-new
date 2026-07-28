@@ -3,13 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Angizesh;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+
+
 
 class AdminController extends Controller
 {
@@ -32,7 +34,13 @@ class AdminController extends Controller
     public function adminShowUsers(Request $request){
         $users = User::get();
 
-        return view('', compact('usres', $users)); //view not created yet
+        return view('admin.show_users', compact('usres', $users));
+    }
+    public function adminShowLimitedUsers(Request $request){
+        $users = User::where('active', 'false')->get();
+        
+
+        return view('admin.show_limited_users', compact('usres', $users));
     }
 
     //when admin clicks on reset password for user
@@ -79,12 +87,16 @@ class AdminController extends Controller
     }
 
     public function limitUser(Request $request, $id){
-
+        $user = User::findOrFail($id);
+        $user->active = false;
+        return response()->json(['successfull'=> true]);
     }
 
 
     public function unlimitUser(Request $request, $id){
-        
+        $user = User::findOrFail($id);
+        $user->active = true;
+        return response()->json(['successfull'=> true]);
     }
 
 }

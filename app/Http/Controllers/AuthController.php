@@ -25,7 +25,12 @@ class AuthController extends Controller
                 return redirect()->route('index_student');
             }
         }
+        if ($user->active == true){
         return view('auth.login');
+        }
+        else{
+            return redirect()->back()->withErrors(['error'=> 'User is limited']);
+        }
     }
 
     public function register()
@@ -131,6 +136,10 @@ class AuthController extends Controller
             return redirect()->back()
                 ->with('error', 'کد ملی یا رمز عبور اشتباه است')
                 ->withInput();
+        }
+        //بررسی محدود بودن کاربر
+        if($user->active == false){
+            return redirect()->back()->withErrors(['error'=> 'User is limited']);
         }
 
         // بررسی پسورد
