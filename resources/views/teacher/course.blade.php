@@ -17,7 +17,7 @@
             <span class="badge-icon">
                 <i class="fas fa-book-open"></i>
             </span>
-            <span class="badge-label">تصحیح تکالیف:</span>
+            <span class="badge-label">درس:</span>
             <span class="badge-value">{{ $course->name ?? 'عنوان درس' }}</span>
         </div>
         <div>
@@ -116,13 +116,35 @@
         <div class="session-content">
             <div class="session-content-header">
                 <div class="session-title-display">
-                    <h5 id="sessionTitleDisplay">
-                        @if($sessions->isNotEmpty())
-                            جلسه {{ $sessions->first()->number }} : {{ $sessions->first()->name }}
-                        @else
-                            هیچ جلسه‌ای انتخاب نشده است
-                        @endif
-                    </h5>
+                    <div class="info-badges">
+                        <div class="info-badge session-badge">
+                            <span class="badge-icon">
+                                <i class="fas fa-hashtag"></i>
+                            </span>
+                            <span class="badge-label">جلسه:</span>
+                            <span class="badge-value" id="sessionNumberDisplay">
+                                @if($sessions->isNotEmpty())
+                                    {{ $sessions->first()->number }}
+                                @else
+                                    <span class="empty">-</span>
+                                @endif
+                            </span>
+                        </div>
+
+                        <div class="info-badge topic-badge">
+                            <span class="badge-icon">
+                                <i class="fas fa-tag"></i>
+                            </span>
+                            <span class="badge-label">موضوع:</span>
+                            <span class="badge-value" id="sessionNameDisplay">
+                                @if($sessions->isNotEmpty())
+                                    {{ $sessions->first()->name }}
+                                @else
+                                    <span class="empty">هیچ جلسه‌ای انتخاب نشده است</span>
+                                @endif
+                            </span>
+                        </div>
+                    </div>
                 </div>
                 <div class="session-action-buttons">
                     <a href="#" id="questionTeacherBtn" class="action-icon-btn" data-tooltip="ثبت سوال">
@@ -197,8 +219,8 @@
                         <i class="fas fa-quote-right" style="margin-left:6px;"></i>
                         متن راهنما:
                     </p>
-                    <div id="reportDescriptionDisplay" style="font-size:14px;line-height:2;color:#1a2332;margin-top:8px;padding:12px 16px;background:#fff;border-radius:8px;">
-                        <span style="color:#6b7a8f;">در حال بارگذاری...</span>
+                    <div style="font-size:14px;line-height:2;color:#1a2332;margin-top:8px;padding:12px 16px;background:#fff;border-radius:8px;">
+                        <span style="color:#6b7a8f;">از دانشجو بخواهید گزارشی برای این جلسه تهیه کند. این گزارش می تواند شامل موارد زیر باشد:- تهیه یک طرح درسی برای مبحث ارائه شده- نوشتن خلاصه ای از مهمترین موضوعات تدریس شده در این جلسه- هر گونه نکته یا پیشنهاد تکمیلی که به بهبود یادگیری کمک کند.توجه: در صورت عدم تکمیل این بخش، توضیحات پیش فرض ثبت شده در تنظیمات به دانشجو نمایش داده خواهد شد.</span>
                     </div>
                 </div>
                 
@@ -680,11 +702,19 @@
         currentPdfUrl = pdfUrl;
         currentSessionTitle = title;
         currentSessionNumber = number;
-
-        const titleDisplay = document.getElementById('sessionTitleDisplay');
-        if (titleDisplay) {
-            titleDisplay.innerHTML = `<h5>${number} : ${title}</h5>`;
+        
+        const sessionNumberDisplay = document.getElementById('sessionNumberDisplay');
+        if (sessionNumberDisplay) {
+            const numberMatch = number.match(/\d+/);
+            sessionNumberDisplay.textContent = numberMatch ? numberMatch[0] : '-';
         }
+
+        // ===== به‌روزرسانی موضوع جلسه =====
+        const sessionNameDisplay = document.getElementById('sessionNameDisplay');
+        if (sessionNameDisplay) {
+            sessionNameDisplay.textContent = title || 'هیچ جلسه‌ای انتخاب نشده است';
+        }
+
 
         const sessionDescription = document.getElementById('sessionDescription');
         if (sessionDescription) {
@@ -801,26 +831,6 @@
             closeEditReportModal();
         }
     });
-
-    // ==========================================
-    // بارگذاری توضیحات و نمایش در مودال اصلی
-    // ==========================================
-    function loadReportDescription() {
-        fetch('/teacher/courses/settings/get-report-desc?course_id=' + courseId)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const display = document.getElementById('reportDescriptionDisplay');
-                    if (display) {
-                        const desc = data.data.description || 'موضوع اصلی این جلسه چه بود و چه هدفی داشت؟ لطفاً یک نکتهٔ آموزنده از مطالب ارائه شده را با بیانی دیگر (به زبان خودتان) بازنویسی کنید.';
-                        display.innerHTML = desc;
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error loading report description:', error);
-            });
-    }
 
     // ==========================================
     // Event listener برای collapsible
@@ -1142,7 +1152,6 @@
             if (data.success) {
                 alert('توضیحات با موفقیت به‌روزرسانی شد');
                 
-                const display = document.getElementById('reportDescriptionDisplay');
                 if (display) {
                     display.innerHTML = data.data.description;
                 }
