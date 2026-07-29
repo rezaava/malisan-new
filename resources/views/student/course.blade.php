@@ -206,7 +206,6 @@
         // ===== به‌روزرسانی شماره جلسه =====
         const sessionNumberDisplay = document.getElementById('sessionNumberDisplay');
         if (sessionNumberDisplay) {
-            // استخراج عدد از "جلسه 12"
             const numberMatch = number.match(/\d+/);
             sessionNumberDisplay.textContent = numberMatch ? numberMatch[0] : '-';
         }
