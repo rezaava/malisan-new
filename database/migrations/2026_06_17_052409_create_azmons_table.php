@@ -26,6 +26,7 @@ return new class extends Migration
             $table->integer('show_state')->default(0);
             $table->integer('changeable')->default(0);
             $table->integer('show_remain')->default(0);
+            $table->enum('type', ['periodic', 'mid-term', 'final'])->default('periodic');
             $table->timestamps();
         });
     }

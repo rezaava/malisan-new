@@ -66,6 +66,8 @@
                                 {{-- استفاده از Verta به جای Jalalian --}}
                                 {{ \Hekmatinasser\Verta\Verta::instance($azmon->start)->format('Y/m/d H:i') }}
                             </span>
+                            <span>نوع آزمون: </span>
+                            <span>{{$azmon->type}}</span>
                         </div>
 
                         @if($azmon->description)

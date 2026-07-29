@@ -147,6 +147,7 @@ class AzmonController extends Controller
             'end_date' => 'required',
             'end_h' => 'required|integer|min:0|max:23',
             'end_m' => 'required|integer|min:0|max:59',
+            'type' => 'required|in:periodic,mid-term,final',
         ]);
 
         // ترکیب تاریخ و ساعت
@@ -166,6 +167,7 @@ class AzmonController extends Controller
         $azmon->start = $startCarbon;
         $azmon->end = $endCarbon;
         $azmon->time = $request->time;
+        $azmon->type = $request->type;
 
         // تبدیل آرایه جلسات به رشته
         $sessions = implode(',', $request->sessions);
@@ -219,6 +221,7 @@ class AzmonController extends Controller
             'end_date' => 'required',
             'end_h' => 'required|integer|min:0|max:23',
             'end_m' => 'required|integer|min:0|max:59',
+            'type' => 'required|in:periodic,mid-term,final',
         ]);
 
         // ترکیب تاریخ و ساعت
@@ -237,6 +240,7 @@ class AzmonController extends Controller
         $azmon->start = $startCarbon;
         $azmon->end = $endCarbon;
         $azmon->time = $request->time;
+        $azmon->type= $request->type;
 
         // تبدیل آرایه جلسات به رشته
         $sessions = implode(',', $request->sessions);
