@@ -63,11 +63,18 @@
                             </span>
                             <span class="meta-item">
                                 <i class="fas fa-calendar-alt"></i>
-                                {{-- استفاده از Verta به جای Jalalian --}}
                                 {{ \Hekmatinasser\Verta\Verta::instance($azmon->start)->format('Y/m/d H:i') }}
                             </span>
-                            <span>نوع آزمون: </span>
-                            <span>{{$azmon->type}}</span>
+                            <span>نوع آزمون:</span>
+                            <span>
+                                @if ($azmon->type == 'mid-term')
+                                    میان ترم
+                                @elseif ($azmon->type == 'periodic')
+                                    آزمون های دوره ای
+                                @elseif ($azmon->type == 'final')
+                                    پایانی
+                                @endif
+                            </span>
                         </div>
 
                         @if($azmon->description)
