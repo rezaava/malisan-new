@@ -111,6 +111,15 @@
                         <span class="error-text"><i class="fas fa-times-circle"></i> {{ $errors->first('num') }}</span>
                     @endif
                 </div>
+
+                <div class="form-group">
+                        <label for="type">نوع آزمون<span class="required">*</span></label>
+                        <select name="type" id="type" class="form-control">
+                            <option value="periodic">دوره ای</option>
+                            <option value="mid-term">میان ترم</option>
+                            <option value="final">پایانی</option>
+                        </select>
+                    </div>
             </div>
 
             {{-- Sessions --}}
