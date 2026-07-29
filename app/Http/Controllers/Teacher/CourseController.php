@@ -2473,18 +2473,7 @@ class CourseController extends Controller
 
             DB::commit();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'جلسه با موفقیت به‌روزرسانی شد',
-                'data' => [
-                    'id' => $session->id,
-                    'name' => $session->name,
-                    'number' => $session->number,
-                    'text' => $session->text,
-                    'file' => $session->file,
-                    'active' => $session->active
-                ]
-            ]);
+            return redirect()->back()->with('success', 'جلسه جدید با موفقیت ایجاد شد');
 
         } catch (\Exception $e) {
             DB::rollBack();

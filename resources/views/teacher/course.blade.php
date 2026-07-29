@@ -78,7 +78,7 @@
                 <button class="add-session-btn" 
                         data-bs-toggle="tooltip" 
                         data-bs-placement="top" 
-                        title="ایجاد جلسه درس جدید"
+                        title="ایجاد جلسه جدید"
                         onclick="openModal('create')">
                     <i class="fas fa-plus"></i>
                 </button>
@@ -205,7 +205,7 @@
                 <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;padding-bottom:16px;border-bottom:2px solid #f0f4f9;margin-bottom:16px;">
                     <button class="btn-settings" onclick="openEditReportModal()" style="background:linear-gradient(135deg,#ff9800,#e65100);">
                         <i class="fas fa-edit"></i>
-                        پیام نحوه نوشتن گزارش به دانشجو
+                        هدایت و راهنمایی دانشجو
                     </button>
                     <button class="btn-close-modal" onclick="closeProfExModal()">
                         <i class="fas fa-times"></i>
@@ -283,27 +283,32 @@
             </button>
         </div>
 
-        <form class="modal-form pt-0" id="sessionForm" method="POST" enctype="multipart/form-data">
+        {{-- فرم با action عادی (non-AJAX) --}}
+        <form class="modal-form pt-0" id="sessionForm" method="POST" enctype="multipart/form-data" 
+              action="{{ route('sessions.store', $course->id) }}">
             @csrf
+            
             <input type="hidden" name="session_id" id="sessionId" value="">
             <input type="hidden" name="course_id" value="{{ $course->id }}">
 
             <div class="form-group" hidden>
                 <label for="modalNumber">شماره جلسه</label>
-                <input type="number" class="form-control" name="number" id="modalNumber" required>
+                <input type="number" class="form-control" name="number" id="modalNumber" 
+                       value="{{ old('number', $sessions->count() + 1) }}" required>
+                @error('number')
+                    <span class="text-danger">{{ $message }}</span>
+                @enderror
             </div>
 
             <div class="form-group">
                 <label for="modalName">عنوان جلسه <span class="required">*</span></label>
-                <input type="text" class="form-control" name="name" id="modalName" 
+                <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                       name="name" id="modalName" 
+                       value="{{ old('name') }}"
                        placeholder="عنوان جلسه را وارد کنید" required>
-            </div>
-
-            {{-- ===== طرح درس یا محتوای درس (خارج از فریم) ===== --}}
-            <div class="form-group">
-                <label>طرح درس یا محتوای درس (اختیاری)</label>
-                <textarea class="jodit-editor" name="text" id="modalEditor" 
-                          placeholder="متن جلسه را وارد کنید..."></textarea>
+                @error('name')
+                    <span class="text-danger">{{ $message }}</span>
+                @enderror
             </div>
 
             {{-- ===== فریم محتوای آموزشی ===== --}}
@@ -313,33 +318,60 @@
                     محتوای آموزشی جلسه (انتخاب حداقل یک گزینه الزامی است.)
                 </div>
                 <div class="content-frame-body">
+                    
+                    {{-- طرح درس یا محتوای درس (درون فریم) --}}
+                    <div class="form-group">
+                        <label>طرح درس یا محتوای درس (اختیاری)</label>
+                        <textarea class="jodit-editor @error('text') is-invalid @enderror" 
+                                  name="text" id="modalEditor" 
+                                  placeholder="مختصری از اهداف آموزشی این جلسه و مطالبی که دانشجو خواهد آموخت یا قادر به توضیح آن‌ها خواهد بود، به‌صورت فهرست‌وار بیان کنید. همچنین می‌توانید تصاویر مرتبط با درس را درج کنید.">{{ old('text') }}</textarea>
+                        @error('text')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+
                     {{-- لینک درس --}}
                     <div class="form-row">
                         <div class="form-group">
                             <label for="modalLink">لینک درس (اختیاری)</label>
-                            <input type="text" class="form-control" name="link" id="modalLink" 
+                            <input type="text" class="form-control @error('link') is-invalid @enderror" 
+                                   name="link" id="modalLink" 
+                                   value="{{ old('link') }}"
                                    placeholder="https://example.com">
+                            @error('link')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
                         </div>
                         <div class="form-group">
                             <label for="modalMajazi">لینک فیلم ضبط شده (اختیاری)</label>
-                            <input type="text" class="form-control" name="majazi" id="modalMajazi" 
+                            <input type="text" class="form-control @error('majazi') is-invalid @enderror" 
+                                   name="majazi" id="modalMajazi" 
+                                   value="{{ old('majazi') }}"
                                    placeholder="https://example.com">
+                            @error('majazi')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
                         </div>
                     </div>
 
                     {{-- لینک آپارات --}}
                     <div class="form-group">
                         <label for="modalAparat">لینک آپارات (اختیاری)</label>
-                        <input type="text" class="form-control" name="aparat" id="modalAparat" 
+                        <input type="text" class="form-control @error('aparat') is-invalid @enderror" 
+                               name="aparat" id="modalAparat" 
+                               value="{{ old('aparat') }}"
                                placeholder="کد اسکریپت آپارات را وارد کنید">
                         <small style="color: #6b7a8f; font-size: 12px;">کد اسکریپت آپارات را به همراه iframe یا embed کپی کنید</small>
+                        @error('aparat')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
 
                     {{-- بارگذاری فایل --}}
                     <div class="form-group">
                         <label>بارگذاری محتوای درس (اختیاری)</label>
                         <div class="file-upload-wrapper">
-                            <input type="file" id="modalFileUpload" name="file" class="file-upload-input" 
+                            <input type="file" id="modalFileUpload" name="file" class="file-upload-input @error('file') is-invalid @enderror" 
                                    accept=".pdf,.doc,.docx,.ppt,.pptx">
                             <label for="modalFileUpload" class="file-upload-label">
                                 <i class="fas fa-cloud-upload-alt"></i>
@@ -350,6 +382,9 @@
                         <small style="color: #6b7a8f; font-size: 12px; display: block; margin-top: 5px;">
                             فرمت‌های مجاز: PDF، Word، PowerPoint | حداکثر حجم: 20 مگابایت
                         </small>
+                        @error('file')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                         <div id="modalExistingFile" style="display:none;" class="existing-file">
                             <div class="file-info">
                                 <i class="fas fa-file-pdf"></i>
@@ -363,12 +398,20 @@
                             </a>
                         </div>
                     </div>
+                    
+                    {{-- نمایش خطای سفارشی برای انتخاب حداقل یک گزینه --}}
+                    @if($errors->has('content'))
+                        <div class="alert alert-danger mt-2">
+                            <i class="fas fa-exclamation-circle"></i>
+                            {{ $errors->first('content') }}
+                        </div>
+                    @endif
                 </div>
             </div>
 
             <div class="form-group">
                 <label class="checkbox-label">
-                    <input type="checkbox" name="active" id="modalActive" checked>
+                    <input type="checkbox" name="active" id="modalActive" {{ old('active', true) ? 'checked' : '' }}>
                     <span style="color: #1e6f9f; font-weight: 600;">درس به دانشجو نشان داده شود؟</span>
                 </label>
             </div>
@@ -414,26 +457,6 @@
     const courseId = '{{ $course->id }}';
     
     // ==========================================
-    // اعتبارسنجی فرم جلسه - حداقل یک گزینه محتوای آموزشی
-    // ==========================================
-    document.getElementById('sessionForm').addEventListener('submit', function(e) {
-        const link = document.getElementById('modalLink').value.trim();
-        const majazi = document.getElementById('modalMajazi').value.trim();
-        const aparat = document.getElementById('modalAparat').value.trim();
-        const file = document.getElementById('modalFileUpload').files[0];
-        const existingFile = document.getElementById('modalExistingFile').style.display !== 'none';
-    
-        // بررسی اینکه حداقل یکی از گزینه‌ها پر شده باشد
-        if (!link && !majazi && !aparat && !file && !existingFile) {
-            e.preventDefault();
-            alert('لطفاً حداقل یکی از گزینه‌های محتوای آموزشی (لینک درس، لینک فیلم ضبط شده، لینک آپارات یا بارگذاری فایل) را انتخاب کنید.');
-            return false;
-        }
-    
-        return true;
-    });
-
-    // ==========================================
     // توابع مودال جلسات
     // ==========================================
     function openModal(mode, sessionId = null) {
@@ -452,9 +475,17 @@
             submitText.textContent = 'ایجاد جلسه';
             deleteBtn.style.display = 'none';
             
+            // تنظیم action برای ایجاد
             form.action = '{{ route("sessions.store", $course->id) }}';
             form.method = 'POST';
             
+            // حذف متد PUT اگر وجود داشته باشد
+            let methodInput = form.querySelector('input[name="_method"]');
+            if (methodInput) {
+                methodInput.remove();
+            }
+            
+            // ریست کردن مقادیر فرم
             document.getElementById('sessionId').value = '';
             document.getElementById('modalNumber').value = {{ $sessions->count() + 1 }};
             document.getElementById('modalName').value = '';
@@ -478,9 +509,11 @@
             deleteBtn.style.display = 'inline-flex';
             currentEditId = sessionId;
             
+            // تنظیم action برای ویرایش
             form.action = '{{ route("sessions.update", "") }}/' + sessionId;
             form.method = 'POST';
             
+            // اضافه کردن متد PUT
             let methodInput = form.querySelector('input[name="_method"]');
             if (!methodInput) {
                 methodInput = document.createElement('input');
@@ -923,6 +956,11 @@
                 defaultFontSize: '14px',
                 fonts: ['Vazir', 'Tahoma', 'Arial', 'Courier New']
             });
+            
+            // اگر خطایی در text وجود داشت، مقدار old را در ادیتور تنظیم کنیم
+            @if(old('text'))
+                joditEditor.value = '{{ addslashes(old('text')) }}';
+            @endif
         }
 
         // ==========================================

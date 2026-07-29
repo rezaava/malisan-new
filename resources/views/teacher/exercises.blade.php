@@ -7,6 +7,52 @@
 @section('head')
 <link rel="stylesheet" href="{{ asset('css/teacher-exercises.css') }}">
 <link rel="stylesheet" href="{{ asset('css/badge.css') }}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.css">
+
+<style>
+    /* ===== فرم ایجاد تمرین در بالای صفحه ===== */
+    .create-exercise-top {
+        margin-bottom: 30px;
+        border: 2px solid #1e6f9f;
+    }
+
+    .create-exercise-top .form-top-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .create-exercise-top .form-top-header h4 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: #1a2332;
+    }
+
+    .create-exercise-top .form-top-header h4 i {
+        color: #1e6f9f;
+        margin-left: 8px;
+    }
+
+    .create-exercise-top .form-top-header .hint-badge {
+        font-size: 13px;
+        color: #6b7a8f;
+        background: #f0f4f9;
+        padding: 4px 14px;
+        border-radius: 20px;
+    }
+
+    .create-exercise-top .form-top-header .hint-badge i {
+        margin-left: 4px;
+    }
+
+    .create-exercise-top .btn-submit-top {
+        margin-top: 6px;
+    }
+</style>
 @endsection
 
 @section('mohtava')
@@ -32,6 +78,57 @@
         @include('layout.backbtn')
     </div>
 
+    <div class="create-exercise-form create-exercise-top">
+        <div class="form-top-header">
+            <h4>
+                <i class="fas fa-plus-circle"></i>
+                افزودن تمرین جدید برای جلسه {{ $session->name }}
+            </h4>
+            <span class="hint-badge">
+                <i class="fas fa-info-circle"></i> پس از ایجاد، در لیست زیر نمایش داده می‌شود
+            </span>
+        </div>
+    
+        <form method="POST" action="{{ route('exercise.create') }}" enctype="multipart/form-data">
+            @csrf
+            <input type="hidden" name="session_id" value="{{ $session->id }}">
+    
+            <div class="form-group">
+                <label>
+                    متن تمرین <span class="required">*</span>
+                </label>
+                <textarea class="jodit-editor" id="createExerciseEditorTop" name="text" 
+                          placeholder="متن تمرین را وارد کنید...">{{ old('text') }}</textarea>
+                @error('text')
+                    <span style="color:#f44336;font-size:13px;margin-top:4px;display:block;">
+                        <i class="fas fa-times-circle"></i> {{ $message }}
+                    </span>
+                @enderror
+            </div>
+    
+            <div class="form-group">
+                <label>فایل پیوست (اختیاری)</label>
+                <div class="file-input-wrapper">
+                    <span class="file-label">
+                        <i class="fas fa-upload"></i>
+                        انتخاب فایل
+                    </span>
+                    <input type="file" name="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip">
+                </div>
+                @error('file')
+                    <span style="color:#f44336;font-size:13px;margin-top:4px;display:block;">
+                        <i class="fas fa-times-circle"></i> {{ $message }}
+                    </span>
+                @enderror
+            </div>
+    
+            <button type="submit" class="btn-submit btn-submit-top">
+                <i class="fas fa-plus"></i>
+                ایجاد تمرین
+            </button>
+        </form>
+    </div>
+
     {{-- EXERCISES LIST --}}
     @if($exercises->count() > 0)
         @foreach($exercises as $key => $exercise)
@@ -42,7 +139,6 @@
                         تمرین {{ $key + 1 }}
                     </span>
                     <div class="exercise-actions">
-                        @if(Auth::user()->hasRole('teacher'))
                             <a href="{{ route('exercise.edit', ['exercise_id' => $exercise->id]) }}" class="btn-action btn-action-primary">
                                 <i class="fas fa-edit"></i> ویرایش
                             </a>
@@ -53,23 +149,7 @@
                                onclick="return confirm('آیا مطمئن هستید؟')">
                                 <i class="fas fa-trash-alt"></i> حذف
                             </a>
-                        @else
-                            @if(isset($exercise->user_answer))
-                                @if($exercise->user_answer->status == 'scored')
-                                    <span class="answer-status scored">
-                                        <i class="fas fa-check-circle"></i> نمره: {{ $exercise->user_answer->score }}
-                                    </span>
-                                @else
-                                    <span class="answer-status submitted">
-                                        <i class="fas fa-check-circle"></i> پاسخ ارسال شده
-                                    </span>
-                                @endif
-                            @else
-                                <span class="answer-status not-submitted">
-                                    <i class="fas fa-clock"></i> پاسخ داده نشده
-                                </span>
-                            @endif
-                        @endif
+
                     </div>
                 </div>
 
@@ -145,63 +225,13 @@
                 <i class="fas fa-file-alt"></i>
             </span>
             <h4>هیچ تمرینی برای این جلسه ثبت نشده است</h4>
-            <p>هنوز تمرینی برای این جلسه ایجاد نشده است.</p>
-        </div>
-    @endif
-
-    {{-- CREATE EXERCISE FORM (TEACHER ONLY) --}}
-    @if(Auth::user()->hasRole('teacher'))
-        <div class="create-exercise-form">
-            <h4>
-                <i class="fas fa-plus-circle"></i>
-                ایجاد تمرین جدید
-            </h4>
-
-            <form method="POST" action="{{ route('exercise.create') }}" enctype="multipart/form-data">
-                @csrf
-                <input type="hidden" name="session_id" value="{{ $session->id }}">
-
-                <div class="form-group">
-                    <label>
-                        متن تمرین <span class="required">*</span>
-                    </label>
-                    <textarea class="jodit-editor" id="createExerciseEditor" name="text" 
-                              placeholder="متن تمرین را وارد کنید...">{{ old('text') }}</textarea>
-                    @error('text')
-                        <span style="color:#f44336;font-size:13px;margin-top:4px;display:block;">
-                            <i class="fas fa-times-circle"></i> {{ $message }}
-                        </span>
-                    @enderror
-                </div>
-
-                <div class="form-group">
-                    <label>فایل پیوست (اختیاری)</label>
-                    <div class="file-input-wrapper">
-                        <span class="file-label">
-                            <i class="fas fa-upload"></i>
-                            انتخاب فایل
-                        </span>
-                        <input type="file" name="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip">
-                    </div>
-                    @error('file')
-                        <span style="color:#f44336;font-size:13px;margin-top:4px;display:block;">
-                            <i class="fas fa-times-circle"></i> {{ $message }}
-                        </span>
-                    @enderror
-                </div>
-
-                <button type="submit" class="btn-submit">
-                    <i class="fas fa-plus"></i>
-                    ایجاد تمرین
-                </button>
-            </form>
+            <p>با استفاده از فرم بالا، اولین تمرین را ایجاد کنید.</p>
         </div>
     @endif
 </div>
 @endsection
 
 @section('js')
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.css">
 <script src="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.js"></script>
 
 <script>
