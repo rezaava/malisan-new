@@ -26,6 +26,10 @@ Route::get('/login', [AuthController::class, 'login'])->name('login');
 Route::get('/register', [AuthController::class, 'register'])->name('register');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
+//added in 2026-07-26
+    Route::post('/complete-reset-password', [AdminController::class, 'resetPasswordComplete'])->name('complete-reset-password');
+
+
 Route::post('/loginPost', [AuthController::class, 'loginPost'])->name('loginPost');
 Route::post('/registerPost', [AuthController::class, 'registerPost'])->name('registerPost');
 
@@ -57,7 +61,17 @@ Route::prefix('/admin')->middleware(['role:admin'])->group(function () {
         Route::get('/chat', [ChatController::class, 'index'])->name('admin.chat.index');
         Route::post('/chat/send', [ChatController::class, 'send'])->name('admin.chat.send');
         Route::get('/chat/messages/{chatId}', [ChatController::class, 'getMessages'])->name('admin.chat.messages');
+        Route::post('/reset-user-password/{id}', [AdminController::class, 'resetPasswordRequest'])->name('reset-user-password');
     });
+
+    Route::prefix('users')->group(function(){
+        Route::get('/', [AdminController::class, 'adminShowUsers'])->name('show-users-admin');
+        Route::get('/limited', [AdminController::class, 'adminShowLimitedUsers'])->name('show-limited-users-admin');
+        Route::get('/limit-user/{id}', [AdminController::class, 'limitUser'])->name('limit-user');
+        Route::get('/unlimit-user/{id}', [AdminController::class, 'unlimitUser'])->name('unlimit-user');
+        });
+    
+    
 });
 
 
