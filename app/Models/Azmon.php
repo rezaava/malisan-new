@@ -13,7 +13,7 @@ class Azmon extends Model
     protected $fillable = [
         'course_id', 'code', 'title', 'zarib', 'description', 'num', 'sath',
         'sessions', 'show_nomre', 'time', 'start', 'end', 'show_ans',
-        'show_state', 'changeable', 'show_remain'
+        'show_state', 'changeable', 'show_remain', 'type'
     ];
 
     public function course()
