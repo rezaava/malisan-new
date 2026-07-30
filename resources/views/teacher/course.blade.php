@@ -343,7 +343,7 @@
                     
                     {{-- طرح درس یا محتوای درس (درون فریم) --}}
                     <div class="form-group">
-                        <label>طرح درس یا محتوای درس (اختیاری)</label>
+                        <label>محتوای درس (اختیاری)</label>
                         <textarea class="jodit-editor @error('text') is-invalid @enderror" 
                                   name="text" id="modalEditor" 
                                   placeholder="مختصری از اهداف آموزشی این جلسه و مطالبی که دانشجو خواهد آموخت یا قادر به توضیح آن‌ها خواهد بود، به‌صورت فهرست‌وار بیان کنید. همچنین می‌توانید تصاویر مرتبط با درس را درج کنید.">{{ old('text') }}</textarea>
@@ -355,7 +355,7 @@
                     {{-- لینک درس --}}
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="modalLink">لینک درس (اختیاری)</label>
+                            <label for="modalLink">لینک محتوای درس (اختیاری)</label>
                             <input type="text" class="form-control @error('link') is-invalid @enderror" 
                                    name="link" id="modalLink" 
                                    value="{{ old('link') }}"
@@ -365,7 +365,7 @@
                             @enderror
                         </div>
                         <div class="form-group">
-                            <label for="modalMajazi">لینک فیلم ضبط شده (اختیاری)</label>
+                            <label for="modalMajazi">لینک فیلم ضبط شده کلاس (اختیاری)</label>
                             <input type="text" class="form-control @error('majazi') is-invalid @enderror" 
                                    name="majazi" id="modalMajazi" 
                                    value="{{ old('majazi') }}"
@@ -382,8 +382,7 @@
                         <input type="text" class="form-control @error('aparat') is-invalid @enderror" 
                                name="aparat" id="modalAparat" 
                                value="{{ old('aparat') }}"
-                               placeholder="کد اسکریپت آپارات را وارد کنید">
-                        <small style="color: #6b7a8f; font-size: 12px;">کد اسکریپت آپارات را به همراه iframe یا embed کپی کنید</small>
+                               placeholder="کد اسکریپت آپارات را به همراه iframe یا embed کپی کنید">
                         @error('aparat')
                             <span class="text-danger">{{ $message }}</span>
                         @enderror

@@ -11,8 +11,6 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
-
-
 class AdminController extends Controller
 {
     public function index()
@@ -92,11 +90,9 @@ class AdminController extends Controller
         return response()->json(['successfull'=> true]);
     }
 
-
     public function unlimitUser(Request $request, $id){
         $user = User::findOrFail($id);
         $user->active = true;
         return response()->json(['successfull'=> true]);
     }
-
 }

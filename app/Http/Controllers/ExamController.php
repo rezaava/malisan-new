@@ -34,7 +34,7 @@ class ExamController extends Controller
 
         $setting = Setting::where('course_id', $course->id)->first();
         
-        if ($setting && $setting->soal_last == 1) {
+        if ($setting && !Auth::user()->hasRole('admin|teacher') && $setting->soal_last == 1) {
             $lastSession = Session::where('course_id', $course->id)
                 ->orderBy('id', 'desc') // یا orderBy('session_number', 'desc') اگر چنین فیلدی دارید
                 ->first();

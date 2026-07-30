@@ -72,7 +72,7 @@
                                 @elseif ($azmon->type == 'periodic')
                                     آزمون های دوره ای
                                 @elseif ($azmon->type == 'final')
-                                    پایانی
+                                    پایان ترم
                                 @endif
                             </span>
                         </div>

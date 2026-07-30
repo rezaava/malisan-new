@@ -7,6 +7,69 @@
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-question-bank.css')}}">
 <link rel="stylesheet" href="{{asset('css/badge.css')}}">
+<style>
+    /* استایل‌های اضافی برای فیلتر آماری */
+    .stat-filter {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .stat-filter:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    }
+    
+    .stat-filter.active-filter {
+        border-color: #1a2332 !important;
+        border-width: 2px !important;
+        background: #f0f4f9 !important;
+        box-shadow: 0 4px 15px rgba(26, 35, 50, 0.1);
+    }
+    
+    .stat-filter.active-filter::after {
+        content: '✓';
+        position: absolute;
+        top: 5px;
+        right: 10px;
+        color: #1a2332;
+        font-weight: bold;
+        font-size: 14px;
+    }
+    
+    .stat-filter .stat-number {
+        transition: color 0.3s ease;
+    }
+    
+    .stat-filter:hover .stat-number {
+        color: #1a2332 !important;
+    }
+    
+    /* استایل برجسته برای کارت‌های آماری خاص */
+    .stat-card.excellent .stat-number { color: #2e7d32; }
+    .stat-card.good .stat-number { color: #1565c0; }
+    .stat-card.medium .stat-number { color: #e65100; }
+    .stat-card.bad .stat-number { color: #c62828; }
+    .stat-card.pending .stat-number { color: #6a1b9a; }
+    .stat-card.starred .stat-number { color: #f9a825; }
+    .stat-card.teacher-questions .stat-number { color: #00838f; }
+    
+    /* استایل برای برچسب سطح 5 (سوال استاد) */
+    .level-badge.teacher-level {
+        background: #6a1b9a;
+        color: #fff;
+    }
+    
+    /* انیمیشن شمارنده */
+    @keyframes countUp {
+        from { opacity: 0; transform: scale(0.8); }
+        to { opacity: 1; transform: scale(1); }
+    }
+    
+    .stat-number.animated {
+        animation: countUp 0.5s ease;
+    }
+</style>
 @endsection
 
 @section('mohtava')
@@ -25,52 +88,52 @@
         </div>
     </div>
 
-    <!-- آمار -->
+    <!-- آمار - قابل کلیک -->
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3 col-lg">
-            <div class="stat-card bg-white rounded-3 p-3 text-center border h-100">
+            <div class="stat-card bg-white rounded-3 p-3 text-center border h-100 stat-filter active-filter" data-filter="all" data-label="کل سوالات">
                 <div class="stat-number fs-3 fw-bold text-dark">{{ $stats['total'] ?? 0 }}</div>
                 <div class="text-secondary small">کل سوالات</div>
             </div>
         </div>
         <div class="col-6 col-md-3 col-lg">
-            <div class="stat-card excellent bg-white rounded-3 p-3 text-center border h-100">
+            <div class="stat-card excellent bg-white rounded-3 p-3 text-center border h-100 stat-filter" data-filter="1" data-label="عالی">
                 <div class="stat-number fs-3 fw-bold">{{ $stats['excellent'] ?? 0 }}</div>
                 <div class="text-secondary small">عالی</div>
             </div>
         </div>
         <div class="col-6 col-md-3 col-lg">
-            <div class="stat-card good bg-white rounded-3 p-3 text-center border h-100">
+            <div class="stat-card good bg-white rounded-3 p-3 text-center border h-100 stat-filter" data-filter="2" data-label="خوب">
                 <div class="stat-number fs-3 fw-bold">{{ $stats['good'] ?? 0 }}</div>
                 <div class="text-secondary small">خوب</div>
             </div>
         </div>
         <div class="col-6 col-md-3 col-lg">
-            <div class="stat-card medium bg-white rounded-3 p-3 text-center border h-100">
+            <div class="stat-card medium bg-white rounded-3 p-3 text-center border h-100 stat-filter" data-filter="3" data-label="متوسط">
                 <div class="stat-number fs-3 fw-bold">{{ $stats['medium'] ?? 0 }}</div>
                 <div class="text-secondary small">متوسط</div>
             </div>
         </div>
         <div class="col-6 col-md-3 col-lg">
-            <div class="stat-card bad bg-white rounded-3 p-3 text-center border h-100">
+            <div class="stat-card bad bg-white rounded-3 p-3 text-center border h-100 stat-filter" data-filter="4" data-label="ضعیف">
                 <div class="stat-number fs-3 fw-bold">{{ $stats['bad'] ?? 0 }}</div>
                 <div class="text-secondary small">ضعیف</div>
             </div>
         </div>
         <div class="col-6 col-md-3 col-lg">
-            <div class="stat-card pending bg-white rounded-3 p-3 text-center border h-100">
+            <div class="stat-card pending bg-white rounded-3 p-3 text-center border h-100 stat-filter" data-filter="null" data-label="در انتظار تایید">
                 <div class="stat-number fs-3 fw-bold">{{ $stats['pending'] ?? 0 }}</div>
                 <div class="text-secondary small">در انتظار تایید</div>
             </div>
         </div>
         <div class="col-6 col-md-3 col-lg">
-            <div class="stat-card starred bg-white rounded-3 p-3 text-center border h-100">
+            <div class="stat-card starred bg-white rounded-3 p-3 text-center border h-100 stat-filter" data-filter="starred" data-label="ستاره دار">
                 <div class="stat-number fs-3 fw-bold">{{ $stats['starred'] ?? 0 }}</div>
                 <div class="text-secondary small">ستاره دار</div>
             </div>
         </div>
         <div class="col-6 col-md-3 col-lg">
-            <div class="stat-card teacher-questions bg-white rounded-3 p-3 text-center border h-100">
+            <div class="stat-card teacher-questions bg-white rounded-3 p-3 text-center border h-100 stat-filter" data-filter="5" data-label="سوال استاد">
                 <div class="stat-number fs-3 fw-bold">{{ $stats['teacher_questions'] ?? 0 }}</div>
                 <div class="text-secondary small">سوال استاد</div>
             </div>
@@ -89,9 +152,9 @@
             <option value="2">خوب</option>
             <option value="3">متوسط</option>
             <option value="4">ضعیف</option>
+            <option value="5">👨‍🏫 سوال استاد</option>
             <option value="null">در انتظار تایید</option>
             <option value="starred">⭐ ستاره دار</option>
-            <option value="teacher">👨‍🏫 سوال استاد</option>
         </select>
         <button class="btn btn-sm rounded-3" id="toggleAllBtn" style="background: #e8edf3; color: #1a2332; border: none;">
             <i class="fas fa-eye"></i>
@@ -105,11 +168,10 @@
             <div class="question-card bg-white rounded-4 border" 
                  data-level="{{ $question->status ?? 'null' }}"
                  data-starred="{{ $question->star ?? 0 }}"
-                 data-teacher="{{ $question->is_teacher_question ?? 0 }}"
                  data-question-id="{{ $question->id }}"
                  style="border-color: #e8edf3;">
                 <!-- هدر سوال -->
-                <div class="question-header p-3 bg-light d-flex justify-content-between align-items-start flex-wrap gap-2" onclick="toggleQuestion(this)" style="background: #f8fafc;">
+                <div class="question-header p-3 bg-light d-flex justify-content-between align-items-start flex-wrap gap-2" onclick="toggleQuestion(this)" style="background: #f8fafc; cursor: pointer;">
                     <div class="question-text fw-semibold text-dark flex-grow-1" style="font-size: 15px;">
                         <button class="star-btn {{ $question->star == 1 ? 'active' : '' }}" 
                                 onclick="event.stopPropagation(); toggleStar({{ $question->id }})">
@@ -121,16 +183,12 @@
                         <span class="text-primary fw-semibold">
                             <i class="fas fa-user"></i> {{ $question->designer_name ?? 'نامشخص' }}
                         </span>
-                        @if(isset($question->is_teacher_question) && $question->is_teacher_question == 1)
-                            <span class="badge bg-purple" style="background: #6a1b9a; color: #fff; font-size: 10px;">
-                                <i class="fas fa-chalkboard-teacher"></i> استاد
-                            </span>
-                        @endif
                         <span class="level-badge {{ 
                             $question->status == 1 ? 'excellent' : 
                             ($question->status == 2 ? 'good' : 
                             ($question->status == 3 ? 'medium' : 
-                            ($question->status == 4 ? 'bad' : 'pending'))) 
+                            ($question->status == 4 ? 'bad' : 
+                            ($question->status == 5 ? 'teacher-level' : 'pending')))) 
                         }} {{ $question->teacher_change == 1 ? 'teacher-changed' : '' }}">
                             {{ $question->level_text ?? 'نامشخص' }}
                             @if($question->teacher_change == 1)
@@ -273,6 +331,7 @@
                         <option value="2">✅ خوب</option>
                         <option value="3">📊 متوسط</option>
                         <option value="4">⚠️ ضعیف</option>
+                        <option value="5">👨‍🏫 سوال استاد</option>
                     </select>
                     <small style="color:#6a1b9a;font-size:12px;display:block;margin-top:6px;">
                         <i class="fas fa-info-circle"></i> 
@@ -295,6 +354,70 @@
 
 @section('js')
 <script>
+    // ============================================
+    // فیلتر بر اساس کلیک روی آمار
+    // ============================================
+    document.addEventListener('DOMContentLoaded', function() {
+        // تنظیم فیلتر اولیه
+        var activeFilter = document.querySelector('.stat-filter.active-filter');
+        if (!activeFilter) {
+            var firstFilter = document.querySelector('.stat-filter[data-filter="all"]');
+            if (firstFilter) firstFilter.classList.add('active-filter');
+        }
+        
+        // رویداد کلیک روی هر کارت آماری
+        document.querySelectorAll('.stat-filter').forEach(function(stat) {
+            stat.addEventListener('click', function() {
+                // حذف کلاس active از همه
+                document.querySelectorAll('.stat-filter').forEach(function(el) {
+                    el.classList.remove('active-filter');
+                });
+                
+                // افزودن کلاس active به کارت کلیک شده
+                this.classList.add('active-filter');
+                
+                // دریافت مقدار فیلتر
+                var filterValue = this.getAttribute('data-filter');
+                
+                // تنظیم سلکت فیلتر
+                var select = document.getElementById('filterLevel');
+                if (select) {
+                    select.value = filterValue;
+                }
+                
+                // اعمال فیلتر
+                applyFilters();
+                
+                // انیمیشن شمارنده
+                var number = this.querySelector('.stat-number');
+                if (number) {
+                    number.classList.remove('animated');
+                    setTimeout(function() {
+                        number.classList.add('animated');
+                    }, 10);
+                }
+            });
+        });
+        
+        // رویداد تغییر سلکت
+        var select = document.getElementById('filterLevel');
+        if (select) {
+            select.addEventListener('change', function() {
+                var value = this.value;
+                
+                // به‌روزرسانی وضعیت active روی کارت‌های آماری
+                document.querySelectorAll('.stat-filter').forEach(function(el) {
+                    el.classList.remove('active-filter');
+                    if (el.getAttribute('data-filter') === value) {
+                        el.classList.add('active-filter');
+                    }
+                });
+                
+                applyFilters();
+            });
+        }
+    });
+
     // ============================================
     // تاگل نمایش/مخفی کردن
     // ============================================
@@ -557,7 +680,7 @@
             }
         }
         
-        // به‌روزرسانی برچسب سطح با رنگ بنفش اگر استاد تغییر داده
+        // به‌روزرسانی برچسب سطح
         var levelBadge = card.querySelector('.level-badge');
         if (levelBadge) {
             var levelText = getLevelText(question.status);
@@ -634,6 +757,7 @@
         if (status == 2) return 'خوب';
         if (status == 3) return 'متوسط';
         if (status == 4) return 'ضعیف';
+        if (status == 5) return 'سوال استاد';
         return 'در انتظار تایید';
     }
 
@@ -642,6 +766,7 @@
         if (status == 2) return 'good';
         if (status == 3) return 'medium';
         if (status == 4) return 'bad';
+        if (status == 5) return 'teacher-level';
         return 'pending';
     }
 
@@ -652,10 +777,12 @@
         var searchText = document.getElementById('searchInput').value.toLowerCase().trim();
         var filterValue = document.getElementById('filterLevel').value;
         var cards = document.querySelectorAll('.question-card');
+        var visibleCount = 0;
         
         cards.forEach(function(card) {
             var show = true;
             
+            // فیلتر جستجو
             if (searchText) {
                 var text = card.querySelector('.question-text').textContent.toLowerCase();
                 if (!text.includes(searchText)) {
@@ -663,15 +790,11 @@
                 }
             }
             
+            // فیلتر سطح
             if (show && filterValue !== 'all') {
                 if (filterValue === 'starred') {
                     var starred = card.getAttribute('data-starred');
                     if (starred !== '1') {
-                        show = false;
-                    }
-                } else if (filterValue === 'teacher') {
-                    var teacher = card.getAttribute('data-teacher');
-                    if (teacher !== '1') {
                         show = false;
                     }
                 } else {
@@ -683,7 +806,25 @@
             }
             
             card.style.display = show ? '' : 'none';
+            if (show) visibleCount++;
         });
+        
+        // نمایش پیام خالی بودن
+        var questionsList = document.getElementById('questionsList');
+        var existingEmpty = questionsList.querySelector('.empty-state:not(.hidden)');
+        
+        if (visibleCount === 0 && cards.length > 0) {
+            if (!existingEmpty) {
+                var empty = document.createElement('div');
+                empty.className = 'empty-state';
+                empty.innerHTML = '<i class="fas fa-filter"></i><p class="mb-0">هیچ سوالی با این فیلتر پیدا نشد.</p>';
+                questionsList.appendChild(empty);
+            }
+        } else {
+            if (existingEmpty) {
+                existingEmpty.remove();
+            }
+        }
     }
 
     // ============================================
@@ -693,13 +834,6 @@
         var searchInput = document.getElementById('searchInput');
         if (searchInput) {
             searchInput.addEventListener('input', function() {
-                applyFilters();
-            });
-        }
-
-        var filterLevel = document.getElementById('filterLevel');
-        if (filterLevel) {
-            filterLevel.addEventListener('change', function() {
                 applyFilters();
             });
         }
@@ -743,6 +877,7 @@
             });
         }
 
+        // اعمال فیلتر اولیه
         applyFilters();
     });
 
