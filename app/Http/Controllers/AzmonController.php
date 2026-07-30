@@ -148,6 +148,7 @@ class AzmonController extends Controller
             'end_h' => 'required|integer|min:0|max:23',
             'end_m' => 'required|integer|min:0|max:59',
             'type' => 'required|in:periodic,mid-term,final',
+            'access_type' => 'required|in:code,free',
         ]);
 
         // ترکیب تاریخ و ساعت
@@ -163,7 +164,14 @@ class AzmonController extends Controller
         $azmon->title = $request->title;
         $azmon->description = $request->description;
         $azmon->sath = $request->sath ?? 3;
-        $azmon->code = $request->code;
+        
+        // تنظیم کد بر اساس نوع دسترسی
+        if ($request->access_type === 'code') {
+            $azmon->code = $request->code; // کد از فرم میاد
+        } else {
+            $azmon->code = null; // اگر آزاد باشه، کد null میشه
+        }
+        
         $azmon->start = $startCarbon;
         $azmon->end = $endCarbon;
         $azmon->time = $request->time;
@@ -188,7 +196,6 @@ class AzmonController extends Controller
         return redirect()->route('azmon.list', ['id' => $request->id])
             ->with('success', 'آزمون با موفقیت ایجاد شد.');
     }
-
 
     /**
      * نمایش فرم ویرایش آزمون
@@ -222,6 +229,7 @@ class AzmonController extends Controller
             'end_h' => 'required|integer|min:0|max:23',
             'end_m' => 'required|integer|min:0|max:59',
             'type' => 'required|in:periodic,mid-term,final',
+            'access_type' => 'required|in:code,free',
         ]);
 
         // ترکیب تاریخ و ساعت
@@ -237,10 +245,18 @@ class AzmonController extends Controller
         $azmon->title = $request->title;
         $azmon->description = $request->description;
         $azmon->sath = $request->sath ?? 3;
+        
+        // تنظیم کد بر اساس نوع دسترسی
+        if ($request->access_type === 'code') {
+            $azmon->code = $request->code; // کد از فرم میاد
+        } else {
+            $azmon->code = null; // اگر آزاد باشه، کد null میشه
+        }
+        
         $azmon->start = $startCarbon;
         $azmon->end = $endCarbon;
         $azmon->time = $request->time;
-        $azmon->type= $request->type;
+        $azmon->type = $request->type;
 
         // تبدیل آرایه جلسات به رشته
         $sessions = implode(',', $request->sessions);

@@ -7,7 +7,7 @@
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-index.css')}}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+<meta name="csrf-token" content="{{ csrf_token() }}">
 @endsection
 
 @section('mohtava')
@@ -122,7 +122,6 @@
         </div>
     </div>
 </div>
-
 @section('js')
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -138,25 +137,45 @@
     // باز کردن مودال
     // ==========================================
     function openExamModal(examId) {
+        // Check if all required elements exist
+        const descBox = document.getElementById('examDescription');
+        const titleElement = document.getElementById('examModalTitle');
+        const codeField = document.getElementById('examCodeField');
+        const codeError = document.getElementById('examCodeError');
+        const codeInput = document.getElementById('examCodeInput');
+        const startBtn = document.getElementById('startExamBtn');
+
+        if (!descBox || !titleElement || !codeField || !codeError || !codeInput || !startBtn) {
+            console.error('Required DOM elements not found');
+            alert('خطا در بارگذاری صفحه. لطفاً صفحه را مجدداً بارگذاری کنید.');
+            return;
+        }
+
         currentExamId = examId;
         
         // نمایش حالت بارگذاری
-        document.getElementById('examDescription').innerHTML = 
+        descBox.innerHTML = 
             '<i class="fas fa-spinner fa-spin"></i> <span>در حال بارگذاری اطلاعات آزمون...</span>';
-        document.getElementById('examModalTitle').textContent = 'آزمون';
+        titleElement.textContent = 'آزمون';
         
         // مخفی کردن فیلد کد
-        document.getElementById('examCodeField').style.display = 'none';
-        document.getElementById('examCodeError').style.display = 'none';
-        document.getElementById('examCodeInput').value = '';
-        document.getElementById('examCodeInput').classList.remove('is-invalid');
+        codeField.style.display = 'none';
+        codeError.style.display = 'none';
+        codeInput.value = '';
+        codeInput.classList.remove('is-invalid');
         
         // غیرفعال کردن دکمه شروع
-        document.getElementById('startExamBtn').disabled = true;
+        startBtn.disabled = true;
         
         // نمایش مودال
+        const modalElement = document.getElementById('examModal');
+        if (!modalElement) {
+            console.error('Modal element not found');
+            return;
+        }
+        
         if (!modalInstance) {
-            modalInstance = new bootstrap.Modal(document.getElementById('examModal'), {
+            modalInstance = new bootstrap.Modal(modalElement, {
                 backdrop: 'static',
                 keyboard: false
             });
@@ -173,7 +192,6 @@
             })
             .then(data => {
                 // نمایش توضیحات
-                const descBox = document.getElementById('examDescription');
                 if (data.description && data.description.trim() !== '') {
                     descBox.innerHTML = `<i class="fas fa-info-circle"></i> ${data.description}`;
                 } else {
@@ -181,12 +199,10 @@
                 }
                 
                 // تنظیم عنوان
-                document.getElementById('examModalTitle').textContent = data.title || 'آزمون';
+                titleElement.textContent = data.title || 'آزمون';
                 
                 // بررسی وجود کد
                 examHasCode = data.has_code || false;
-                const codeField = document.getElementById('examCodeField');
-                const codeInput = document.getElementById('examCodeInput');
                 
                 if (examHasCode) {
                     codeField.style.display = 'block';
@@ -197,89 +213,147 @@
                 }
                 
                 // فعال کردن دکمه شروع
-                document.getElementById('startExamBtn').disabled = false;
+                startBtn.disabled = false;
             })
             .catch(error => {
                 console.error('Error:', error);
-                document.getElementById('examDescription').innerHTML = 
+                descBox.innerHTML = 
                     '<i class="fas fa-exclamation-triangle" style="color:#f44336;"></i> ' +
                     '<span style="color:#f44336;">خطا در دریافت اطلاعات آزمون. لطفاً مجدداً تلاش کنید.</span>';
-                document.getElementById('startExamBtn').disabled = true;
+                startBtn.disabled = true;
             });
     }
 
     // ==========================================
     // شروع آزمون
     // ==========================================
-    document.getElementById('startExamBtn').addEventListener('click', function() {
-        if (isLoading) return;
-        
+    document.addEventListener('DOMContentLoaded', function() {
+        const startBtn = document.getElementById('startExamBtn');
         const codeInput = document.getElementById('examCodeInput');
         const codeError = document.getElementById('examCodeError');
         const errorMessage = document.getElementById('examCodeErrorMessage');
-        
-        // اگر آزمون کد دارد
-        if (examHasCode) {
-            const enteredCode = codeInput.value.trim();
+        const examForm = document.getElementById('examStartForm');
+        const modalId = document.getElementById('examModalId');
+        const codeHidden = document.getElementById('examCodeHidden');
+        const modalElement = document.getElementById('examModal');
+
+        // Check if all required elements exist
+        if (!startBtn || !codeInput || !codeError || !errorMessage || 
+            !examForm || !modalId || !codeHidden || !modalElement) {
+            console.error('Some required elements are missing');
+            return;
+        }
+
+        // شروع آزمون
+        startBtn.addEventListener('click', function() {
+            if (isLoading) return;
             
-            // بررسی خالی بودن کد
-            if (!enteredCode) {
-                errorMessage.textContent = 'لطفاً کد آزمون را وارد کنید';
-                codeError.style.display = 'block';
-                codeInput.classList.add('is-invalid');
-                codeInput.focus();
-                return;
-            }
+            const codeError = document.getElementById('examCodeError');
+            const errorMessage = document.getElementById('examCodeErrorMessage');
             
-            // بررسی کد
-            isLoading = true;
-            this.disabled = true;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال بررسی...';
-            
-            fetch(`/student/exam/verify-code/${currentExamId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({ code: enteredCode })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('خطا در بررسی کد');
-                }
-                return response.json();
-            })
-            .then(data => {
-                isLoading = false;
-                this.disabled = false;
-                this.innerHTML = '<i class="fas fa-play"></i> شروع آزمون';
+            // اگر آزمون کد دارد
+            if (examHasCode) {
+                const enteredCode = codeInput.value.trim();
                 
-                if (data.valid) {
-                    // کد صحیح است - شروع آزمون
-                    document.getElementById('examCodeHidden').value = enteredCode;
-                    startExam();
-                } else {
-                    // کد اشتباه است
-                    errorMessage.textContent = 'کد وارد شده صحیح نیست';
+                // بررسی خالی بودن کد
+                if (!enteredCode) {
+                    errorMessage.textContent = 'لطفاً کد آزمون را وارد کنید';
                     codeError.style.display = 'block';
                     codeInput.classList.add('is-invalid');
-                    codeInput.value = '';
                     codeInput.focus();
+                    return;
                 }
-            })
-            .catch(error => {
-                isLoading = false;
-                this.disabled = false;
-                this.innerHTML = '<i class="fas fa-play"></i> شروع آزمون';
-                console.error('Error:', error);
-                alert('خطا در بررسی کد. لطفاً مجدداً تلاش کنید.');
-            });
-        } else {
-            // بدون کد - شروع مستقیم
-            startExam();
-        }
+                
+                // بررسی کد
+                isLoading = true;
+                this.disabled = true;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال بررسی...';
+                
+                fetch(`/student/exam/verify-code/${currentExamId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ code: enteredCode })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('خطا در بررسی کد');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    isLoading = false;
+                    this.disabled = false;
+                    this.innerHTML = '<i class="fas fa-play"></i> شروع آزمون';
+                    
+                    if (data.valid) {
+                        // کد صحیح است - شروع آزمون
+                        if (codeHidden) {
+                            codeHidden.value = enteredCode;
+                        }
+                        startExam();
+                    } else {
+                        // کد اشتباه است
+                        errorMessage.textContent = 'کد وارد شده صحیح نیست';
+                        codeError.style.display = 'block';
+                        codeInput.classList.add('is-invalid');
+                        codeInput.value = '';
+                        codeInput.focus();
+                    }
+                })
+                .catch(error => {
+                    isLoading = false;
+                    this.disabled = false;
+                    this.innerHTML = '<i class="fas fa-play"></i> شروع آزمون';
+                    console.error('Error:', error);
+                    alert('خطا در بررسی کد. لطفاً مجدداً تلاش کنید.');
+                });
+            } else {
+                // بدون کد - شروع مستقیم
+                startExam();
+            }
+        });
+
+        // پاک کردن خطا هنگام تایپ
+        codeInput.addEventListener('input', function() {
+            this.classList.remove('is-invalid');
+            const errorEl = document.getElementById('examCodeError');
+            if (errorEl) {
+                errorEl.style.display = 'none';
+            }
+        });
+
+        // ارسال با کلید Enter
+        codeInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const btn = document.getElementById('startExamBtn');
+                if (btn) btn.click();
+            }
+        });
+
+        // پاکسازی مودال هنگام بسته شدن
+        modalElement.addEventListener('hidden.bs.modal', function () {
+            const codeInput = document.getElementById('examCodeInput');
+            const codeError = document.getElementById('examCodeError');
+            const startBtn = document.getElementById('startExamBtn');
+            
+            if (codeInput) {
+                codeInput.value = '';
+                codeInput.classList.remove('is-invalid');
+            }
+            if (codeError) {
+                codeError.style.display = 'none';
+            }
+            if (startBtn) {
+                startBtn.disabled = false;
+                startBtn.innerHTML = '<i class="fas fa-play"></i> شروع آزمون';
+            }
+            isLoading = false;
+        });
     });
 
     // ==========================================
@@ -287,7 +361,14 @@
     // ==========================================
     function startExam() {
         const form = document.getElementById('examStartForm');
-        document.getElementById('examModalId').value = currentExamId;
+        const modalId = document.getElementById('examModalId');
+        
+        if (!form || !modalId) {
+            console.error('Form or modal ID element not found');
+            return;
+        }
+        
+        modalId.value = currentExamId;
         
         // بستن مودال
         if (modalInstance) {
@@ -297,35 +378,5 @@
         // ارسال فرم
         form.submit();
     }
-
-    // ==========================================
-    // پاک کردن خطا هنگام تایپ
-    // ==========================================
-    document.getElementById('examCodeInput').addEventListener('input', function() {
-        this.classList.remove('is-invalid');
-        document.getElementById('examCodeError').style.display = 'none';
-    });
-
-    // ==========================================
-    // ارسال با کلید Enter
-    // ==========================================
-    document.getElementById('examCodeInput').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            document.getElementById('startExamBtn').click();
-        }
-    });
-
-    // ==========================================
-    // پاکسازی مودال هنگام بسته شدن
-    // ==========================================
-    document.getElementById('examModal').addEventListener('hidden.bs.modal', function () {
-        document.getElementById('examCodeInput').value = '';
-        document.getElementById('examCodeInput').classList.remove('is-invalid');
-        document.getElementById('examCodeError').style.display = 'none';
-        document.getElementById('startExamBtn').disabled = false;
-        document.getElementById('startExamBtn').innerHTML = '<i class="fas fa-play"></i> شروع آزمون';
-        isLoading = false;
-    });
 </script>
 @endsection

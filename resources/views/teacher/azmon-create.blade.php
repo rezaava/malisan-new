@@ -54,16 +54,37 @@
 
             <input type="hidden" name="id" value="{{ $course->id }}">
 
-            @if(!isset($azmon))
-                <input type="hidden" name="code" value="{{ $code }}">
-            @endif
+            {{-- نحوه دسترسی --}}
+            <div class="form-group {{ $errors->has('access_type') ? 'has-error' : '' }}">
+                <label>نحوه دسترسی به آزمون <span class="required">*</span></label>
+                <select class="form-control" name="access_type" id="accessType" required>
+                    <option value="code" {{ old('access_type', isset($azmon) ? ($azmon->code ? 'code' : 'free') : 'code') == 'code' ? 'selected' : '' }}>
+                        با در اختیار داشتن کد آزمون
+                    </option>
+                    <option value="free" {{ old('access_type', isset($azmon) ? ($azmon->code ? 'code' : 'free') : 'code') == 'free' ? 'selected' : '' }}>
+                        آزاد و بدون نیاز به کد آزمون
+                    </option>
+                </select>
+                @if($errors->has('access_type'))
+                    <span class="error-text"><i class="fas fa-times-circle"></i> {{ $errors->first('access_type') }}</span>
+                @endif
+            </div>
 
             {{-- Code --}}
-            <div class="form-group">
+            <div class="form-group" id="codeFieldGroup">
                 <label>کد آزمون</label>
-                <input type="text" class="form-control" disabled 
-                       value="{{ isset($azmon) ? $azmon->code : $code }}">
-                <div class="help-text">دانشجو با این کد وارد آزمون می‌شود</div>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="examCode" name="code" 
+                           value="{{ isset($azmon) ? $azmon->code : '' }}" 
+                           readonly style="background-color: #f8f9fa; direction: ltr; text-align: center; font-weight: bold; letter-spacing: 5px;">
+                    <button type="button" class="btn btn-outline-primary rounded" id="generateCodeBtn">
+                        <i class="fas fa-sync-alt"></i> تولید مجدد
+                    </button>
+                </div>
+                <div class="help-text">کد ۵ رقمی که دانشجو برای ورود به آزمون نیاز دارد</div>
+                @if($errors->has('code'))
+                    <span class="error-text"><i class="fas fa-times-circle"></i> {{ $errors->first('code') }}</span>
+                @endif
             </div>
 
             {{-- Title --}}
@@ -306,8 +327,54 @@
 <script src="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.js"></script>
 
 <script>
-    // Select2
+    // ==========================================
+    // مدیریت کد آزمون
+    // ==========================================
     document.addEventListener('DOMContentLoaded', function() {
+        const accessType = document.getElementById('accessType');
+        const codeFieldGroup = document.getElementById('codeFieldGroup');
+        const examCodeInput = document.getElementById('examCode');
+        const generateBtn = document.getElementById('generateCodeBtn');
+        
+        // تابع تولید کد تصادفی ۵ رقمی
+        function generateRandomCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 5; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+        
+        // تابع نمایش/مخفی کردن فیلد کد
+        function toggleCodeField() {
+            if (accessType.value === 'code') {
+                codeFieldGroup.style.display = 'block';
+                // اگر کد خالی بود، یک کد جدید تولید کن
+                if (!examCodeInput.value) {
+                    examCodeInput.value = generateRandomCode();
+                }
+            } else {
+                codeFieldGroup.style.display = 'none';
+                examCodeInput.value = ''; // پاک کردن کد
+            }
+        }
+        
+        // اجرا در ابتدا
+        toggleCodeField();
+        
+        // رویداد تغییر
+        accessType.addEventListener('change', function() {
+            toggleCodeField();
+        });
+        
+        // تولید کد جدید
+        generateBtn.addEventListener('click', function() {
+            if (accessType.value === 'code') {
+                examCodeInput.value = generateRandomCode();
+            }
+        });
+
         // Select2
         if (typeof $ !== 'undefined' && $.fn.select2) {
             $('#sessionsSelect').select2({
