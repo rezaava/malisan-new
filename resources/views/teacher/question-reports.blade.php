@@ -8,6 +8,90 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="{{ asset('css/question-reports.css') }}">
 <link rel="stylesheet" href="{{ asset('css/badge.css') }}">
+<style>
+    .filter-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    .filter-stats .stat-box {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 2px solid transparent;
+    }
+    .filter-stats .stat-box:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .filter-stats .stat-box.active {
+        border-color: #1e6f9f;
+        background-color: #e8f0fe;
+    }
+    .filter-stats .stat-box .number {
+        font-size: 24px;
+        font-weight: bold;
+    }
+    .filter-stats .stat-box .label {
+        font-size: 14px;
+        color: #666;
+    }
+    .report-card.hidden {
+        display: none;
+    }
+    .empty-state-reports {
+        text-align: center;
+        padding: 60px 20px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        margin-top: 20px;
+    }
+    .empty-state-reports .empty-icon {
+        font-size: 64px;
+        color: #ccc;
+        display: block;
+        margin-bottom: 16px;
+    }
+    .empty-state-reports h4 {
+        font-size: 20px;
+        color: #333;
+        margin-bottom: 8px;
+    }
+    .empty-state-reports p {
+        color: #888;
+        font-size: 16px;
+    }
+    .toast-message {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #333;
+        color: #fff;
+        padding: 16px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        max-width: 400px;
+        animation: slideIn 0.3s ease;
+    }
+    .toast-message.success { background: #28a745; }
+    .toast-message.error { background: #dc3545; }
+    .toast-message .toast-close {
+        background: none;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 0 4px;
+    }
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+</style>
 @endsection
 
 @section('mohtava')
@@ -344,7 +428,7 @@
             emptyMsg.innerHTML = `
                 <span class="empty-icon"><i class="fas fa-inbox"></i></span>
                 <h4>هیچ گزارشی با این وضعیت وجود ندارد</h4>
-                <p>هیچ گزارشی با وضعیت انتخاب شده یافت نشد.</p>
+                <p>هنوز دانشجویی برای سوالات این درس ایرادی ثبت نکرده است.</p>
             `;
             document.querySelector('.reports-container').appendChild(emptyMsg);
         }

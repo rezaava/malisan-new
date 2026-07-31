@@ -19,6 +19,6 @@
     text-decoration: none;
 }
 </style>
-<a href="#" class="back-action-btn back-btn" onclick="history.back()">
+<a href="{{ route('view.coure',$course->id) }}" class="back-action-btn back-btn">
     <i class="fas fa-arrow-right"></i>
 </a>

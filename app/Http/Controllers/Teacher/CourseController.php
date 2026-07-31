@@ -1068,7 +1068,6 @@ class CourseController extends Controller
         }
     }
 
-
     public function setting($id)
     {
         $course = Course::findOrFail($id);
@@ -1107,14 +1106,18 @@ class CourseController extends Controller
             'max_soal' => 'nullable|numeric|min:0',
             'max_taklif' => 'nullable|numeric|min:0',
             'min_w_khod' => 'nullable|numeric|min:0',
-            'q_num' => 'nullable|numeric|min:0',
+            'q_num' => 'nullable|numeric|min:1',
             'sath_khod' => 'nullable|in:1,2,3',
             'hozor_ghayab_nomre' => 'nullable|numeric|min:0|max:100',
             'miyan_term_nomre' => 'nullable|numeric|min:0|max:100',
             'kar_amali_nomre' => 'nullable|numeric|min:0|max:100',
             'payan_term_nomre' => 'nullable|numeric|min:0|max:100',
             'sath_quiz' => 'nullable|in:1,2,3',
-        ]);
+            'time_limit_khod' => 'nullable|boolean',
+            'time_per_question' => 'nullable|numeric|min:1|max:300',
+            'total_time_limit' => 'nullable|numeric|min:0|max:120',
+            'time_type' => 'nullable|in:per_question,total',
+       ]);
 
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
@@ -1196,19 +1199,51 @@ class CourseController extends Controller
             }
 
             // ==========================================
-            // فیلدهای چک‌باکس (boolean) - اصلاح شده
+            // فیلدهای چک‌باکس (boolean)
             // ==========================================
             
-            // بخش فعالیت‌ها - اینها به درستی کار می‌کنند
+            // بخش فعالیت‌ها
             $setting->soal_last = $request->has('soal_last') ? 1 : 0;
             $setting->gozaresh_last = $request->has('gozaresh_last') ? 1 : 0;
             $setting->taklif_last = $request->has('taklif_last') ? 1 : 0;
             
-            // بخش خودآزمایی - اصلاح: بررسی مقدار واقعی چک‌باکس
-            // چون input hidden با name یکسان وجود دارد، باید مقدار ارسالی را بررسی کنیم
+            // بخش خودآزمایی - چک‌باکس‌ها
             $setting->show_khod = $request->input('show_khod', 0) == 1 ? 1 : 0;
             $setting->natije = $request->input('natije', 0) == 1 ? 1 : 0;
             $setting->show_quiz = $request->input('show_quiz', 0) == 1 ? 1 : 0;
+
+            // ==========================================
+            // تنظیمات محدودیت زمانی خودآزمایی
+            // ==========================================
+            $setting->time_limit_khod = $request->input('time_limit_khod', 0) == 1 ? 1 : 0;
+            
+            if ($setting->time_limit_khod == 1) {
+                $time_type = $request->input('time_type', 'per_question');
+                
+                if ($time_type == 'total') {
+                    // حالت کل آزمون
+                    $total_minutes = $request->input('total_time_limit', 0);
+                    
+                    // اگر کاربر مقدار وارد نکرده باشد، از مقدار پیش‌فرض استفاده کن
+                    if ($total_minutes == 0) {
+                        $q_num = $request->input('q_num', 10);
+                        $total_minutes = round(($q_num * 45) / 60);
+                    }
+                    
+                    $setting->total_time_limit = $total_minutes;
+                    $setting->time_per_question = 0; // غیرفعال
+                } else {
+                    // حالت به ازای هر سوال
+                    $time_per_question = $request->input('time_per_question', 45);
+                    
+                    $setting->time_per_question = $time_per_question;
+                    $setting->total_time_limit = 0; // غیرفعال
+                }
+            } else {
+                // اگر محدودیت زمانی غیرفعال باشد، هر دو را صفر کن
+                $setting->time_per_question = 0;
+                $setting->total_time_limit = 0;
+            }
 
             $setting->save();
 

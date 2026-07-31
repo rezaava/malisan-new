@@ -25,7 +25,8 @@ class Setting extends Model
         'hozor_ghayab_nomre', 'hozor_ghayab_desc',
         'miyan_term_nomre', 'miyan_term_desc',
         'kar_amali_nomre', 'kar_amali_desc',
-        'payan_term_nomre', 'payan_term_desc'
+        'payan_term_nomre', 'payan_term_desc','time_limit_khod',
+        'time_per_question', 'total_time_limit'
     ];
 
     public function course()

@@ -71,6 +71,9 @@ return new class extends Migration
             $table->integer('natije')->nullable()->default(1);
             $table->integer('show_quiz')->nullable()->default(1);
             $table->integer('azmon_nomre')->default(0);
+            $table->boolean('time_limit_khod')->default(0);
+            $table->integer('time_per_question')->default(45);
+            $table->integer('total_time_limit')->default(0);
             $table->timestamps();
         });
     }
