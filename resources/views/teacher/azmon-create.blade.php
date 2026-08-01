@@ -136,9 +136,13 @@
                 <div class="form-group">
                         <label for="type">نوع آزمون<span class="required">*</span></label>
                         <select name="type" id="type" class="form-control">
-                            <option value="periodic">دوره ای</option>
-                            <option value="mid-term">میان ترم</option>
-                            <option value="final">پایان ترم</option>
+                            <option value="periodic" @selected(old('type', $azmon->type) === 'periodic')>
+                                دوره ای</option>
+                            <option value="mid-term" @selected(old('type', $azmon->type) === 'mid-term')>
+                                میان ترم</option>
+                            <option value="final" @selected(old('type', $azmon->type) === 'final')>
+                                پایانی</option>
+                        </select>
                         </select>
                     </div>
             </div>
