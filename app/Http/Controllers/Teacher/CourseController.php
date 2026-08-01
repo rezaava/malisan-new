@@ -603,6 +603,7 @@ class CourseController extends Controller
             'majazi' => 'nullable|url|max:500',
             'aparat' => 'nullable|string|max:500',
             'text' => 'nullable|string',
+            'lesson_plan' => 'nullable|string',
             'active' => 'nullable|in:on,1',
         ], [
             'file.mimes' => 'فرمت فایل باید PDF، Word یا PowerPoint باشد',
@@ -623,6 +624,7 @@ class CourseController extends Controller
             $session = new Session();
             $session->name = $request->name;
             $session->text = $request->text;
+            $session->lesson_plan = $request->lesson_plan;
             $session->number = $request->number;
             $session->course_id = $course->id;
             $session->active = $request->has('active') ? 1 : 0;
@@ -2417,6 +2419,7 @@ class CourseController extends Controller
                     'majazi' => $session->majazi,
                     'aparat' => $session->aparat,
                     'file' => $session->file,
+                    'lesson_plan' => $session->lesson_plan,
                     'active' => $session->active,
                     'course_id' => $session->course_id
                 ]
@@ -2443,6 +2446,7 @@ class CourseController extends Controller
             'majazi' => 'nullable|url|max:500',
             'aparat' => 'nullable|string|max:500',
             'text' => 'nullable|string',
+            'lesson_plan' => 'nullable|string',
             'active' => 'nullable|in:on,1',
         ]);
 
@@ -2477,6 +2481,7 @@ class CourseController extends Controller
             $session->name = $request->name;
             $session->number = $request->number;
             $session->text = $request->text;
+            $session->lesson_plan = $request->lesson_plan;
             $session->link = $this->cleanUrl($request->link);
             $session->majazi = $this->cleanUrl($request->majazi);
             $session->aparat = $request->aparat;

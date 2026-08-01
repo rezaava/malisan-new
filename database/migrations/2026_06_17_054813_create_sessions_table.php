@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->bigInteger('course_id');
             $table->longText('text')->nullable();
+            $table->longText('lesson_plan')->nullable();
             $table->string('file', 191)->nullable();
             $table->text('link')->nullable();
             $table->text('majazi')->nullable();

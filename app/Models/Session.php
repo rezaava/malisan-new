@@ -12,7 +12,7 @@ class Session extends Model
     protected $table = 'sessions';
     protected $fillable = [
         'course_id', 'text', 'file', 'link', 'majazi', 'aparat',
-        'active', 'number', 'name'
+        'active', 'number', 'name', 'lesson_plan'
     ];
 
     public function course()

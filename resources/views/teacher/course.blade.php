@@ -8,6 +8,74 @@
 <link rel="stylesheet" href="{{asset('css/style-course.css')}}">
 <link rel="stylesheet" href="{{asset('css/badge.css')}}">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.css">
+<style>
+    /* استایل‌های اضافی برای طرح درس */
+    .lesson-plan-section {
+        background: #f0f7ff;
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 16px;
+        border-right: 4px solid #1e6f9f;
+    }
+    .lesson-plan-section .plan-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        color: #1e6f9f;
+        margin-bottom: 8px;
+    }
+    .lesson-plan-section .plan-header i {
+        font-size: 18px;
+    }
+    .lesson-plan-section .plan-content {
+        font-size: 14px;
+        line-height: 2;
+        color: #1a2332;
+        padding-right: 10px;
+    }
+    .lesson-plan-section .plan-content ul {
+        padding-right: 20px;
+        margin: 8px 0;
+    }
+    .lesson-plan-section .plan-content ul li {
+        margin-bottom: 4px;
+    }
+    .lesson-plan-badge {
+        background: #e3f2fd;
+        color: #1e6f9f;
+        padding: 2px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        margin-right: 8px;
+    }
+    .content-frame-body .form-divider {
+        border-top: 1px dashed #dce3ec;
+        margin: 16px 0;
+        position: relative;
+    }
+    .content-frame-body .form-divider span {
+        background: #f8fafc;
+        padding: 0 12px;
+        position: absolute;
+        right: 12px;
+        top: -10px;
+        font-size: 12px;
+        color: #6b7a8f;
+    }
+    .session-content-header .info-badges {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .info-badge.plan-badge {
+        background: #e8f5e9;
+        border-color: #4caf50;
+    }
+    .info-badge.plan-badge .badge-icon i {
+        color: #4caf50;
+    }
+</style>
 @endsection
 
 @section('mohtava')
@@ -91,6 +159,7 @@
                        data-title="{{ addslashes($session->name) }}"
                        data-number="جلسه {{ $session->number }}"
                        data-description="{{ addslashes($session->text ?? '') }}"
+                       data-lessonplan="{{ addslashes($session->lesson_plan ?? '') }}"
                        onclick="changeSessionFromData(this)">
                         <span class="session-check"><i class="fas fa-check-circle"></i></span>
                         <span class="session-title">{{ $session->name }}</span>
@@ -158,11 +227,27 @@
                     </button>
                 </div>
             </div>
+
+            {{-- بخش نمایش طرح درس (اگر وجود داشته باشد) --}}
+            <div id="lessonPlanDisplay" style="display: {{ $sessions->isNotEmpty() && $sessions->first()->lesson_plan ? 'block' : 'none' }};">
+                <div class="lesson-plan-section">
+                    <div class="plan-header">
+                        <i class="fas fa-tasks"></i>
+                        <span>طرح درس این جلسه</span>
+                    </div>
+                    <div class="plan-content" id="sessionLessonPlan">
+                        @if($sessions->isNotEmpty() && $sessions->first()->lesson_plan)
+                            {!! $sessions->first()->lesson_plan !!}
+                        @endif
+                    </div>
+                </div>
+            </div>
+
             <div class="session-description">
                 <div class="collapsible-section">
                     <div class="collapsible-header">
                         <i class="fas fa-bell"></i>
-                        طرح درس یا محتوای درس
+                        محتوای درس
                         <i class="fas fa-chevron-down expand-icon"></i>
                     </div>
                     <div class="collapsible-body" id="sessionDescription">
@@ -341,7 +426,30 @@
                 </div>
                 <div class="content-frame-body">
                     
-                    {{-- طرح درس یا محتوای درس (درون فریم) --}}
+                    {{-- ===== طرح درس (جديد) ===== --}}
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-tasks" style="color:#4caf50;"></i>
+                            طرح درس (اختیاری)
+                        </label>
+                        <textarea class="jodit-editor @error('lesson_plan') is-invalid @enderror" 
+                                  name="lesson_plan" id="modalLessonPlan" 
+                                  placeholder="اهداف آموزشی، سرفصل‌ها، فعالیت‌های کلاسی و تکالیف این جلسه را به‌صورت ساختاریافته وارد کنید.">{{ old('lesson_plan') }}</textarea>
+                        <small style="color: #6b7a8f; font-size: 12px; display: block; margin-top: 5px;">
+                            <i class="fas fa-info-circle"></i>
+                            طرح درس شامل اهداف، سرفصل‌ها، فعالیت‌ها و تکالیف جلسه است.
+                        </small>
+                        @error('lesson_plan')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    {{-- خط جداکننده --}}
+                    <div class="form-divider">
+                        <span>محتوای اصلی</span>
+                    </div>
+
+                    {{-- محتوای درس (درون فریم) --}}
                     <div class="form-group">
                         <label>محتوای درس (اختیاری)</label>
                         <textarea class="jodit-editor @error('text') is-invalid @enderror" 
@@ -470,7 +578,9 @@
     let currentPdfUrl = '{{ $sessions->first()->file ?? "" }}';
     let currentSessionTitle = '{{ addslashes($sessions->first()->name ?? "") }}';
     let currentSessionNumber = 'جلسه {{ $sessions->first()->number ?? "" }}';
+    let currentLessonPlan = '{{ addslashes($sessions->first()->lesson_plan ?? "") }}';
     let joditEditor = null;
+    let joditLessonPlan = null;
     let modalMode = 'create';
     let currentEditId = null;
     let reportJoditEditor = null;
@@ -517,6 +627,9 @@
             
             if (joditEditor) {
                 joditEditor.value = '';
+            }
+            if (joditLessonPlan) {
+                joditLessonPlan.value = '';
             }
             
             document.getElementById('modalFileUpload').value = '';
@@ -590,6 +703,9 @@
                     
                     if (joditEditor) {
                         joditEditor.value = session.text || '';
+                    }
+                    if (joditLessonPlan) {
+                        joditLessonPlan.value = session.lesson_plan || '';
                     }
                     
                     if (session.file) {
@@ -689,7 +805,7 @@
     // ==========================================
     // تابع اصلی برای تغییر جلسه
     // ==========================================
-    function changeSession(element, sessionId, pdfUrl, title, number, description) {
+    function changeSession(element, sessionId, pdfUrl, title, number, description, lessonPlan) {
         if (!element) return;
         
         document.querySelectorAll('.session-item').forEach(item => {
@@ -701,6 +817,7 @@
         currentPdfUrl = pdfUrl;
         currentSessionTitle = title;
         currentSessionNumber = number;
+        currentLessonPlan = lessonPlan || '';
         
         const sessionNumberDisplay = document.getElementById('sessionNumberDisplay');
         if (sessionNumberDisplay) {
@@ -714,7 +831,20 @@
             sessionNameDisplay.textContent = title || 'هیچ جلسه‌ای انتخاب نشده است';
         }
 
+        // ===== به‌روزرسانی طرح درس =====
+        const lessonPlanDisplay = document.getElementById('lessonPlanDisplay');
+        const sessionLessonPlan = document.getElementById('sessionLessonPlan');
+        
+        if (lessonPlan && lessonPlan.trim() !== '') {
+            lessonPlanDisplay.style.display = 'block';
+            if (sessionLessonPlan) {
+                sessionLessonPlan.innerHTML = lessonPlan;
+            }
+        } else {
+            lessonPlanDisplay.style.display = 'none';
+        }
 
+        // ===== به‌روزرسانی محتوای درس =====
         const sessionDescription = document.getElementById('sessionDescription');
         if (sessionDescription) {
             if (description && description.trim() !== '') {
@@ -724,12 +854,19 @@
             }
         }
 
+        // ===== به‌روزرسانی PDF =====
         const pdfViewer = document.getElementById('pdfViewer');
         if (pdfViewer) {
             if (pdfUrl) {
-                pdfViewer.outerHTML = `<object id="pdfViewer" data="https://docs.google.com/gview?embedded=true&url=${pdfUrl}" type="application/pdf" width="100%" height="550px">
-                    <object width="100%" height="550" data="https://docs.google.com/gview?embedded=true&url=${pdfUrl}"></object>
-                </object>`;
+                const parent = pdfViewer.parentNode;
+                const newObject = document.createElement('object');
+                newObject.id = 'pdfViewer';
+                newObject.setAttribute('data', pdfUrl);
+                newObject.setAttribute('type', 'application/pdf');
+                newObject.setAttribute('width', '100%');
+                newObject.setAttribute('height', '550px');
+                newObject.innerHTML = `<object width="100%" height="550" data="${pdfUrl}"></object>`;
+                parent.replaceChild(newObject, pdfViewer);
             } else {
                 pdfViewer.innerHTML = `
                     <div class="text-center p-5">
@@ -770,8 +907,9 @@
         const title = element.dataset.title;
         const number = element.dataset.number;
         const description = element.dataset.description;
+        const lessonPlan = element.dataset.lessonplan || '';
         
-        changeSession(element, sessionId, pdfUrl, title, number, description);
+        changeSession(element, sessionId, pdfUrl, title, number, description, lessonPlan);
     }
 
     // ==========================================
@@ -832,6 +970,13 @@
     });
 
     // ==========================================
+    // بارگذاری توضیحات گزارش
+    // ==========================================
+    function loadReportDescription() {
+        // می‌توانید در اینجا توضیحات گزارش را از سرور بارگذاری کنید
+    }
+
+    // ==========================================
     // Event listener برای collapsible
     // ==========================================
     document.addEventListener('DOMContentLoaded', function() {
@@ -853,13 +998,13 @@
         }
 
         // ==========================================
-        // مقداردهی Jodit Editor برای مودال جلسات
+        // مقداردهی Jodit Editor برای محتوای درس (مودال جلسات)
         // ==========================================
         const editorElement = document.getElementById('modalEditor');
         if (editorElement) {
             joditEditor = new Jodit('#modalEditor', {
                 width: '100%',
-                height: 250,
+                height: 200,
                 allowResize: true,
                 allowResizeImages: true,
                 direction: 'rtl',
@@ -966,9 +1111,83 @@
                 fonts: ['Vazir', 'Tahoma', 'Arial', 'Courier New']
             });
             
-            // اگر خطایی در text وجود داشت، مقدار old را در ادیتور تنظیم کنیم
             @if(old('text'))
                 joditEditor.value = '{{ addslashes(old('text')) }}';
+            @endif
+        }
+
+        // ==========================================
+        // مقداردهی Jodit Editor برای طرح درس (جديد)
+        // ==========================================
+        const lessonPlanElement = document.getElementById('modalLessonPlan');
+        if (lessonPlanElement) {
+            joditLessonPlan = new Jodit('#modalLessonPlan', {
+                width: '100%',
+                height: 180,
+                allowResize: true,
+                allowResizeImages: true,
+                direction: 'rtl',
+                language: 'fa',
+                buttons: [
+                    'source', '|',
+                    'undo', 'redo', '|',
+                    'bold', 'italic', 'underline', 'strikethrough', '|',
+                    'font', 'fontsize', 'brush', 'paragraph', '|',
+                    'ul', 'ol', 'outdent', 'indent', '|',
+                    'align', 'hr', 'table', '|',
+                    'link', 'unlink',
+                    {
+                        name: 'uploadImage',
+                        iconURL: 'https://cdn-icons-png.flaticon.com/512/1829/1829586.png',
+                        tooltip: 'آپلود تصویر',
+                        exec: (editor) => {
+                            let input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'image/*';
+                            input.onchange = () => {
+                                let file = input.files[0];
+                                if (!file) return;
+
+                                let formData = new FormData();
+                                formData.append('file', file);
+
+                                fetch('{{ route("upload.image") }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                    },
+                                    body: formData
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.files && data.files[0].url) {
+                                        let img = document.createElement('img');
+                                        img.src = data.files[0].url;
+                                        img.style.maxWidth = '100%';
+                                        editor.s.insertNode(img);
+                                    } else {
+                                        alert('خطا در آپلود تصویر');
+                                    }
+                                })
+                                .catch(err => alert('Upload error: ' + err));
+                            };
+                            input.click();
+                        }
+                    },
+                    '|', 'symbols', 'emoticons', '|',
+                    'print', 'fullsize', 'preview'
+                ],
+                colors: {
+                    text: ['#000000', '#ff0000', '#00ff00', '#0000ff', '#ff00ff', '#00ffff'],
+                    background: ['#ffffff', '#ffff00', '#00ffff', '#ffcc99']
+                },
+                defaultFont: 'Vazir, Tahoma, Arial, sans-serif',
+                defaultFontSize: '14px',
+                fonts: ['Vazir', 'Tahoma', 'Arial', 'Courier New']
+            });
+            
+            @if(old('lesson_plan'))
+                joditLessonPlan.value = '{{ addslashes(old('lesson_plan')) }}';
             @endif
         }
 
@@ -1090,14 +1309,17 @@
         // ==========================================
         // نمایش نام فایل انتخاب شده
         // ==========================================
-        document.getElementById('modalFileUpload').addEventListener('change', function(e) {
-            var fileName = e.target.files[0] ? e.target.files[0].name : 'هیچ فایلی انتخاب نشده است';
-            document.getElementById('modalFileName').textContent = fileName;
-            
-            if (e.target.files[0]) {
-                document.getElementById('modalExistingFile').style.display = 'none';
-            }
-        });
+        const fileInput = document.getElementById('modalFileUpload');
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                var fileName = e.target.files[0] ? e.target.files[0].name : 'هیچ فایلی انتخاب نشده است';
+                document.getElementById('modalFileName').textContent = fileName;
+                
+                if (e.target.files[0]) {
+                    document.getElementById('modalExistingFile').style.display = 'none';
+                }
+            });
+        }
 
         // ==========================================
         // تنظیم دکمه‌ها برای جلسه اول
@@ -1176,5 +1398,4 @@
         });
     });
 </script>
-
 @endsection

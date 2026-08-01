@@ -1287,7 +1287,7 @@
                                                 <span class="option-icon">⏱️</span>
                                                 <div>
                                                     <div class="option-label">به ازای هر سوال</div>
-                                                    <div class="option-desc">تنظیم زمان مجزا برای هر سوال</div>
+                                                    <div class="option-desc">تنظیم زمان برای هر سوال</div>
                                                 </div>
                                             </label>
                                             <label class="time-option {{ $setting->total_time_limit > 0 ? 'selected' : '' }}" id="totalOption">
@@ -1295,7 +1295,7 @@
                                                 <span class="option-icon">⏳</span>
                                                 <div>
                                                     <div class="option-label">کل آزمون</div>
-                                                    <div class="option-desc">تنظیم زمان کل برای کل آزمون</div>
+                                                    <div class="option-desc">تنظیم زمان برای کل آزمون</div>
                                                 </div>
                                             </label>
                                         </div>
@@ -1314,7 +1314,7 @@
                                                 <strong id="total-time-calc">{{ round((($setting->q_num ?? 10) * ($setting->time_per_question > 0 ? $setting->time_per_question : 45)) / 60) }}</strong>
                                                 دقیقه
                                                 <span class="calc-result" id="perQuestionResult">
-                                                    {{ $setting->time_per_question > 0 ? $setting->time_per_question : 45 }} ثانیه / سوال
+                                                    {{ $setting->time_per_question > 0 ? $setting->time_per_question : 45 }} ثانیه X سوال
                                                 </span>
                                             </div>
                                         </div>
@@ -2026,7 +2026,7 @@
             const totalMinutes = Math.round((q_num * timePerQuestion) / 60);
             
             document.getElementById('total-time-calc').textContent = totalMinutes;
-            document.getElementById('perQuestionResult').textContent = timePerQuestion + ' ثانیه / سوال';
+            document.getElementById('perQuestionResult').textContent = timePerQuestion + ' ثانیه X سوال';
             
             // به‌روزرسانی input hidden برای ارسال
             document.getElementById('time_per_question').value = timePerQuestion;
@@ -2087,7 +2087,7 @@
                 updateTimeCalculations();
             });
         });
-        
+
         // رویداد toggle محدودیت زمانی
         const timeToggle = document.getElementById('timeToggle');
         if (timeToggle) {
