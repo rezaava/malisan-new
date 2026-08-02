@@ -1304,9 +1304,9 @@
                                         <div id="per-question-time" class="quiz-time-input {{ ($setting->time_per_question > 0 && $setting->total_time_limit == 0) || ($setting->time_per_question == 0 && $setting->total_time_limit == 0) ? 'visible' : '' }}" style="{{ $setting->time_limit_khod == 1 ? '' : 'opacity: 0.5;' }}">
                                             <div class="input-row">
                                                 <label>زمان هر سوال:</label>
-                                                <input type="number" name="time_per_question" id="time_per_question" value="{{ $setting->time_per_question > 0 ? $setting->time_per_question : 45 }}" class="form-input" min="1" max="300" {{ $setting->time_limit_khod == 1 ? '' : 'disabled' }}>
+                                                <input type="number" name="time_per_question" id="time_per_question" value="{{ $setting->time_per_question > 0 ? $setting->time_per_question : 45 }}" class="form-input" min="10" max="300" {{ $setting->time_limit_khod == 1 ? '' : 'disabled' }}>
                                                 <span class="unit">ثانیه</span>
-                                                <span class="hint">(حداقل ۱، حداکثر ۳۰۰)</span>
+                                                <span class="hint">(حداقل ۱۰، حداکثر ۳۰۰)</span>
                                             </div>
                                             <div class="quiz-time-calc">
                                                 <i class="fas fa-calculator"></i>
@@ -1314,7 +1314,7 @@
                                                 <strong id="total-time-calc">{{ round((($setting->q_num ?? 10) * ($setting->time_per_question > 0 ? $setting->time_per_question : 45)) / 60) }}</strong>
                                                 دقیقه
                                                 <span class="calc-result" id="perQuestionResult">
-                                                    {{ $setting->time_per_question > 0 ? $setting->time_per_question : 45 }} ثانیه X سوال
+                                                    {{ $setting->time_per_question > 0 ? $setting->time_per_question : 45 }} ثانیه {{ $setting->q_num ?? 10 }} X سوال
                                                 </span>
                                             </div>
                                         </div>
@@ -1890,6 +1890,16 @@
         const perQuestionRadio = document.querySelector('input[name="time_type"][value="per_question"]');
         const totalRadio = document.querySelector('input[name="time_type"][value="total"]');
         
+        // تنظیم مقدار پیش‌فرض برای time_per_question اگر کمتر از ۱۰ باشد
+        const perQuestionInputField = document.getElementById('time_per_question');
+        if (perQuestionInputField) {
+            let val = parseInt(perQuestionInputField.value) || 0;
+            if (val < 10) {
+                perQuestionInputField.value = 10;
+            }
+            perQuestionInputField.min = 10;
+        }
+        
         // تنظیم وضعیت اولیه
         if (timeToggle && timeToggle.checked) {
             timeSection.classList.add('active');
@@ -1960,6 +1970,16 @@
         const perQuestionRadio = document.querySelector('input[name="time_type"][value="per_question"]');
         const totalRadio = document.querySelector('input[name="time_type"][value="total"]');
         
+        // اطمینان از مقدار حداقل ۱۰
+        const perQuestionInputField = document.getElementById('time_per_question');
+        if (perQuestionInputField) {
+            let val = parseInt(perQuestionInputField.value) || 0;
+            if (val < 10) {
+                perQuestionInputField.value = 10;
+            }
+            perQuestionInputField.min = 10;
+        }
+        
         if (timeToggle && timeToggle.checked) {
             timeSection.classList.add('active');
             statusBadge.textContent = 'فعال';
@@ -2022,13 +2042,17 @@
         }
         
         if (timeType && timeType.value === 'per_question') {
-            const timePerQuestion = parseInt(document.getElementById('time_per_question').value) || 45;
+            let timePerQuestion = parseInt(document.getElementById('time_per_question').value) || 10;
+            // اطمینان از حداقل ۱۰
+            if (timePerQuestion < 10) {
+                timePerQuestion = 10;
+                document.getElementById('time_per_question').value = 10;
+            }
             const totalMinutes = Math.round((q_num * timePerQuestion) / 60);
             
             document.getElementById('total-time-calc').textContent = totalMinutes;
-            document.getElementById('perQuestionResult').textContent = timePerQuestion + ' ثانیه X سوال';
+            document.getElementById('perQuestionResult').textContent = timePerQuestion + ' ثانیه ' + q_num + ' X سوال';
             
-            // به‌روزرسانی input hidden برای ارسال
             document.getElementById('time_per_question').value = timePerQuestion;
             
         } else if (timeType && timeType.value === 'total') {
@@ -2038,7 +2062,6 @@
             document.getElementById('avg-time-per-question').textContent = avgSeconds;
             document.getElementById('totalResult').textContent = totalMinutes + ' دقیقه';
             
-            // به‌روزرسانی input hidden برای ارسال
             document.getElementById('total_time_limit').value = totalMinutes;
         }
     }

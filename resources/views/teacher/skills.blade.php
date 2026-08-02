@@ -99,20 +99,9 @@
                     <i class="fas fa-share-alt"></i>
                     <span class="action-tooltip">اشتراک گذاری</span>
                 </div>
-                <div class="action-item" data-action="کپی" onclick="copyCourse({{ $cours->id }})">
-                    <i class="fas fa-copy"></i>
-                    <span class="action-tooltip">کپی</span>
-                </div>
                 <div class="action-item" data-action="آرشیو" onclick="event.preventDefault(); event.stopPropagation(); archiveCourse({{ $cours->id }})">
                     <i class="fas fa-archive"></i>
                     <span class="action-tooltip">آرشیو</span>
-                </div>
-                <!-- دکمه تغییر وضعیت دوره‌ای/غیردوره‌ای -->
-                <div class="action-item" 
-                     data-action="دوره‌ای" 
-                     onclick="event.preventDefault(); event.stopPropagation(); toggleDore({{ $cours->id }})">
-                    <i class="fas {{ $isDore ? 'fa-calendar-check' : 'fa-calendar-times' }}"></i>
-                    <span class="action-tooltip">{{ $isDore ? 'غیردوره‌ای' : 'دوره‌ای' }}</span>
                 </div>
                 <!-- دکمه تغییر وضعیت خاتمه یافته/در حال برگزاری (is_ended) -->
                 <div class="action-item" data-action="خاتمه/فعال" onclick="event.preventDefault(); event.stopPropagation(); toggleEnded({{ $cours->id }})">
@@ -156,7 +145,6 @@
         
         <form id="createCourseForm" action="{{ route('skill.store') }}" method="POST">
             @csrf
-            <input type="hidden" name="copy" id="copyCourseId" value="">
             
             <div class="modal-body">
                 <div class="form-group">
@@ -257,7 +245,6 @@
         if (copyId) {
             modalTitle.textContent = 'کپی مهارت';
             submitButtonText.textContent = 'کپی مهارت';
-            document.getElementById('copyCourseId').value = copyId;
             
             showToast('در حال بارگذاری اطلاعات مهارت...', 'info');
             
@@ -290,7 +277,6 @@
             submitButtonText.textContent = 'ایجاد مهارت';
             document.getElementById('name').value = '';
             document.getElementById('majazi').value = '';
-            document.getElementById('copyCourseId').value = '';
             modal.classList.add('active');
         }
     }
@@ -299,7 +285,6 @@
         const modal = document.getElementById('createCourseModal');
         modal.classList.remove('active');
         document.getElementById('createCourseForm').reset();
-        document.getElementById('copyCourseId').value = '';
     }
 
     document.getElementById('createCourseModal')?.addEventListener('click', function(e) {
@@ -431,7 +416,7 @@
     }
 
     function loadArchivedCount() {
-        fetch('/teacher/skills/archived')
+        fetch('/teacher/skill/archived')
             .then(function(response) {
                 return response.json();
             })
@@ -464,7 +449,7 @@
             }
         });
         
-        fetch('/teacher/skills/toggle-archive/' + courseId, {
+        fetch('/teacher/skill/toggle-archive/' + courseId, {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
@@ -499,15 +484,6 @@
         });
     }
 
-    // ============================================
-    // COURSE ACTIONS
-    // ============================================
-    
-    function copyCourse(courseId) {
-        event.preventDefault();
-        event.stopPropagation();
-        openCreateModal(courseId);
-    }
 
     // ============================================
     // ویرایش مهارت - نسخه Ajax
@@ -519,7 +495,7 @@
         
         showToast('در حال دریافت اطلاعات مهارت...', 'info');
         
-        fetch(`/teacher/skills/${courseId}/edit-data`, {
+        fetch(`/teacher/skill/${courseId}/edit-data`, {
             method: 'GET',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
@@ -590,7 +566,7 @@
         submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> در حال ذخیره...';
         submitBtn.disabled = true;
         
-        fetch(`/teacher/skills/${courseId}`, {
+        fetch(`/teacher/skill/${courseId}`, {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
@@ -700,57 +676,6 @@
     // تغییر وضعیت دوره‌ای/غیردوره‌ای (is_dore)
     // ============================================
 
-    function toggleDore(courseId) {
-        event.preventDefault();
-        event.stopPropagation();
-        
-        const targetBtn = event?.currentTarget;
-        if (targetBtn) {
-            targetBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            targetBtn.style.pointerEvents = 'none';
-        }
-        
-        fetch(`/teacher/skills/toggle-dore/${courseId}`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(data => {
-                    throw new Error(data.message || 'خطا در تغییر وضعیت');
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                showToast(data.message, 'success');
-                updateDoreStatus(courseId, data.is_dore);
-            } else {
-                showToast(data.message || 'خطا در تغییر وضعیت', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast(error.message || 'خطا در ارتباط با سرور', 'error');
-        })
-        .finally(() => {
-            if (targetBtn) {
-                const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
-                const isDore = card?.dataset?.isDore === '1';
-                targetBtn.innerHTML = `
-                    <i class="fas ${isDore ? 'fa-calendar-check' : 'fa-calendar-times'}"></i>
-                    <span class="action-tooltip">${isDore ? 'غیردوره‌ای' : 'دوره‌ای'}</span>
-                `;
-                targetBtn.style.pointerEvents = 'auto';
-            }
-        });
-    }
-
     function updateDoreStatus(courseId, isDore) {
         const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
         if (!card) return;
@@ -815,7 +740,7 @@
         const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
         const currentValue = card?.dataset?.isPrivate === '1' ? 0 : 1;
         
-        fetch(`/teacher/skills/toggle-visibility/${courseId}`, {
+        fetch(`/teacher/skill/toggle-visibility/${courseId}`, {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
@@ -912,7 +837,7 @@
         const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
         const currentValue = card?.dataset?.isEnded === '1' ? 0 : 1;
         
-        fetch(`/teacher/skills/toggle-visibility/${courseId}`, {
+        fetch(`/teacher/skill/toggle-visibility/${courseId}`, {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
@@ -1048,7 +973,7 @@
             deleteBtn.style.pointerEvents = 'none';
         }
         
-        fetch(`/teacher/skills/${courseId}`, {
+        fetch(`/teacher/skill/${courseId}`, {
             method: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
@@ -1206,7 +1131,7 @@
             targetBtn.style.pointerEvents = 'none';
         }
         
-        fetch(`/teacher/skills/toggle-archive/${courseId}`, {
+        fetch(`/teacher/skill/toggle-archive/${courseId}`, {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',

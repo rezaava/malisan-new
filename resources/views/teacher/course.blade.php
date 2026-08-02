@@ -456,11 +456,18 @@
                     {{-- لینک درس --}}
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="modalLink">لینک محتوای درس (اختیاری)</label>
+                            <label for="modalLink">
+                                لینک محتوای درس (اختیاری)
+                                <i class="fas fa-question-circle text-muted" 
+                                data-toggle="tooltip" 
+                                data-placement="top" 
+                                title="اگر فایل محتوای جلسه درس را در سایت خود یا فضاهای ابری نظیر گوگل‌درایو یا دراپ‌باکس قرار داده‌اید و دسترسی عمومی به آن‌ها فراهم است، می‌توانید لینک آن‌ را در این قسمت درج کنید تا دانشجو بتواند مستقیماً به آن‌ دسترسی داشته باشد." 
+                                style="margin-right: 6px; cursor: help;"></i>
+                            </label>
                             <input type="text" class="form-control @error('link') is-invalid @enderror" 
-                                   name="link" id="modalLink" 
-                                   value="{{ old('link') }}"
-                                   placeholder="https://example.com">
+                                name="link" id="modalLink" 
+                                value="{{ old('link') }}"
+                                placeholder="https://example.com">
                             @error('link')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
