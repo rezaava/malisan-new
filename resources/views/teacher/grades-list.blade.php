@@ -38,9 +38,9 @@
                         <th>نام و نام خانوادگی</th>
                         <th>نمره ارزشیابی (از ۲۰)</th>
                         <th>میانگین نمره آزمون (از ۲۰)</th>
-                        @if(isset($setting) && $setting->final_nomre > 0)
-                            <th>نمره پایان ترم (از ۲۰)</th>
-                        @endif
+                        @foreach($scoreSections as $key => $section)
+                            <th>{{ $section['title'] }} (از ۲۰)</th>
+                        @endforeach
                     </tr>
                 </thead>
                 <tbody>
@@ -64,25 +64,34 @@
                                     <span class="exam-badge none">—</span>
                                 @endif
                             </td>
-                            @if(isset($setting) && $setting->final_nomre > 0)
+                            @foreach($scoreSections as $key => $section)
                                 <td>
-                                    <input type="hidden" name="ind[]" value="{{ $user->id }}">
-                                    <input
-                                        type="number"
-                                        name="final[{{ $user->id }}]"
-                                        class="grade-input"
-                                        step="0.01"
-                                        min="0"
-                                        max="20"
-                                        placeholder="—"
-                                        value="{{ $user->final ?? '' }}"
-                                    >
+                                    @if($key == 'payan_term_nomre')
+                                        {{-- برای پایان ترم از name=final استفاده می‌کنیم (سازگاری با کنترلر ذخیره‌سازی فعلی) --}}
+                                        <input type="number"
+                                               name="final[{{ $user->id }}]"
+                                               class="grade-input"
+                                               step="0.01"
+                                               min="0"
+                                               max="20"
+                                               placeholder="—"
+                                               value="{{ $user->final ?? '' }}">
+                                    @else
+                                        <input type="number"
+                                               name="scores[{{ $user->id }}][{{ $section['type'] }}]"
+                                               class="grade-input"
+                                               step="0.01"
+                                               min="0"
+                                               max="20"
+                                               placeholder="—"
+                                               value="{{ $user->amali_scores[$section['type']] ?? '' }}">
+                                    @endif
                                 </td>
-                            @endif
+                            @endforeach
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="20" style="text-align:center;padding:40px;color:#6b7a8f;">
+                            <td colspan="{{ 4 + count($scoreSections) }}" style="text-align:center;padding:40px;color:#6b7a8f;">
                                 <i class="fas fa-users" style="font-size:32px;display:block;margin-bottom:12px;color:#d0d7e2;"></i>
                                 هیچ دانشجویی در این درس ثبت‌نام نکرده است
                             </td>
@@ -91,7 +100,7 @@
                 </tbody>
             </table>
 
-            @if(isset($setting) && $setting->final_nomre > 0 && $users->count() > 0)
+            @if(count($scoreSections) > 0 && $users->count() > 0)
                 <div class="action-bar">
                     <button type="submit" class="save-grades-btn">
                         <i class="fas fa-save"></i>
@@ -167,17 +176,17 @@
         if (existingToast) {
             existingToast.remove();
         }
-        
+
         var toast = document.createElement('div');
         toast.className = 'toast-notification';
-        
+
         var colors = {
             success: '#4CAF50',
             error: '#f44336',
             info: '#2196F3',
             warning: '#FF9800'
         };
-        
+
         toast.style.cssText = `
             position: fixed;
             bottom: 30px;
@@ -196,10 +205,10 @@
             max-width: 90%;
             text-align: center;
         `;
-        
+
         toast.textContent = message;
         document.body.appendChild(toast);
-        
+
         setTimeout(function() {
             toast.style.opacity = '0';
             toast.style.transition = 'opacity 0.4s';

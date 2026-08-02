@@ -1544,7 +1544,7 @@ class CourseController extends Controller
             ->get();
 
         $sessions = Session::where('course_id', $course->id)->pluck('id');
-        
+
         if ($course->status == 1) {
             $max_session = $course->max_session;
         } else {
@@ -1557,7 +1557,7 @@ class CourseController extends Controller
         // ==========================================
         // دریافت تمام داده‌های مورد نیاز با یک کوئری
         // ==========================================
-        
+
         // دریافت تمام سوالات کاربران
         $questions = Question::whereIn('session_id', $sessions)
             ->whereIn('user_id', $users->pluck('id'))
@@ -1583,12 +1583,11 @@ class CourseController extends Controller
             ->get()
             ->groupBy('quiz_id');
 
-        // دریافت نمرات پایان ترم
-        $finals = Amali::where('course_id', $course->id)
-            ->where('type', 1)
+        // دریافت تمام نمرات دستی (amali) با انواع مختلف
+        $amalis = Amali::where('course_id', $course->id)
             ->whereIn('user_id', $users->pluck('id'))
             ->get()
-            ->keyBy('user_id');
+            ->groupBy('user_id');
 
         // دریافت تعداد داوری‌ها
         $all_q = Question::whereIn('session_id', $sessions)->pluck('id');
@@ -1604,15 +1603,45 @@ class CourseController extends Controller
             ->get()
             ->groupBy('user_id');
 
+        // ==========================================
+        // ساخت لیست بخش‌های بارم‌بندی که نمره > 0 دارند
+        // ==========================================
+        $scoreSections = [];
+        if ($setting->taklif_seminar_nomre > 0) {
+            $scoreSections['taklif_seminar_nomre'] = ['title' => 'تکلیف/سمینار', 'type' => 2];
+        }
+        if ($setting->azmon_nomre > 0) {
+            $scoreSections['azmon_nomre'] = ['title' => 'آزمون', 'type' => 3];
+        }
+        if ($setting->hozor_ghayab_nomre > 0) {
+            $scoreSections['hozor_ghayab_nomre'] = ['title' => 'حضور و غیاب', 'type' => 4];
+        }
+        if ($setting->miyan_term_nomre > 0) {
+            $scoreSections['miyan_term_nomre'] = ['title' => 'میان ترم', 'type' => 5];
+        }
+        if ($setting->kar_amali_nomre > 0) {
+            $scoreSections['kar_amali_nomre'] = ['title' => 'کار عملی', 'type' => 6];
+        }
+        if ($setting->payan_term_nomre > 0) {
+            $scoreSections['payan_term_nomre'] = ['title' => 'پایان ترم', 'type' => 1];
+        }
+
+        // ==========================================
+        // محاسبه نمرات هر کاربر
+        // ==========================================
         foreach ($users as $user) {
             $userId = $user->id;
 
             // وضعیت آنلاین
             $user->online = $user->isOnline() ? 1 : 0;
 
-            // نمره پایان ترم
-            $final = $finals->get($userId);
-            $user->final = $final ? $final->nomre : null;
+            // نمرات دستی (amali) برای این کاربر
+            $userAmali = $amalis->get($userId, collect())->keyBy('type');
+            $user->amali_scores = $userAmali->mapWithKeys(function ($item) {
+                return [$item->type => $item->nomre];
+            })->toArray();
+            // نمره پایان ترم (type = 1) را به صورت جداگانه برای استفاده در view
+            $user->final = $user->amali_scores[1] ?? null;
 
             // ==========================================
             // سوالات این کاربر
@@ -1678,8 +1707,8 @@ class CourseController extends Controller
             $mostamer = ($pishraft + $kelasi) * 12 / 100;
             if ($mostamer > 12) $mostamer = 12;
 
-            $user->mostamar_nomre = $setting->mostamar_nomre > 0 
-                ? round($mostamer * 20 / $setting->mostamar_nomre, 2) 
+            $user->mostamar_nomre = $setting->mostamar_nomre > 0
+                ? round($mostamer * 20 / $setting->mostamar_nomre, 2)
                 : 0;
 
             // ==========================================
@@ -1711,7 +1740,7 @@ class CourseController extends Controller
                 : null;
         }
 
-        return view('teacher.grades-list', compact('users', 'course', 'setting'))->with([
+        return view('teacher.grades-list', compact('users', 'course', 'setting', 'scoreSections'))->with([
             'pageTitle' => 'نمرات دانشجویان',
             'pageName' => 'نمرات دانشجویان',
             'pageDescription' => 'مدرس گرامی! نمرات دانشجویان به شرح زیر می‌باشد',
@@ -1727,41 +1756,64 @@ class CourseController extends Controller
         $setting = Setting::where('course_id', $course->id)->first();
 
         try {
-            foreach ($request->ind as $userId) {
-                // نمره پایان ترم
-                if ($setting->final_nomre > 0 && isset($request->final[$userId])) {
-                    $final = Amali::where('course_id', $courseId)
-                        ->where('user_id', $userId)
-                        ->where('type', 1)
-                        ->first();
+            // استخراج شناسه‌های کاربران از کلیدهای آرایه‌های scores و final
+            $userIds = [];
+            if ($request->has('scores')) {
+                $userIds = array_keys($request->scores);
+            }
+            if ($request->has('final')) {
+                $userIds = array_unique(array_merge($userIds, array_keys($request->final)));
+            }
 
-                    if (!$final) {
-                        $final = new Amali();
+            if (empty($userIds)) {
+                return redirect()->back()->with('error', 'هیچ نمره‌ای برای ذخیره وجود ندارد');
+            }
+
+            foreach ($userIds as $userId) {
+                // پردازش نمرات بخش‌های مختلف (از آرایه scores)
+                if ($request->has('scores') && isset($request->scores[$userId])) {
+                    foreach ($request->scores[$userId] as $type => $nomre) {
+                        // اگر نمره خالی یا null بود، رد شو
+                        if ($nomre === '' || $nomre === null) {
+                            continue;
+                        }
+                        $type = (int)$type;
+                        // ذخیره یا به‌روزرسانی
+                        $amali = Amali::where('course_id', $courseId)
+                            ->where('user_id', $userId)
+                            ->where('type', $type)
+                            ->first();
+
+                        if (!$amali) {
+                            $amali = new Amali();
+                            $amali->course_id = $courseId;
+                            $amali->user_id = $userId;
+                            $amali->type = $type;
+                        }
+                        $amali->nomre = $nomre;
+                        $amali->save();
                     }
-
-                    $final->course_id = $courseId;
-                    $final->user_id = $userId;
-                    $final->type = 1;
-                    $final->nomre = $request->final[$userId];
-                    $final->save();
                 }
 
-                // نمره عملی (اگر نیاز باشد)
-                if ($setting->amali_nomre > 0 && isset($request->amali[$userId])) {
-                    $amali = Amali::where('course_id', $courseId)
-                        ->where('user_id', $userId)
-                        ->where('type', 2)
-                        ->first();
+                // پردازش نمره پایان‌ترم (از فیلد final) برای سازگاری با نسخه قبلی
+                if ($request->has('final') && isset($request->final[$userId])) {
+                    $nomre = $request->final[$userId];
+                    if ($nomre !== '' && $nomre !== null) {
+                        $type = 1; // پایان ترم
+                        $amali = Amali::where('course_id', $courseId)
+                            ->where('user_id', $userId)
+                            ->where('type', $type)
+                            ->first();
 
-                    if (!$amali) {
-                        $amali = new Amali();
+                        if (!$amali) {
+                            $amali = new Amali();
+                            $amali->course_id = $courseId;
+                            $amali->user_id = $userId;
+                            $amali->type = $type;
+                        }
+                        $amali->nomre = $nomre;
+                        $amali->save();
                     }
-
-                    $amali->course_id = $courseId;
-                    $amali->user_id = $userId;
-                    $amali->type = 2;
-                    $amali->nomre = $request->amali[$userId];
-                    $amali->save();
                 }
             }
 
