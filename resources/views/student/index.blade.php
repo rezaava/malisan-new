@@ -30,7 +30,7 @@
         <div class="col-md-4 col-sm-6">
             <div class="card-dash shadow">
                 <div class="card-icon"><i class="fas fa-layer-group"></i></div>
-                <div class="card-title">دوره‌ها</div>
+                <div class="card-title">دوره های مهارتی</div>
                 <div class="card-count">{{ $course_count ?? 0 }}</div>
                 <div class="card-text-sm">دوره در حال برگزاری</div>
             </div>
@@ -38,9 +38,9 @@
         <div class="col-md-4 col-sm-12">
             <div class="card-dash shadow">
                 <div class="card-icon"><i class="fas fa-clipboard-list"></i></div>
-                <div class="card-title">آزمون‌ها</div>
+                <div class="card-title">جعبه های یادگیری</div>
                 <div class="card-count">{{ $active_exam_count ?? 0 }}</div>
-                <div class="card-text-sm">آزمون فعال</div>
+                <div class="card-text-sm">جعبه های فعال</div>
             </div>
         </div>
     </div>
@@ -50,7 +50,7 @@
 @if(isset($activeExams) && $activeExams->count() > 0)
     <div class="active-exams-section">
         <div class="section-header">
-            <h4><i class="fas fa-circle"></i> آزمون‌های فعال</h4>
+            <h4><i class="fas fa-circle"></i> جعبه‌های فعال</h4>
             <span class="badge-count">{{ $activeExams->count() }}</span>
         </div>
         @foreach($activeExams->take(5) as $exam)
@@ -77,7 +77,7 @@
     <div class="modal-dialog modal-dialog-centered modal-md">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="examModalTitle">آزمون</h5>
+                <h5 class="modal-title" id="examModalTitle">جعبه</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">

@@ -109,6 +109,7 @@ class TeacherSiteController extends Controller
         
         $courses = $user->courses()
             ->where('archieve', 0)
+            ->where('is_skill', 0)
             ->wherePivot('role_id', $teacherRole->id)
             ->withCount(['users as pending_requests_count' => function($query) {
                 $query->where('course_user.status', 2); // Use the pivot table name directly

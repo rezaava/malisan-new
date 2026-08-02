@@ -417,6 +417,23 @@
                     <span class="text-danger">{{ $message }}</span>
                 @enderror
             </div>
+            
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-tasks" style="color:#4caf50;"></i>
+                    طرح درس
+                </label>
+                <textarea class="jodit-editor @error('lesson_plan') is-invalid @enderror" 
+                          name="lesson_plan" id="modalLessonPlan" 
+                          placeholder="مختصری از اهداف آموزشی این جلسه و مطالبی که دانشجو خواهد آموخت یا پس از مطالعهٔ درس قادر به توضیح آن‌ها خواهد بود، به‌صورت فهرست‌وار بیان کنید.">{{ old('lesson_plan') }}</textarea>
+                <small style="color: #6b7a8f; font-size: 12px; display: block; margin-top: 5px;">
+                    <i class="fas fa-info-circle"></i>
+                    طرح درس شامل اهداف، سرفصل‌ها، فعالیت‌ها و تکالیف جلسه است.
+                </small>
+                @error('lesson_plan')
+                    <span class="text-danger">{{ $message }}</span>
+                @enderror
+            </div>
 
             {{-- ===== فریم محتوای آموزشی ===== --}}
             <div class="content-frame">
@@ -425,36 +442,12 @@
                     محتوای آموزشی جلسه (انتخاب حداقل یک گزینه الزامی است.)
                 </div>
                 <div class="content-frame-body">
-                    
-                    {{-- ===== طرح درس (جديد) ===== --}}
-                    <div class="form-group">
-                        <label>
-                            <i class="fas fa-tasks" style="color:#4caf50;"></i>
-                            طرح درس (اختیاری)
-                        </label>
-                        <textarea class="jodit-editor @error('lesson_plan') is-invalid @enderror" 
-                                  name="lesson_plan" id="modalLessonPlan" 
-                                  placeholder="اهداف آموزشی، سرفصل‌ها، فعالیت‌های کلاسی و تکالیف این جلسه را به‌صورت ساختاریافته وارد کنید.">{{ old('lesson_plan') }}</textarea>
-                        <small style="color: #6b7a8f; font-size: 12px; display: block; margin-top: 5px;">
-                            <i class="fas fa-info-circle"></i>
-                            طرح درس شامل اهداف، سرفصل‌ها، فعالیت‌ها و تکالیف جلسه است.
-                        </small>
-                        @error('lesson_plan')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    {{-- خط جداکننده --}}
-                    <div class="form-divider">
-                        <span>محتوای اصلی</span>
-                    </div>
-
                     {{-- محتوای درس (درون فریم) --}}
                     <div class="form-group">
                         <label>محتوای درس (اختیاری)</label>
                         <textarea class="jodit-editor @error('text') is-invalid @enderror" 
                                   name="text" id="modalEditor" 
-                                  placeholder="مختصری از اهداف آموزشی این جلسه و مطالبی که دانشجو خواهد آموخت یا قادر به توضیح آن‌ها خواهد بود، به‌صورت فهرست‌وار بیان کنید. همچنین می‌توانید تصاویر مرتبط با درس را درج کنید.">{{ old('text') }}</textarea>
+                                  placeholder="محتوای آموزشی خود را می‌توانید به‌صورت متنی در این بخش بنویسید یا کپی کنید. در صورت وجود عکس یا نمودار، می‌توانید آن‌ها را نیز در همین بخش و درون متن قرار دهید.">{{ old('text') }}</textarea>
                         @error('text')
                             <span class="text-danger">{{ $message }}</span>
                         @enderror

@@ -1,0 +1,374 @@
+<?php
+
+namespace App\Http\Controllers\Student;
+
+use App\Http\Controllers\Controller;
+use App\Models\Course;
+use App\Models\CourseUser;
+use App\Models\Discussion;
+use App\Models\Exercise;
+use App\Models\Question;
+use App\Models\Role;
+use App\Models\Scoring;
+use App\Models\session;
+use App\Models\Setting;
+use App\Models\User;
+use Auth;
+use Carbon\Carbon;
+use DB;
+use Illuminate\Http\Request;
+use Validator;
+
+class StudentSkillController extends Controller
+{
+    public function courses()
+    {
+        $user = Auth::user();
+
+        $skills = $user->courses()->where('courses.archieve', 0)->where('courses.is_skill', 1)->get();
+
+        return view('student.skills', compact('skills'));
+    }
+    public function view($id)
+    {
+        $course = Course::with(['sessions' => function ($query) {
+            $query->orderBy('number', 'desc');
+        }, 'settings'])->where('is_skill', 1)->findOrFail($id);
+
+        $user = Auth::user();
+        $studentRole = Role::where('name', 'student')->first();
+        $teacherRole = Role::where('name', 'teacher')->first();
+        
+        // بررسی اینکه آیا کاربر نقش دانشجو دارد یا خیر
+        $isStudent = $user->hasRole('student');
+        $setting = $course->settings;
+
+        $courseUser = CourseUser::where('course_id', $course->id)
+            ->where('user_id', $user->id)
+            ->first();
+        
+        $member = ($courseUser) ? 1 : 0;
+        $paid = ($course->price == 0 || ($courseUser && $courseUser->paid == 1)) ? 1 : 0;
+
+        $sessionIdsForJudgment = Session::where('course_id', $id)->whereHas('course', function($query) {
+            $query->where('is_skill', 1);
+        })->pluck('id');
+        $pendingQuestionsCount = Question::whereNull('status')
+            ->whereIn('session_id', $sessionIdsForJudgment)
+            ->count();
+        $pendingDiscussionsCount = Discussion::whereNull('status')
+            ->whereIn('session_id', $sessionIdsForJudgment)
+            ->count();
+        $isJudment = ($pendingQuestionsCount > 0 || $pendingDiscussionsCount > 0);
+
+        if ($isStudent) {
+            // ===== بررسی active بودن کل دوره =====
+            if ($course->active == 1) {
+                // فقط جلسات فعال رو بگیر
+                $sessions = $course->sessions->where('active', 1);
+                
+                if ($sessions->isEmpty()) {
+                    $sessions = collect();
+                } else {
+                    $totalSessionsCount = $sessions->count();
+
+                    // فیلتر بر اساس عضویت
+                    if ($member == 1 && $course->private == 1) {
+                        $now = Carbon::now();
+                        $time = Carbon::parse($courseUser->created_at);
+                        $diffInDays = $time->diffInDays($now);
+                        $availableCount = $totalSessionsCount - floor($diffInDays / $course->period) - 1;
+
+                        if ($availableCount > 0) {
+                            $filteredSessions = collect();
+                            $index = 0;
+                            foreach ($sessions as $session) {
+                                if ($index < $availableCount) {
+                                    $filteredSessions->push($session);
+                                }
+                                $index++;
+                            }
+                            $sessions = $filteredSessions;
+                        } else {
+                            $sessions = collect();
+                        }
+                    }
+
+                    // فیلتر برای کاربر غیرعضو
+                    if ($member == 0) {
+                        $sessions = $sessions->filter(function ($session) {
+                            return $session->number == 1;
+                        });
+                    } 
+                    // فیلتر برای کاربری که پرداخت نکرده
+                    elseif ($paid == 0) {
+                        $sessions = $sessions->filter(function ($session) {
+                            return $session->number <= 4;
+                        });
+                    }
+                }
+            } else {
+                // اگر دوره غیرفعال بود، هیچ جلسه‌ای نشون نده
+                $sessions = collect();
+            }
+        } else {
+            // برای استاد همه جلسات رو نشون بده (حتی غیرفعال)
+            $sessions = $course->sessions;
+            
+            if ($sessions->isEmpty()) {
+                $sessions = collect();
+            }
+        }
+
+        $khodazmaii = 0;
+        
+        if (!$sessions->isEmpty() && $setting) {
+            $sessionIds = $sessions->pluck('id');
+            
+            $statusFilter = match ($setting->sath_khod) {
+                1 => [1],
+                2 => [1, 2],
+                3 => [2],
+                default => null,
+            };
+
+            if ($statusFilter) {
+                $questionCount = Question::whereIn('session_id', $sessionIds)
+                    ->whereIn('status', $statusFilter)
+                    ->count();
+                
+                $khodazmaii = ($questionCount >= $setting->q_num) ? 1 : 0;
+            }
+        }
+
+        // ===== اضافه کردن وضعیت دسترسی به هر جلسه =====
+        if (!$sessions->isEmpty()) {
+            // پیدا کردن آخرین جلسه
+            $lastSession = Session::where('course_id', $course->id)
+                ->whereHas('course', function($query) {
+                    $query->where('is_skill', 1);
+                })
+                ->orderBy('id', 'desc')
+                ->first();
+            
+            // دریافت تمام exerciseها برای این دوره
+            $exerciseIds = Exercise::whereIn('session_id', $sessions->pluck('id'))
+                ->pluck('session_id')
+                ->toArray();
+            
+            foreach ($sessions as $index => $session) {
+                $session['ex_count'] = Exercise::where('session_id', $session->id)->count();
+                
+                // تنظیم وضعیت‌های پیش‌فرض
+                $session['taklif_last'] = 1;
+                $session['gozaresh_last'] = 1;
+                $session['soal_last'] = 1;
+                
+                // تنظیم وضعیت‌های دسترسی برای دکمه‌ها - پیش‌فرض همه فعال
+                $session['can_question'] = true;
+                $session['can_homework'] = true;
+                $session['can_report'] = true;
+
+                $hasExercise = in_array($session->id, $exerciseIds);
+                if (!$hasExercise) {
+                    $session['can_homework'] = false;
+                }
+
+                // اگر تنظیمات وجود دارد و محدودیت فعال است
+                if ($setting) {
+                    // محدودیت طرح سوال به آخرین جلسه
+                    if ($setting->soal_last == 1) {
+                        if (!$lastSession || $session->id != $lastSession->id) {
+                            $session['can_question'] = false;
+                            $session['soal_last'] = 0;
+                        }
+                    }
+                    
+                    // محدودیت ارسال تکلیف به آخرین جلسه
+                    // فقط اگر تکلیف وجود داشته باشد و محدودیت فعال باشد
+                    if ($setting->taklif_last == 1 && $hasExercise) {
+                        if (!$lastSession || $session->id != $lastSession->id) {
+                            $session['can_homework'] = false;
+                            $session['taklif_last'] = 0;
+                        }
+                    }
+                    
+                    // محدودیت ارسال گزارش به آخرین جلسه
+                    if ($setting->gozaresh_last == 1) {
+                        if (!$lastSession || $session->id != $lastSession->id) {
+                            $session['can_report'] = false;
+                            $session['gozaresh_last'] = 0;
+                        }
+                    }
+                }
+            }
+        }
+
+        $course['sessions'] = $course->sessions()->whereHas('course', function($query) {
+            $query->where('is_skill', 1);
+        })->count();
+        $course['count'] = ($studentRole) 
+            ? $course->users()->where('role_id', $studentRole->id)->whereHas('course', function($query) {
+                $query->where('is_skill', 1);
+            })->count() 
+            : 0;
+
+        if ($teacherRole) {
+            $teacher = $course->users()->where('role_id', $teacherRole->id)->pluck('user_id')->first();
+            $course['user'] = $teacher ? User::findOrFail($teacher) : null;
+        }
+
+        $course['students'] = ($studentRole)
+            ? $course->users()->where('role_id', $studentRole->id)->take(5)->get()
+            : collect();
+
+        return view('student.course', compact(
+            'setting',
+            'khodazmaii',
+            'sessions',
+            'course',
+            'isJudment',
+            'member',
+            'paid'
+        ))->with([
+            'student' => (int) $isStudent,
+        ]);
+    }
+    
+    public function join(Request $request)
+    {
+        // اعتبارسنجی
+        $validator = Validator::make($request->all(), [
+            'code' => 'required|string|max:10',
+        ], [
+            'code.required' => 'لطفاً کد مهارت را وارد کنید',
+            'code.max' => 'کد مهارت نباید بیشتر از ۱۰ کاراکتر باشد',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            $user = Auth::user();
+            $studentRole = Role::where('name', 'student')->first();
+
+            // پیدا کردن دوره با کد - فقط دوره‌های مهارتی
+            $course = Course::where('code', $request->code)
+                ->where('is_skill', 1)
+                ->first();
+
+            if (!$course) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'کد درس وارد شده نامعتبر است'
+                ], 404);
+            }
+
+            // بررسی آرشیو بودن دوره
+            if ($course->archive == 1) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'این دوره آرشیو شده و امکان عضویت در آن وجود ندارد'
+                ], 403);
+            }
+
+            // بررسی تکراری بودن عضویت
+            $existingMembership = $user->courses()->where('course_id', $course->id)->first();
+            if ($existingMembership) {
+                // اگر کاربر قبلاً درخواست داده و وضعیت pending است
+                if ($existingMembership->pivot->status == 2) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'درخواست شما قبلاً ثبت شده و در انتظار تأیید است'
+                    ], 409);
+                }
+                // اگر کاربر قبلاً عضو شده است
+                return response()->json([
+                    'success' => false,
+                    'message' => 'شما قبلاً در این کلاس عضو هستید'
+                ], 409);
+            }
+
+            // بررسی خصوصی بودن دوره
+            if ($course->private == 1) {
+                // برای دوره‌های خصوصی، عضویت با وضعیت pending (2) ثبت می‌شود
+                $status = 2; // pending request
+                
+                // عضویت دانشجو در دوره با وضعیت pending
+                $course->users()->attach($user, [
+                    'role_id' => $studentRole->id,
+                    'status' => $status
+                ]);
+
+                DB::commit();
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'درخواست شما برای استاد درس ارسال شد. لطفاً تا زمان تأیید ایشان صبر کنید. به محض تأیید، دسترسی شما به درس فعال خواهد شد.',
+                    'course_name' => $course->name,
+                    'status' => 'pending'
+                ]);
+            }
+
+            // برای دوره‌های عمومی، عضویت با وضعیت approved (1) ثبت می‌شود
+            $status = 1; // approved
+
+            // عضویت دانشجو در دوره
+            $course->users()->attach($user, [
+                'role_id' => $studentRole->id,
+                'status' => $status
+            ]);
+
+            // ایجاد Scoring برای دانشجو با مقادیر پیش‌فرض ۰
+            $scoring = Scoring::create([
+                'course_id' => $course->id,
+                'user_id' => $user->id,
+                'q_1' => 0,
+                'q_2' => 0,
+                'q_3' => 0,
+                'q_4' => 0,
+                'd_1' => 0,
+                'd_2' => 0,
+                'd_3' => 0,
+                'd_4' => 0,
+                'e_1' => 0,
+                'e_2' => 0,
+                'e_3' => 0,
+                'e_4' => 0,
+                's_1' => 0,
+                's_2' => 0,
+                's_3' => 0,
+                's_4' => 0,
+            ]);
+
+            // اطمینان از وجود Setting برای دوره (اگر وجود نداشت)
+            Setting::firstOrCreate(
+                ['course_id' => $course->id],
+                ['course_id' => $course->id]
+            );
+
+            DB::commit();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'عضویت با موفقیت انجام شد',
+                'course_name' => $course->name,
+                'status' => 'approved',
+                'redirect' => route('view.skill.St', $course->id)
+            ]);
+            
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            \Log::error('Join course failed: ' . $exception->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'خطایی در سرور رخ داده است: ' . $exception->getMessage()
+            ], 500);
+        }
+    }
+}
