@@ -82,11 +82,11 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
 
     Route::prefix('/courses')->group(function () {
         Route::post('/create', [CourseController::class, 'storeCourse'])->name('courses.store');
-
         Route::post('/edit-setting', [CourseController::class, 'editSetting'])->name('update.setting.courses');
         Route::post('/toggle-visibility/{id}', [CourseController::class, 'toggleVisibility'])->name('courses.toggle.visibility');
         Route::post('/toggle-dore/{id}', [CourseController::class, 'toggleDore'])->name('courses.toggle.dore');
 
+        // جلسات
         Route::prefix('/sessions')->group(function () {
             Route::get('/create/{id}', [CourseController::class, 'create'])->name('sessions.create');
             Route::post('/store/{id}', [CourseController::class, 'store'])->name('sessions.store');
@@ -97,58 +97,53 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
             Route::post('/delete-file/{id}', [CourseController::class, 'deleteSessionFile'])->name('sessions.delete.file');
         });
 
+        // تنظیمات
         Route::prefix('/settings')->group(function () {
             Route::post('/update-report-desc', [CourseController::class, 'updateReportDescription'])->name('teacher.settings.update_report_desc');
             Route::get('/get-report-desc', [CourseController::class, 'getReportDescription'])->name('teacher.settings.get_report_desc');
         });
-        
-        // مسیر ویرایش (با PUT)
-        Route::post('/{id}', [CourseController::class, 'update'])->name('courses.update');
-        
-        // مسیر حذف (با DELETE)
-        Route::delete('/{id}', [CourseController::class, 'destroy'])->name('courses.destroy');
 
+        // عملیات اصلی
+        Route::post('/{id}', [CourseController::class, 'update'])->name('courses.update');
+        Route::delete('/{id}', [CourseController::class, 'destroy'])->name('courses.destroy');
+        
         Route::get('/', [TeacherSiteController::class, 'courses'])->name('courses');
         Route::get('/copy/{id}', [CourseController::class, 'getCopyData'])->name('courses.copy.data');
         Route::get('/{id}/edit-data', [CourseController::class, 'getEditData'])->name('courses.edit.data');
         Route::get('/view/{id}', [CourseController::class, 'view'])->name('view.coure');
-
-        Route::get('/sessions/create/{id}', [CourseController::class, 'create'])->name('sessions.create');
-        Route::post('/sessions/store/{id}', [CourseController::class, 'store'])->name('sessions.store');
-
         Route::post('/toggle-status/{id}', [CourseController::class, 'toggleStatus'])->name('courses.toggle.status');
         Route::post('/toggle-archive/{id}', [CourseController::class, 'toggleArchive'])->name('courses.toggle.archive');
         Route::get('/archived', [CourseController::class, 'archivedCourses'])->name('courses.archived');
 
+        // دانشجویان
         Route::get('/student-profile/{id}', [CourseController::class, 'studentProfile'])->name('studentProfile');
         Route::post('/student-profile/{id}', [CourseController::class, 'updateStudentProfile'])->name('studentProfile.update');
-
         Route::get('/students-list/{id}', [CourseController::class, 'studentsList'])->name('studentsList');
         Route::post('/students/remove/{userId}/{courseId}', [CourseController::class, 'destroyUser'])->name('students.remove');
         Route::post('/students/restore/{userId}/{courseId}', [CourseController::class, 'restoreUser'])->name('students.restore');
         Route::get('/students/removed/{courseId}', [CourseController::class, 'removedStudents'])->name('students.removed');
-
         Route::get('/setting/{id}', [CourseController::class, 'setting'])->name('courses.setting');
 
+        // صفات و رویدادها
         Route::get('/adjectives/{studentId}', [StudentAdjectiveController::class, 'index']);
         Route::post('/adjectives', [StudentAdjectiveController::class, 'store']);
-
         Route::get('/events/{studentId}', [StudentEventController::class, 'index']);
         Route::post('/events', [StudentEventController::class, 'store']);
 
+        // ارزیابی و نمرات
         Route::get('/student-evaluation/{courseId}/{userId}', [CourseController::class, 'studentEvaluation'])->name('studentEvaluation');
-        
         Route::get('/grades-list/{id}', [CourseController::class, 'gradesList'])->name('gradesList');
         Route::post('/grades-save/{id}', [CourseController::class, 'saveGrades'])->name('grades.save');
 
+        // فعالیت‌ها
         Route::get('/activities/{id}', [CourseController::class, 'allProgress'])->name('activities');
         Route::post('/activities-range/{id}', [CourseController::class, 'getStudentActivitiesRange'])->name('get.student.activities.range');
 
-        // ===== گزارش‌های دانشجویان =====
+        // گزارش‌ها
         Route::get('/reports-list/{course_id}', [CourseController::class, 'reportsList'])->name('teacher.reports.list');
         Route::get('/report/{id}', [CourseController::class, 'getReportDetail'])->name('teacher.report.detail');
 
-        // ===== فعالیت‌های دانشجویان =====
+        // فعالیت‌های دانشجویان
         Route::get('/student-activities/{course}', [CourseController::class, 'studentActivities'])->name('studentActivities');
         Route::get('/student-questions/{id}', [CourseController::class, 'studentQuestions'])->name('studentQuestions');
         Route::get('/student-reports/{id}', [CourseController::class, 'studentReports'])->name('studentReports');
@@ -156,7 +151,7 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         Route::get('/student-self-tests/{id}', [CourseController::class, 'studentSelfTests'])->name('studentSelfTests');
         Route::get('/student-official-exams/{id}', [CourseController::class, 'studentOfficialExams'])->name('studentOfficialExams');
 
-        // ===== بانک سوالات =====
+        // بانک سوالات
         Route::prefix('/bank')->group(function () {
             Route::get('/{id}', [CourseController::class, 'questionBank'])->name('question.bank');
             Route::post('/star/{id}', [CourseController::class, 'toggleStar'])->name('question.star');
@@ -164,7 +159,7 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
             Route::put('/update/{id}', [CourseController::class, 'updateQuestion'])->name('question.update');
         });
 
-        // ===== نظرسنجی =====
+        // نظرسنجی
         Route::prefix('/survey')->group(function () {
             Route::get('/{id}', [SurveyController::class, 'index'])->name('surveys.index');
             Route::post('/store', [SurveyController::class, 'store'])->name('survey.store');
@@ -175,7 +170,7 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
             Route::post('/update/{id}', [SurveyController::class, 'update'])->name('survey.update');
         });
 
-        // ===== آزمون‌ها =====
+        // آزمون‌ها
         Route::prefix('/azmon')->group(function () {
             Route::get('/list/{id}', [AzmonController::class, 'list'])->name('azmon.list');
             Route::get('/create', [AzmonController::class, 'create'])->name('azmon.create');
@@ -187,7 +182,7 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
             Route::get('/stats/{id}', [AzmonController::class, 'azmonStats'])->name('azmon.stats');
         });
 
-        // ===== تمرین (Exercise) - استاد =====
+        // تمرین‌ها
         Route::prefix('/exercises')->group(function () {
             Route::get('/show/{session_id}', [ExerciseController::class, 'show'])->name('exercise.show');
             Route::post('/create', [ExerciseController::class, 'create'])->name('exercise.create');
@@ -203,139 +198,134 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
             Route::post('/score/{answerId}', [CourseController::class, 'scoreExerciseAnswer'])->name('exercises.score');
         });
 
+        // درخواست‌ها
         Route::get('/pending-requests/{courseId}', [TeacherSiteController::class, 'pendingRequests'])->name('courses.pending.requests');
         Route::post('/approve-request/{courseId}/{userId}', [TeacherSiteController::class, 'approveRequest'])->name('courses.approve.request');
         Route::post('/reject-request/{courseId}/{userId}', [TeacherSiteController::class, 'rejectRequest'])->name('courses.reject.request');
     });
 
+    /*
+    |--------------------------------------------------------------------------
+    | روت‌های دوره‌های مهارتی (Skill) - فقط روت‌های اختصاصی
+    |--------------------------------------------------------------------------
+    */
     Route::prefix('/skill')->group(function () {
+        // روت‌های اختصاصی Skill که با Courses تفاوت دارند
         Route::post('/create', [SkillController::class, 'storeCourse'])->name('skill.store');
-
         Route::post('/edit-setting', [SkillController::class, 'editSetting'])->name('update.setting.skill');
         Route::post('/toggle-visibility/{id}', [SkillController::class, 'toggleVisibility'])->name('skill.toggle.visibility');
         Route::post('/toggle-dore/{id}', [SkillController::class, 'toggleDore'])->name('skill.toggle.dore');
-
-        Route::prefix('/sessions')->group(function () {
-            Route::get('/create/{id}', [SkillController::class, 'create'])->name('sessions.create');
-            Route::post('/store/{id}', [SkillController::class, 'store'])->name('sessions.store');
-            Route::get('/edit/{id}', [SkillController::class, 'edit'])->name('sessions.edit');
-            Route::put('/update/{id}', [SkillController::class, 'updateSession'])->name('sessions.update');
-            Route::delete('/delete/{id}', [SkillController::class, 'destroySession'])->name('sessions.delete');
-            Route::post('/toggle-active/{id}', [SkillController::class, 'toggleSessionActive'])->name('sessions.toggle.active');
-            Route::post('/delete-file/{id}', [SkillController::class, 'deleteSessionFile'])->name('sessions.delete.file');
-        });
-
-        Route::prefix('/settings')->group(function () {
-            Route::post('/update-report-desc', [SkillController::class, 'updateReportDescription'])->name('teacher.settings.update_report_desc');
-            Route::get('/get-report-desc', [SkillController::class, 'getReportDescription'])->name('teacher.settings.get_report_desc');
-        });
         
-        // مسیر ویرایش (با PUT)
+        // روت‌های اصلی
         Route::post('/{id}', [SkillController::class, 'update'])->name('skill.update');
-        
-        // مسیر حذف (با DELETE)
         Route::delete('/{id}', [SkillController::class, 'destroy'])->name('skill.destroy');
-
         Route::get('/', [SkillController::class, 'skill'])->name('skill');
         Route::get('/copy/{id}', [SkillController::class, 'getCopyData'])->name('skill.copy.data');
         Route::get('/{id}/edit-data', [SkillController::class, 'getEditData'])->name('skill.edit.data');
         Route::get('/view/{id}', [SkillController::class, 'view'])->name('view.skill');
-
-        Route::get('/sessions/create/{id}', [SkillController::class, 'create'])->name('sessions.create');
-        Route::post('/sessions/store/{id}', [SkillController::class, 'store'])->name('sessions.store');
-
         Route::post('/toggle-status/{id}', [SkillController::class, 'toggleStatus'])->name('skill.toggle.status');
         Route::post('/toggle-archive/{id}', [SkillController::class, 'toggleArchive'])->name('skill.toggle.archive');
         Route::get('/archived', [SkillController::class, 'archivedCourses'])->name('skill.archived');
 
-        Route::get('/student-profile/{id}', [SkillController::class, 'studentProfile'])->name('studentProfile');
-        Route::post('/student-profile/{id}', [SkillController::class, 'updateStudentProfile'])->name('studentProfile.update');
+        // جلسات
+        Route::prefix('/sessions')->group(function () {
+            Route::get('/create/{id}', [SkillController::class, 'create'])->name('skill.sessions.create');
+            Route::post('/store/{id}', [SkillController::class, 'store'])->name('skill.sessions.store');
+            Route::get('/edit/{id}', [SkillController::class, 'edit'])->name('skill.sessions.edit');
+            Route::put('/update/{id}', [SkillController::class, 'updateSession'])->name('skill.sessions.update');
+            Route::delete('/delete/{id}', [SkillController::class, 'destroySession'])->name('skill.sessions.delete');
+            Route::post('/toggle-active/{id}', [SkillController::class, 'toggleSessionActive'])->name('skill.sessions.toggle.active');
+            Route::post('/delete-file/{id}', [SkillController::class, 'deleteSessionFile'])->name('skill.sessions.delete.file');
+        });
 
-        Route::get('/students-list/{id}', [SkillController::class, 'studentsList'])->name('studentsList');
-        Route::post('/students/remove/{userId}/{courseId}', [SkillController::class, 'destroyUser'])->name('students.remove');
-        Route::post('/students/restore/{userId}/{courseId}', [SkillController::class, 'restoreUser'])->name('students.restore');
-        Route::get('/students/removed/{courseId}', [SkillController::class, 'removedStudents'])->name('students.removed');
+        // تنظیمات
+        Route::prefix('/settings')->group(function () {
+            Route::post('/update-report-desc', [SkillController::class, 'updateReportDescription'])->name('skill.settings.update_report_desc');
+            Route::get('/get-report-desc', [SkillController::class, 'getReportDescription'])->name('skill.settings.get_report_desc');
+        });
 
+        // دانشجویان
+        Route::get('/student-profile/{id}', [SkillController::class, 'studentProfile'])->name('skill.studentProfile');
+        Route::post('/student-profile/{id}', [SkillController::class, 'updateStudentProfile'])->name('skill.studentProfile.update');
+        Route::get('/students-list/{id}', [SkillController::class, 'studentsList'])->name('skill.studentsList');
+        Route::post('/students/remove/{userId}/{courseId}', [SkillController::class, 'destroyUser'])->name('skill.students.remove');
+        Route::post('/students/restore/{userId}/{courseId}', [SkillController::class, 'restoreUser'])->name('skill.students.restore');
+        Route::get('/students/removed/{courseId}', [SkillController::class, 'removedStudents'])->name('skill.students.removed');
         Route::get('/setting/{id}', [SkillController::class, 'setting'])->name('skill.setting');
 
-        Route::get('/adjectives/{studentId}', [StudentAdjectiveController::class, 'index']);
-        Route::post('/adjectives', [StudentAdjectiveController::class, 'store']);
+        // ارزیابی و نمرات
+        Route::get('/student-evaluation/{courseId}/{userId}', [SkillController::class, 'studentEvaluation'])->name('skill.studentEvaluation');
+        Route::get('/grades-list/{id}', [SkillController::class, 'gradesList'])->name('skill.gradesList');
+        Route::post('/grades-save/{id}', [SkillController::class, 'saveGrades'])->name('skill.grades.save');
 
-        Route::get('/events/{studentId}', [StudentEventController::class, 'index']);
-        Route::post('/events', [StudentEventController::class, 'store']);
+        // فعالیت‌ها
+        Route::get('/activities/{id}', [SkillController::class, 'allProgress'])->name('skill.activities');
+        Route::post('/activities-range/{id}', [SkillController::class, 'getStudentActivitiesRange'])->name('skill.get.student.activities.range');
 
-        Route::get('/student-evaluation/{courseId}/{userId}', [SkillController::class, 'studentEvaluation'])->name('studentEvaluation');
-        
-        Route::get('/grades-list/{id}', [SkillController::class, 'gradesList'])->name('gradesList');
-        Route::post('/grades-save/{id}', [SkillController::class, 'saveGrades'])->name('grades.save');
+        // گزارش‌ها
+        Route::get('/reports-list/{course_id}', [SkillController::class, 'reportsList'])->name('skill.teacher.reports.list');
+        Route::get('/report/{id}', [SkillController::class, 'getReportDetail'])->name('skill.teacher.report.detail');
 
-        Route::get('/activities/{id}', [SkillController::class, 'allProgress'])->name('activities');
-        Route::post('/activities-range/{id}', [SkillController::class, 'getStudentActivitiesRange'])->name('get.student.activities.range');
+        // فعالیت‌های دانشجویان
+        Route::get('/student-activities/{course}', [SkillController::class, 'studentActivities'])->name('skill.studentActivities');
+        Route::get('/student-questions/{id}', [SkillController::class, 'studentQuestions'])->name('skill.studentQuestions');
+        Route::get('/student-reports/{id}', [SkillController::class, 'studentReports'])->name('skill.studentReports');
+        Route::get('/student-homeworks/{id}', [SkillController::class, 'studentHomeworks'])->name('skill.studentHomeworks');
+        Route::get('/student-self-tests/{id}', [SkillController::class, 'studentSelfTests'])->name('skill.studentSelfTests');
+        Route::get('/student-official-exams/{id}', [SkillController::class, 'studentOfficialExams'])->name('skill.studentOfficialExams');
 
-        // ===== گزارش‌های دانشجویان =====
-        Route::get('/reports-list/{course_id}', [SkillController::class, 'reportsList'])->name('teacher.reports.list');
-        Route::get('/report/{id}', [SkillController::class, 'getReportDetail'])->name('teacher.report.detail');
-
-        // ===== فعالیت‌های دانشجویان =====
-        Route::get('/student-activities/{course}', [SkillController::class, 'studentActivities'])->name('studentActivities');
-        Route::get('/student-questions/{id}', [SkillController::class, 'studentQuestions'])->name('studentQuestions');
-        Route::get('/student-reports/{id}', [SkillController::class, 'studentReports'])->name('studentReports');
-        Route::get('/student-homeworks/{id}', [SkillController::class, 'studentHomeworks'])->name('studentHomeworks');
-        Route::get('/student-self-tests/{id}', [SkillController::class, 'studentSelfTests'])->name('studentSelfTests');
-        Route::get('/student-official-exams/{id}', [SkillController::class, 'studentOfficialExams'])->name('studentOfficialExams');
-
-        // ===== بانک سوالات =====
+        // بانک سوالات
         Route::prefix('/bank')->group(function () {
-            Route::get('/{id}', [SkillController::class, 'questionBank'])->name('question.bank');
-            Route::post('/star/{id}', [SkillController::class, 'toggleStar'])->name('question.star');
-            Route::get('/edit/{id}', [SkillController::class, 'editQuestion'])->name('question.edit');
-            Route::put('/update/{id}', [SkillController::class, 'updateQuestion'])->name('question.update');
+            Route::get('/{id}', [SkillController::class, 'questionBank'])->name('skill.question.bank');
+            Route::post('/star/{id}', [SkillController::class, 'toggleStar'])->name('skill.question.star');
+            Route::get('/edit/{id}', [SkillController::class, 'editQuestion'])->name('skill.question.edit');
+            Route::put('/update/{id}', [SkillController::class, 'updateQuestion'])->name('skill.question.update');
         });
 
-        // ===== نظرسنجی =====
+        // نظرسنجی
         Route::prefix('/survey')->group(function () {
-            Route::get('/{id}', [SurveyController::class, 'index'])->name('surveys.index');
-            Route::post('/store', [SurveyController::class, 'store'])->name('survey.store');
-            Route::get('/results/{id}', [SurveyController::class, 'results'])->name('survey.results');
-            Route::get('/remove/{id}', [SurveyController::class, 'destroy'])->name('survey.destroy');
-            Route::get('/active/{id}', [SurveyController::class, 'toggleActive'])->name('survey.toggle');
-            Route::get('/edit/{id}', [SurveyController::class, 'edit'])->name('survey.edit');
-            Route::post('/update/{id}', [SurveyController::class, 'update'])->name('survey.update');
+            Route::get('/{id}', [SurveyController::class, 'index'])->name('skill.surveys.index');
+            Route::post('/store', [SurveyController::class, 'store'])->name('skill.survey.store');
+            Route::get('/results/{id}', [SurveyController::class, 'results'])->name('skill.survey.results');
+            Route::get('/remove/{id}', [SurveyController::class, 'destroy'])->name('skill.survey.destroy');
+            Route::get('/active/{id}', [SurveyController::class, 'toggleActive'])->name('skill.survey.toggle');
+            Route::get('/edit/{id}', [SurveyController::class, 'edit'])->name('skill.survey.edit');
+            Route::post('/update/{id}', [SurveyController::class, 'update'])->name('skill.survey.update');
         });
 
-        // ===== آزمون‌ها =====
+        // آزمون‌ها
         Route::prefix('/azmon')->group(function () {
-            Route::get('/list/{id}', [AzmonController::class, 'list'])->name('azmon.list');
-            Route::get('/create', [AzmonController::class, 'create'])->name('azmon.create');
-            Route::post('/create', [AzmonController::class, 'createPost'])->name('azmon.store');
-            Route::get('/edit', [AzmonController::class, 'edit'])->name('azmon.edit');
-            Route::put('/edit/{id}', [AzmonController::class, 'editPost'])->name('azmon.update');
-            Route::get('/delete/{id}', [AzmonController::class, 'delete'])->name('azmon.delete');
-            Route::post('/zarib/{id}', [AzmonController::class, 'toggleZarib'])->name('azmon.toggleZarib');
-            Route::get('/stats/{id}', [AzmonController::class, 'azmonStats'])->name('azmon.stats');
+            Route::get('/list/{id}', [AzmonController::class, 'list'])->name('skill.azmon.list');
+            Route::get('/create', [AzmonController::class, 'create'])->name('skill.azmon.create');
+            Route::post('/create', [AzmonController::class, 'createPost'])->name('skill.azmon.store');
+            Route::get('/edit', [AzmonController::class, 'edit'])->name('skill.azmon.edit');
+            Route::put('/edit/{id}', [AzmonController::class, 'editPost'])->name('skill.azmon.update');
+            Route::get('/delete/{id}', [AzmonController::class, 'delete'])->name('skill.azmon.delete');
+            Route::post('/zarib/{id}', [AzmonController::class, 'toggleZarib'])->name('skill.azmon.toggleZarib');
+            Route::get('/stats/{id}', [AzmonController::class, 'azmonStats'])->name('skill.azmon.stats');
         });
 
-        // ===== تمرین (Exercise) - استاد =====
+        // تمرین‌ها
         Route::prefix('/exercises')->group(function () {
-            Route::get('/show/{session_id}', [ExerciseController::class, 'show'])->name('exercise.show');
-            Route::post('/create', [ExerciseController::class, 'create'])->name('exercise.create');
-            Route::get('/edit', [ExerciseController::class, 'edit'])->name('exercise.edit');
-            Route::put('/update/{id}', [ExerciseController::class, 'update'])->name('exercise.update');
-            Route::get('/delete/{id}', [ExerciseController::class, 'delete'])->name('exercise.delete');
-            Route::get('/answers/{exercise_id}', [ExerciseController::class, 'answersList'])->name('exercise.answers');
-            Route::post('/score', [ExerciseController::class, 'score'])->name('exercise.score');
-            Route::get('/correction/{courseId}', [SkillController::class, 'exerciseCorrection'])->name('exercises.correction');
-            Route::get('/answers2/{exerciseId}', [SkillController::class, 'getExerciseAnswers'])->name('exercises.answers');
-            Route::get('/questions/{sessionId}', [SkillController::class, 'getSessionQuestions'])->name('teacher.sessions.questions');
-            Route::get('/discussions/{sessionId}', [SkillController::class, 'getSessionDiscussions'])->name('teacher.sessions.discussions');
-            Route::post('/score/{answerId}', [SkillController::class, 'scoreExerciseAnswer'])->name('exercises.score');
+            Route::get('/show/{session_id}', [ExerciseController::class, 'show'])->name('skill.exercise.show');
+            Route::post('/create', [ExerciseController::class, 'create'])->name('skill.exercise.create');
+            Route::get('/edit', [ExerciseController::class, 'edit'])->name('skill.exercise.edit');
+            Route::put('/update/{id}', [ExerciseController::class, 'update'])->name('skill.exercise.update');
+            Route::get('/delete/{id}', [ExerciseController::class, 'delete'])->name('skill.exercise.delete');
+            Route::get('/answers/{exercise_id}', [ExerciseController::class, 'answersList'])->name('skill.exercise.answers');
+            Route::post('/score', [ExerciseController::class, 'score'])->name('skill.exercise.score');
+            Route::get('/correction/{courseId}', [SkillController::class, 'exerciseCorrection'])->name('skill.exercises.correction');
+            Route::get('/answers2/{exerciseId}', [SkillController::class, 'getExerciseAnswers'])->name('skill.exercises.answers');
+            Route::get('/questions/{sessionId}', [SkillController::class, 'getSessionQuestions'])->name('skill.teacher.sessions.questions');
+            Route::get('/discussions/{sessionId}', [SkillController::class, 'getSessionDiscussions'])->name('skill.teacher.sessions.discussions');
+            Route::post('/score/{answerId}', [SkillController::class, 'scoreExerciseAnswer'])->name('skill.exercises.score');
         });
 
+        // درخواست‌ها
         Route::get('/pending-requests/{courseId}', [TeacherSiteController::class, 'pendingRequests'])->name('skill.pending.requests');
         Route::post('/approve-request/{courseId}/{userId}', [TeacherSiteController::class, 'approveRequest'])->name('skill.approve.request');
         Route::post('/reject-request/{courseId}/{userId}', [TeacherSiteController::class, 'rejectRequest'])->name('skill.reject.request');
     });
-
     
     // ==========================================
     // مسیرهای مربوط به سوالات - معلم
