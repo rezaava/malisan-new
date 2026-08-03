@@ -42,6 +42,11 @@ Route::get("/", function () {
     return redirect("/login");
 });
 
+Route::middleware(['auth'])->group(function () {
+    Route::get('/switch-to-student', [AuthController::class, 'switchToStudent'])->name('switch.to.student');
+    Route::get('/switch-to-teacher', [AuthController::class, 'switchToTeacher'])->name('switch.to.teacher');
+    Route::get('/switch-to-admin', [AuthController::class, 'switchToAdmin'])->name('switch.to.admin');
+});
 
 Route::prefix('/admin')->middleware(['role:admin'])->group(function () {
     Route::get('/', [AdminController::class, 'index'])->name('index_admin');
@@ -61,6 +66,10 @@ Route::prefix('/admin')->middleware(['role:admin'])->group(function () {
 
     Route::prefix('/survey')->group(function () {
         Route::get('/', [AdminSurveyController::class, 'angizesh_index'])->name('admin_survey');
+
+        Route::post('/toggle-student', [AdminSurveyController::class, 'toggleStudentSurvey'])->name('admin.toggle-student-survey');
+        Route::post('/toggle-teacher', [AdminSurveyController::class, 'toggleTeacherSurvey'])->name('admin.toggle-teacher-survey');
+        Route::get('/settings', [AdminSurveyController::class, 'getSettings'])->name('admin.get-settings');
     });
 
     Route::middleware(['auth'])->group(function () {
@@ -83,6 +92,12 @@ Route::prefix('/admin')->middleware(['role:admin'])->group(function () {
 // ==========================================
 Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function () {
     Route::get('/', [TeacherSiteController::class, 'index'])->name('index_teacher');
+
+    Route::prefix('/onboarding')->group(function () {
+        Route::get('/', [SurveyController::class, 'teacherOnboardingSurvey'])->name('teacher.onboarding');
+        Route::post('/submit', [SurveyController::class, 'submitTeacherOnboarding'])->name('teacher.onboarding.submit');
+        Route::get('/skip', [SurveyController::class, 'skipTeacherOnboarding'])->name('teacher.onboarding.skip');
+    });
 
     Route::prefix('/courses')->group(function () {
         Route::post('/create', [CourseController::class, 'storeCourse'])->name('courses.store');
@@ -110,7 +125,7 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         // عملیات اصلی
         Route::post('/{id}', [CourseController::class, 'update'])->name('courses.update');
         Route::delete('/{id}', [CourseController::class, 'destroy'])->name('courses.destroy');
-        
+
         Route::get('/', [TeacherSiteController::class, 'courses'])->name('courses');
         Route::get('/copy/{id}', [CourseController::class, 'getCopyData'])->name('courses.copy.data');
         Route::get('/{id}/edit-data', [CourseController::class, 'getEditData'])->name('courses.edit.data');
@@ -219,7 +234,7 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         Route::post('/edit-setting', [SkillController::class, 'editSetting'])->name('update.setting.skill');
         Route::post('/toggle-visibility/{id}', [SkillController::class, 'toggleVisibility'])->name('skill.toggle.visibility');
         Route::post('/toggle-dore/{id}', [SkillController::class, 'toggleDore'])->name('skill.toggle.dore');
-        
+
         // روت‌های اصلی
         Route::post('/{id}', [SkillController::class, 'update'])->name('skill.update');
         Route::delete('/{id}', [SkillController::class, 'destroy'])->name('skill.destroy');
@@ -330,7 +345,7 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         Route::post('/approve-request/{courseId}/{userId}', [TeacherSiteController::class, 'approveRequest'])->name('skill.approve.request');
         Route::post('/reject-request/{courseId}/{userId}', [TeacherSiteController::class, 'rejectRequest'])->name('skill.reject.request');
     });
-    
+
     // ==========================================
     // مسیرهای مربوط به سوالات - معلم
     // ==========================================
@@ -351,11 +366,11 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
     // ==========================================
     Route::get('/question-reports', [QuestionReportController::class, 'index'])->name('teacher.question.reports');
     Route::put('/question-report/{id}', [QuestionReportController::class, 'update'])->name('teacher.question.report.update');
-    
+
     Route::prefix('/reports')->group(function () {
         Route::get('/list/{course_id}', [QuestionReportController::class, 'courseReports'])->name('teacher.question.reports.list');
     });
-    
+
     // ==========================================
     // مسیرهای چت
     // ==========================================
@@ -364,7 +379,7 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         Route::post('/chat/send', [ChatController::class, 'send'])->name('teacher.chat.send');
         Route::get('/chat/messages/{chatId}', [ChatController::class, 'getMessages'])->name('teacher.chat.messages');
     });
-    
+
     Route::get('/profile', [TeacherSiteController::class, 'profile'])->name('teacher.profile');
     Route::post('/profile/update', [StudentSiteController::class, 'updateStudentProfile'])->name('teacherProfile.update');
 });
@@ -374,10 +389,10 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
 // ==========================================
 Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(function () {
     Route::get('/', [StudentSiteController::class, 'index'])->name('index_student');
-    
+
     Route::get('/profile', [StudentSiteController::class, 'profile'])->name('student.profile');
     Route::post('/profile/update', [StudentSiteController::class, 'updateStudentProfile'])->name('studentProfile.updatest');
-    
+
     Route::prefix('/courses')->group(function () {
         Route::get('/', [StudentSiteController::class, 'courses'])->name('courses.st');
         Route::get('/view/{id}', [StudentCourseController::class, 'view'])->name('view.coure.St');
@@ -392,7 +407,7 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
 
         // ===== فعالیت‌های من =====
         Route::get('/my-activities/{course_id}', [StudentSiteController::class, 'myActivities'])->name('student.my.activities');
-        
+
         // ===== مشاهده جزئیات =====
         Route::get('/question/{id}', [StudentSiteController::class, 'viewQuestion'])->name('student.question.view');
         Route::get('/discussion/{id}', [StudentSiteController::class, 'viewDiscussion'])->name('student.discussion.view');
@@ -416,7 +431,7 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
 
         // ===== فعالیت‌های من =====
         Route::get('/my-activities/{course_id}', [StudentSkillController::class, 'myActivities'])->name('student.my.activities.skill');
-        
+
         // ===== مشاهده جزئیات =====
         Route::get('/question/{id}', [StudentSkillController::class, 'viewQuestion'])->name('student.question.view');
         Route::get('/discussion/{id}', [StudentSkillController::class, 'viewDiscussion'])->name('student.discussion.view');
@@ -472,9 +487,9 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
     // مسیرهای تمرین - دانشجو
     // ==========================================
     Route::prefix('/exercise')->group(function () {
-        Route::get('/show/{id}', [ExerciseController::class, 'studentShow'])->name('student.exercise.show');        
-        Route::post('/answer', [ExerciseController::class, 'answer'])->name('student.exercise.answer');        
-        Route::put('/answer/{id}', [ExerciseController::class, 'updateAnswer'])->name('student.exercise.answer.update');        
+        Route::get('/show/{id}', [ExerciseController::class, 'studentShow'])->name('student.exercise.show');
+        Route::post('/answer', [ExerciseController::class, 'answer'])->name('student.exercise.answer');
+        Route::put('/answer/{id}', [ExerciseController::class, 'updateAnswer'])->name('student.exercise.answer.update');
         Route::get('/answer/{id}', [ExerciseController::class, 'deleteAnswer'])->name('student.exercise.answer.delete');
     });
 
@@ -490,11 +505,11 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
     // مسیرهای داوری - دانشجو
     // ==========================================
     Route::prefix('/judgment')->middleware(['role:student|admin'])->group(function () {
-        Route::get('/', [JudgmentController::class, 'index'])->name('student.judgment.index');        
-        Route::post('/store', [JudgmentController::class, 'store'])->name('student.judgment.store');        
-        Route::get('/stats', [JudgmentController::class, 'stats'])->name('student.judgment.stats');        
-        Route::get('/returned', [JudgmentController::class, 'returnedItems'])->name('student.judgment.returned');        
-        Route::post('/resubmit', [JudgmentController::class, 'resubmit'])->name('student.judgment.resubmit');        
+        Route::get('/', [JudgmentController::class, 'index'])->name('student.judgment.index');
+        Route::post('/store', [JudgmentController::class, 'store'])->name('student.judgment.store');
+        Route::get('/stats', [JudgmentController::class, 'stats'])->name('student.judgment.stats');
+        Route::get('/returned', [JudgmentController::class, 'returnedItems'])->name('student.judgment.returned');
+        Route::post('/resubmit', [JudgmentController::class, 'resubmit'])->name('student.judgment.resubmit');
         Route::delete('/{id}', [JudgmentController::class, 'destroy'])->name('student.judgment.destroy');
     });
 
@@ -504,7 +519,7 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
     Route::prefix('/question-report')->middleware(['role:student|admin'])->group(function () {
         Route::post('/store', [QuestionReportController::class, 'store'])->name('question.report.store');
     });
-    
+
     // ==========================================
     // مسیرهای چت
     // ==========================================

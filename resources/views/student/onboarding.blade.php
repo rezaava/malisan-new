@@ -5,7 +5,7 @@
 @endsection
 
 @section('head')
-<link rel="stylesheet" href="{{ asset('css/my-activities.css') }}">
+<link rel="stylesheet" href="{{ asset('css/onboarding.css') }}">
 @endsection
 
 @section('mohtava')

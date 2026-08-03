@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Course;
 use App\Models\Option;
 use App\Models\OptionUser;
+use App\Models\SiteSetting;
 use App\Models\Survey;
 use Auth;
 use Illuminate\Http\Request;
@@ -184,7 +185,7 @@ class SurveyController extends Controller
             $survey->save();
 
             $status = $survey->active == 1 ? 'فعال' : 'غیرفعال';
-            return redirect()->back()->with('success', "وضعیت نظرسنجی به {$status} تغییر یافت");
+            return redirect()->back();
 
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'خطا در تغییر وضعیت: ' . $e->getMessage());
@@ -196,28 +197,42 @@ class SurveyController extends Controller
      */
     public function onboardingSurvey()
     {
+        // چک کردن فعال بودن نظرسنجی دانشجو
+        if (!SiteSetting::isStudentSurveyEnabled()) {
+            session()->put('onboarding_done', true);
+            return redirect()->route('index_student');
+        }
+
         $user = Auth::user();
 
+        // دریافت لیست نظرسنجی‌هایی که کاربر پاسخ داده
         $answeredSurveyIds = OptionUser::where('user_id', $user->id)
             ->pluck('survey_id')
             ->toArray();
 
+        // پیدا کردن یک نظرسنجی که کاربر بهش پاسخ نداده
         $survey = Survey::where('active', 1)
             ->whereNotIn('id', $answeredSurveyIds)
-            ->where('type',1)
+            ->where('type', 1) // فقط نظرسنجی‌های نوع 1 (اجباری)
             ->inRandomOrder()
             ->first();
 
+        // اگه همه نظرسنجی‌ها پاسخ داده شده
         if (!$survey) {
             session()->put('onboarding_done', true);
-            return redirect()->route('index_student')
-                ->with('success', 'شما به تمام پرسش‌ها پاسخ داده‌اید!');
+            return redirect()->route('index_student');
         }
 
         // دریافت گزینه‌های سوال
         $options = Option::where('survey_id', $survey->id)->get();
 
-        return view('student.onboarding', compact('survey', 'options'))->with([
+        // محاسبه تعداد باقیمانده
+        $remainingCount = Survey::where('active', 1)
+            ->where('type', 1)
+            ->whereNotIn('id', $answeredSurveyIds)
+            ->count();
+
+        return view('student.onboarding', compact('survey', 'options', 'remainingCount'))->with([
             'pageTitle' => 'پرسش اولیه',
             'pageName' => 'پرسش اولیه',
             'pageDescription' => 'لطفاً به این سوال پاسخ دهید',
@@ -229,6 +244,12 @@ class SurveyController extends Controller
      */
     public function submitOnboarding(Request $request)
     {
+        // چک کردن فعال بودن نظرسنجی دانشجو
+        if (!SiteSetting::isStudentSurveyEnabled()) {
+            return redirect()->route('index_student')
+                ->with('info', 'در حال حاظر نظرسنجی فعال نیست.');
+        }
+
         $validator = Validator::make($request->all(), [
             'survey_id' => 'required|exists:surveys,id',
             'answer' => 'required_if:survey_type,1,2|nullable|string|max:500',
@@ -246,6 +267,15 @@ class SurveyController extends Controller
             $surveyType = $request->survey_type;
             $surveyId = $request->survey_id;
 
+            // بررسی اینکه کاربر قبلاً به این نظرسنجی پاسخ نداده باشه
+            $existingAnswer = OptionUser::where('survey_id', $surveyId)
+                ->where('user_id', $user->id)
+                ->exists();
+
+            if ($existingAnswer) {
+                return redirect()->route('student.onboarding');
+            }
+
             // نوع 1: پاسخ کوتاه (نظر کاربر)
             if ($surveyType == 1) {
                 OptionUser::create([
@@ -254,7 +284,6 @@ class SurveyController extends Controller
                     'answer' => $request->answer,
                 ]);
             }
-
             // نوع 2: تک جواب (یک گزینه)
             elseif ($surveyType == 2) {
                 OptionUser::create([
@@ -263,9 +292,7 @@ class SurveyController extends Controller
                     'answer' => $request->answer,
                 ]);
             }
-
             // نوع 3: چند جواب (چند گزینه)
-
             elseif ($surveyType == 3) {
                 $answers = $request->answers ?? [];
                 foreach ($answers as $answer) {
@@ -279,8 +306,21 @@ class SurveyController extends Controller
                 }
             }
 
-            return redirect()->route('student.onboarding')
-                ->with('success', 'پاسخ شما با موفقیت ثبت شد!');
+            // بعد از ثبت پاسخ، دوباره چک میکنیم که آیا سوال دیگری باقی مونده؟
+            $answeredSurveyIds = OptionUser::where('user_id', $user->id)
+                ->pluck('survey_id')
+                ->toArray();
+
+            $remainingSurveys = Survey::where('active', 1)
+                ->where('type', 1)
+                ->whereNotIn('id', $answeredSurveyIds)
+                ->count();
+
+
+                // اگه همه سوالات پاسخ داده شده، به صفحه اصلی میره
+                session()->put('onboarding_done', true);
+                return redirect()->route('index_student');
+            
 
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'خطا در ثبت پاسخ: ' . $e->getMessage());
@@ -292,9 +332,162 @@ class SurveyController extends Controller
      */
     public function skipOnboarding()
     {
-        session()->put('onboarding_done', true);
+        // چک کردن فعال بودن نظرسنجی دانشجو
+        if (!SiteSetting::isStudentSurveyEnabled()) {
+            session()->put('onboarding_done', true);
+            return redirect()->route('index_student');
+        }
 
-        return redirect()->route('index_student')
-            ->with('info', 'شما می‌توانید بعداً در بخش نظرسنجی‌ها به این سوال پاسخ دهید.');
+        return redirect()->route('index_student');
+    }
+
+    /**
+     * نمایش پرسش اولیه برای استاد
+     */
+    public function teacherOnboardingSurvey()
+    {
+        // چک کردن فعال بودن نظرسنجی استاد
+        if (!SiteSetting::isTeacherSurveyEnabled()) {
+            session()->put('teacher_onboarding_done', true);
+            return redirect()->route('index_teacher');
+        }
+
+        $user = Auth::user();
+
+        // دریافت لیست نظرسنجی‌هایی که کاربر پاسخ داده
+        $answeredSurveyIds = OptionUser::where('user_id', $user->id)
+            ->pluck('survey_id')
+            ->toArray();
+
+        // پیدا کردن یک نظرسنجی که کاربر بهش پاسخ نداده (نوع 1 = اجباری)
+        $survey = Survey::where('active', 1)
+            ->whereNotIn('id', $answeredSurveyIds)
+            ->where('type', 1)
+            ->inRandomOrder()
+            ->first();
+
+        // اگه همه نظرسنجی‌ها پاسخ داده شده
+        if (!$survey) {
+            session()->put('teacher_onboarding_done', true);
+            return redirect()->route('index_teacher');
+        }
+
+        // دریافت گزینه‌های سوال
+        $options = Option::where('survey_id', $survey->id)->get();
+
+        // محاسبه تعداد باقیمانده
+        $remainingCount = Survey::where('active', 1)
+            ->where('type', 1)
+            ->whereNotIn('id', $answeredSurveyIds)
+            ->count();
+
+        return view('student.onboarding', compact('survey', 'options', 'remainingCount'))->with([
+            'pageTitle' => 'پرسش اولیه',
+            'pageName' => 'پرسش اولیه',
+            'pageDescription' => 'لطفاً به این سوال پاسخ دهید',
+        ]);
+    }
+
+    /**
+     * ذخیره پاسخ پرسش اولیه برای استاد
+     */
+    public function submitTeacherOnboarding(Request $request)
+    {
+        // چک کردن فعال بودن نظرسنجی استاد
+        if (!SiteSetting::isTeacherSurveyEnabled()) {
+            return redirect()->route('index_teacher')
+                ->with('info', 'در حال حاظر نظرسنجی فعال نیست.');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'survey_id' => 'required|exists:surveys,id',
+            'answer' => 'required_if:survey_type,1,2|nullable|string|max:500',
+            'answers' => 'required_if:survey_type,3|nullable|array',
+            'answers.*' => 'string|max:500',
+            'survey_type' => 'required|in:1,2,3',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        try {
+            $user = Auth::user();
+            $surveyType = $request->survey_type;
+            $surveyId = $request->survey_id;
+
+            // بررسی اینکه کاربر قبلاً به این نظرسنجی پاسخ نداده باشه
+            $existingAnswer = OptionUser::where('survey_id', $surveyId)
+                ->where('user_id', $user->id)
+                ->exists();
+
+            if ($existingAnswer) {
+                return redirect()->route('teacher.onboarding');
+            }
+
+            // نوع 1: پاسخ کوتاه (نظر کاربر)
+            if ($surveyType == 1) {
+                OptionUser::create([
+                    'survey_id' => $surveyId,
+                    'user_id' => $user->id,
+                    'answer' => $request->answer,
+                ]);
+            }
+            // نوع 2: تک جواب (یک گزینه)
+            elseif ($surveyType == 2) {
+                OptionUser::create([
+                    'survey_id' => $surveyId,
+                    'user_id' => $user->id,
+                    'answer' => $request->answer,
+                ]);
+            }
+            // نوع 3: چند جواب (چند گزینه)
+            elseif ($surveyType == 3) {
+                $answers = $request->answers ?? [];
+                foreach ($answers as $answer) {
+                    if (!empty($answer)) {
+                        OptionUser::create([
+                            'survey_id' => $surveyId,
+                            'user_id' => $user->id,
+                            'answer' => $answer,
+                        ]);
+                    }
+                }
+            }
+
+            // بعد از ثبت پاسخ، دوباره چک میکنیم که آیا سوال دیگری باقی مونده؟
+            $answeredSurveyIds = OptionUser::where('user_id', $user->id)
+                ->pluck('survey_id')
+                ->toArray();
+
+            $remainingSurveys = Survey::where('active', 1)
+                ->where('type', 1)
+                ->whereNotIn('id', $answeredSurveyIds)
+                ->count();
+
+            if ($remainingSurveys > 0) {
+                return redirect()->route('teacher.onboarding');
+            } else {
+                session()->put('teacher_onboarding_done', true);
+                return redirect()->route('index_teacher');
+            }
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'خطا در ثبت پاسخ: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * رد کردن پرسش برای استاد
+     */
+    public function skipTeacherOnboarding()
+    {
+        // چک کردن فعال بودن نظرسنجی استاد
+        if (!SiteSetting::isTeacherSurveyEnabled()) {
+            session()->put('teacher_onboarding_done', true);
+            return redirect()->route('index_teacher');
+        }
+
+        return redirect()->route('index_teacher');
     }
 }

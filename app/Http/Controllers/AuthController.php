@@ -25,12 +25,8 @@ class AuthController extends Controller
                 return redirect()->route('index_student');
             }
         }
-        if ($user->active == true){
         return view('auth.login');
-        }
-        else{
-            return redirect()->back()->withErrors(['error'=> 'User is limited']);
-        }
+
     }
 
     public function register()
@@ -137,10 +133,7 @@ class AuthController extends Controller
                 ->with('error', 'کد ملی یا رمز عبور اشتباه است')
                 ->withInput();
         }
-        //بررسی محدود بودن کاربر
-        if($user->active == false){
-            return redirect()->back()->withErrors(['error'=> 'User is limited']);
-        }
+
 
         // بررسی پسورد
         if (!Hash::check($request->password, $user->password)) {
@@ -178,23 +171,25 @@ class AuthController extends Controller
 
         return redirect('/login')->with('success', 'با موفقیت خارج شدید');
     }
-    function roleFun() {
-        $admin = new Role();
-        $admin->name = 'admin';
-        $admin->display_name = 'مدیر سیستم';
-        $admin->description = 'مدیریت کامل سیستم';
-        $admin->save();
 
-        $teacher = new Role();
-        $teacher->name = 'teacher';
-        $teacher->display_name = 'استاد';
-        $teacher->description = 'مدیریت دوره‌ها';
-        $teacher->save();
+    public function switchToStudent()
+    {
+        session()->forget('onboarding_done');
+        session()->forget('teacher_onboarding_done');
+        return redirect()->route('index_student');
+    }
 
-        $student = new Role();
-        $student->name = 'student';
-        $student->display_name = 'دانشجو';
-        $student->description = 'دسترسی به دوره‌ها';
-        $student->save();
+    public function switchToTeacher()
+    {
+        session()->forget('onboarding_done');
+        session()->forget('teacher_onboarding_done');
+        return redirect()->route('index_teacher');
+    }
+
+    public function switchToAdmin()
+    {
+        session()->forget('onboarding_done');
+        session()->forget('teacher_onboarding_done');
+        return redirect()->route('index_admin');
     }
 }

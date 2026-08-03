@@ -7,9 +7,12 @@ use App\Models\Course;
 use App\Models\Azmon;
 use App\Models\CourseUser;
 use App\Models\Konkor;
+use App\Models\OptionUser;
 use App\Models\Role;
 use App\Models\Scoring;
 use App\Models\Setting;
+use App\Models\SiteSetting;
+use App\Models\Survey;
 use App\Models\User;
 use Auth;
 use DB;
@@ -25,7 +28,24 @@ class TeacherSiteController extends Controller
     public function index()
     {
         $user = Auth::user();
-        
+        // چک کردن اینکه استاد باید به صفحه onboarding برود یا خیر
+        if (SiteSetting::isTeacherSurveyEnabled() && !session()->has('teacher_onboarding_done')) {
+            $answeredSurveyIds = OptionUser::where('user_id', $user->id)
+                ->pluck('survey_id')
+                ->toArray();
+
+            $hasUnansweredSurveys = Survey::where('active', 1)
+                ->where('type', 1)
+                ->whereNotIn('id', $answeredSurveyIds)
+                ->exists();
+
+            if ($hasUnansweredSurveys) {
+                return redirect()->route('teacher.onboarding')
+                    ->with('info', 'لطفاً به سوالات پاسخ دهید.');
+            } else {
+                session()->put('teacher_onboarding_done', true);
+            }
+        }
         // دریافت پیام انگیزشی
         $message = Angizesh::whereIn('level', [7, 8])
             ->inRandomOrder()
