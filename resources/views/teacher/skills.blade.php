@@ -21,7 +21,7 @@
     </button>
     <button class="archive-btn me-auto" id="archiveBtn">
         <i class="fas fa-archive"></i>
-        <span>آرشیوها</span>
+        <span>ارشیو مهارت ها</span>
         <span class="archived-count" id="archivedCountBadge">0</span>
     </button>
 </div>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Angizesh;
+use App\Models\Survey;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -22,13 +23,14 @@ class AdminController extends Controller
             ->inRandomOrder()
             ->first();
         
-            $massage = Angizesh::whereNotIn('level', [8,7])->count();
+        $massage = Angizesh::whereNotIn('level', [8,7])->count();
 
-        return view('admin.index', compact('user','message','massage'));
+        // دریافت پیام انگیزشی
+        $survey = Survey::count();
+
+        return view('admin.index', compact('user','message','massage','survey'));
     }
 
-    // An API that returns an http response of users specific data
-    // For admin panel
     public function adminShowUsers(Request $request){
         $users = User::get();
 

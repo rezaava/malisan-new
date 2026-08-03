@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminAngizeshController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminCourseController;
+use App\Http\Controllers\AdminSurveyController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AzmonController;
 use App\Http\Controllers\ChatController;
@@ -58,6 +59,10 @@ Route::prefix('/admin')->middleware(['role:admin'])->group(function () {
         Route::get('/edit/{id}', [AdminAngizeshController::class, 'angizesh_edit'])->name('admin_angizesh.edit');
     });
 
+    Route::prefix('/survey')->group(function () {
+        Route::get('/', [AdminSurveyController::class, 'angizesh_index'])->name('admin_survey');
+    });
+
     Route::middleware(['auth'])->group(function () {
         Route::get('/chat', [ChatController::class, 'index'])->name('admin.chat.index');
         Route::post('/chat/send', [ChatController::class, 'send'])->name('admin.chat.send');
@@ -72,7 +77,6 @@ Route::prefix('/admin')->middleware(['role:admin'])->group(function () {
         Route::get('/unlimit-user/{id}', [AdminController::class, 'unlimitUser'])->name('unlimit-user');
     });
 });
-
 
 // ==========================================
 // Teacher Routes
@@ -133,7 +137,7 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         // ارزیابی و نمرات
         Route::get('/student-evaluation/{courseId}/{userId}', [CourseController::class, 'studentEvaluation'])->name('studentEvaluation');
         Route::get('/grades-list/{id}', [CourseController::class, 'gradesList'])->name('gradesList');
-        Route::post('/grades-save/{id}', [CourseController::class, 'saveGrades'])->name('grades.save');
+        Route::post('/grades-save/{id}', [CourseController::class, 'saveGPrades'])->name('grades.save');
 
         // فعالیت‌ها
         Route::get('/activities/{id}', [CourseController::class, 'allProgress'])->name('activities');
@@ -411,7 +415,7 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
         Route::post('/events', [StudentEventController::class, 'store']);
 
         // ===== فعالیت‌های من =====
-        Route::get('/my-activities/{course_id}', [StudentSkillController::class, 'myActivities'])->name('student.my.activities');
+        Route::get('/my-activities/{course_id}', [StudentSkillController::class, 'myActivities'])->name('student.my.activities.skill');
         
         // ===== مشاهده جزئیات =====
         Route::get('/question/{id}', [StudentSkillController::class, 'viewQuestion'])->name('student.question.view');

@@ -26,19 +26,26 @@
                 <div class="card-text-sm">پیام های انگیزشی</div>
             </a>
         </div>
-
         <div class="col-md-3 col-sm-6">
             <a href="{{ route('show-users-admin') }}" class="card-dash shadow">
                 <div class="card-icon"><i class="fas fa-clipboard-list"></i></div>
                 <div class="card-title">کاربران</div>
                 <div class="card-text-sm">نمایش کل کاربران</div>
-            </a>ط
+            </a>
         </div>
         <div class="col-md-3 col-sm-6">
             <a href="{{ route('show-limited-users-admin') }}" class="card-dash shadow">
                 <div class="card-icon"><i class="fas fa-clipboard-list"></i></div>
                 <div class="card-title"> کاربران محدود شده</div>
                 <div class="card-text-sm">نمایش کل کاربران محدود شده</div>
+            </a>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <a href="{{ route('admin_survey') }}" class="card-dash shadow">
+                <div class="card-icon"><i class="fas fa-clipboard-list"></i></div>
+                <div class="card-title">نظرسنجی</div>
+                <div class="card-count">{{ $survey }}</div>
+                <div class="card-text-sm">نظرسنجی</div>
             </a>
         </div>
     </div>
