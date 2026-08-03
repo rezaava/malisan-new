@@ -7,6 +7,7 @@
 
 @section('head')
 <style>
+    /* تمام استایل‌ها به همان شکل قبل */
     .self-test-wrapper {
         max-width: 650px;
         margin: 30px auto;
@@ -173,6 +174,113 @@
         color: #856404;
         border: 1px solid #ffeeba;
         font-size: 14px;
+    }
+
+    /* ===== تایمر ===== */
+    .timer-container {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        background: #f0f4f8;
+        padding: 8px 16px;
+        border-radius: 30px;
+        margin-bottom: 15px;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .timer-container .timer-icon {
+        font-size: 20px;
+        color: #1e6f9f;
+    }
+
+    .timer-container .timer-display {
+        font-size: 20px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        direction: ltr;
+        color: #1a2332;
+        min-width: 80px;
+        text-align: center;
+    }
+
+    .timer-container .timer-display.warning {
+        color: #dc3545;
+        animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+    }
+
+    .circle-timer {
+        position: relative;
+        width: 50px;
+        height: 50px;
+        flex-shrink: 0;
+    }
+
+    .circle-timer svg {
+        transform: rotate(-90deg);
+    }
+
+    .circle-timer .bg {
+        fill: none;
+        stroke: #e0e5ec;
+        stroke-width: 4;
+    }
+
+    .circle-timer .progress {
+        fill: none;
+        stroke: #1e6f9f;
+        stroke-width: 4;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 0.3s ease;
+    }
+
+    .circle-timer .progress.warning {
+        stroke: #dc3545;
+    }
+
+    .circle-timer .timer-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 14px;
+        font-weight: 700;
+        color: #1a2332;
+    }
+
+    .timer-container .timer-label {
+        font-size: 13px;
+        color: #6c7a8a;
+        margin-right: auto;
+    }
+
+    .prev-question-box {
+        background: #f8f9fa;
+        padding: 15px 18px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .prev-question-box .label {
+        font-size: 14px;
+        color: #888;
+        margin-bottom: 6px;
+    }
+
+    .prev-question-box .qtext {
+        font-size: 16px;
+        margin-bottom: 12px;
+    }
+
+    hr.divider {
+        margin: 20px 0;
+        border: 0;
+        border-top: 1px dashed #ddd;
     }
 
     /* ===== مودال ===== */
@@ -394,37 +502,12 @@
     .toast-close:hover {
         opacity: 1;
     }
-
-    .prev-question-box {
-        background: #f8f9fa;
-        padding: 15px 18px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-    }
-
-    .prev-question-box .label {
-        font-size: 14px;
-        color: #888;
-        margin-bottom: 6px;
-    }
-
-    .prev-question-box .qtext {
-        font-size: 16px;
-        margin-bottom: 12px;
-    }
-
-    hr.divider {
-        margin: 20px 0;
-        border: 0;
-        border-top: 1px dashed #ddd;
-    }
 </style>
 @endsection
 
 @section('mohtava')
 
 <div class="self-test-wrapper">
-
     {{-- هدر --}}
     <div class="test-header">
         <span class="title">سوال <span id="currentNum">{{ $num ?? 1 }}</span> از <span id="totalQ">{{ $q_num ?? 10 }}</span></span>
@@ -434,10 +517,34 @@
         </span>
     </div>
 
-    {{-- باکس فیدبک (فقط پیام) --}}
+    {{-- نمایش تایمر اگر فعال باشد --}}
+    @if($timerData['enabled'] ?? false)
+        <div class="timer-container" id="timerContainer">
+            <span class="timer-icon"><i class="fas fa-hourglass-half"></i></span>
+            @if($timerData['type'] == 'per_question')
+                <div class="circle-timer" id="circleTimer">
+                    <svg width="50" height="50" viewBox="0 0 50 50">
+                        <circle class="bg" cx="25" cy="25" r="20" />
+                        <circle class="progress" id="circleProgress" cx="25" cy="25" r="20" 
+                                stroke-dasharray="125.6" stroke-dashoffset="0" />
+                    </svg>
+                    <span class="timer-text" id="circleTimerText">{{ $timerData['time_per_question'] }}</span>
+                </div>
+                <span class="timer-display" id="timerDisplay">{{ $timerData['time_per_question'] }} ثانیه</span>
+                <span class="timer-label">زمان باقی‌مانده برای این سوال</span>
+            @elseif($timerData['type'] == 'total')
+                <span class="timer-display" id="timerDisplay">
+                    {{ gmdate('H:i:s', $timerData['total_time']) }}
+                </span>
+                <span class="timer-label">زمان باقی‌مانده کل آزمون</span>
+            @endif
+        </div>
+    @endif
+
+    {{-- باکس فیدبک --}}
     <div id="feedbackBox" class="feedback-box"></div>
 
-    {{-- نمایش سوال قبلی برای حالت غیر AJAX (رفرش) --}}
+    {{-- نمایش سوال قبلی (فقط در حالت غیر AJAX) --}}
     @if($showQuiz == 1 && isset($previousQuestion) && $previousQuestion && !request()->ajax())
         <div class="prev-question-box">
             <div class="label">سوال قبلی:</div>
@@ -508,7 +615,11 @@
     {{-- هیدن‌ها --}}
     <input type="hidden" id="answerId" value="{{ $newAnswer->id ?? $answer->id }}">
     <input type="hidden" id="showQuiz" value="{{ $showQuiz ?? 0 }}">
-    <input type="hidden" id="isFirstQuestion" value="{{ $isFirstQuestion ?? false }}">
+    <input type="hidden" id="timerType" value="{{ $timerData['type'] ?? '' }}">
+    <input type="hidden" id="timePerQuestion" value="{{ $timerData['time_per_question'] ?? 0 }}">
+    <input type="hidden" id="totalTime" value="{{ $timerData['total_time'] ?? 0 }}">
+    <input type="hidden" id="timerEnabled" value="{{ $timerData['enabled'] ? 1 : 0 }}">
+    <input type="hidden" id="quizId" value="{{ $quiz->id ?? 0 }}">
 </div>
 
 {{-- مودال گزارش ایراد --}}
@@ -543,13 +654,198 @@
 
 <script>
     // =============================================
-    // منطق اصلی خودآزمایی (دقیقاً مانند قبل)
+    // متغیرهای اصلی
     // =============================================
     let selectedOption = null;
     let isLoading = false;
     const showQuiz = parseInt(document.getElementById('showQuiz').value);
+    const timerEnabled = parseInt(document.getElementById('timerEnabled').value);
+    const timerType = document.getElementById('timerType').value;
+    let timerInterval = null;
+    let timeLeft = 0;
+    let isFirstAutoSubmit = true;
 
-    // انتخاب گزینه با onclick
+    // =============================================
+    // توابع تایمر
+    // =============================================
+    function startTimer() {
+        if (!timerEnabled) return;
+
+        if (timerType === 'per_question') {
+            const initial = parseInt(document.getElementById('timePerQuestion').value);
+            if (isNaN(initial) || initial <= 0) return;
+            timeLeft = initial;
+            updateCircleTimer(initial, initial);
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    if (!isLoading) {
+                        autoSubmit();
+                    }
+                    return;
+                }
+                updateCircleTimer(timeLeft, initial);
+            }, 1000);
+        } else if (timerType === 'total') {
+            const initial = parseInt(document.getElementById('totalTime').value);
+            if (isNaN(initial) || initial <= 0) return;
+            timeLeft = initial;
+            updateTotalTimer(initial);
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    finishTest();
+                    return;
+                }
+                updateTotalTimer(timeLeft);
+            }, 1000);
+        }
+    }
+
+    function updateCircleTimer(current, total) {
+        const circle = document.getElementById('circleProgress');
+        const text = document.getElementById('circleTimerText');
+        const display = document.getElementById('timerDisplay');
+        const radius = 20;
+        const circumference = 2 * Math.PI * radius;
+        const offset = circumference * (1 - current / total);
+        circle.style.strokeDashoffset = offset;
+        text.textContent = current;
+        display.textContent = current + ' ثانیه';
+        if (current <= 5) {
+            circle.classList.add('warning');
+            display.classList.add('warning');
+        } else {
+            circle.classList.remove('warning');
+            display.classList.remove('warning');
+        }
+    }
+
+    function updateTotalTimer(seconds) {
+        const display = document.getElementById('timerDisplay');
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        display.textContent = 
+            String(hours).padStart(2, '0') + ':' +
+            String(minutes).padStart(2, '0') + ':' +
+            String(secs).padStart(2, '0');
+        if (seconds <= 60) {
+            display.classList.add('warning');
+        } else {
+            display.classList.remove('warning');
+        }
+    }
+
+    function stopTimer() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+    }
+
+    // =============================================
+    // ارسال خودکار (بدون پاسخ) - فقط برای per_question
+    // =============================================
+    function autoSubmit() {
+        if (isLoading) return;
+        if (!isFirstAutoSubmit) return;
+        isFirstAutoSubmit = false;
+
+        const answerId = document.getElementById('answerId').value;
+        isLoading = true;
+        document.getElementById('submitBtn').disabled = true;
+        document.querySelectorAll('.option-item').forEach(el => el.style.pointerEvents = 'none');
+
+        fetch('{{ route('student.selfTest.next') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                answer_id: answerId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                showError(data.message || 'خطا در ارسال خودکار');
+                resetAfterError();
+                return;
+            }
+            if (data.finished) {
+                stopTimer();
+                window.location.href = '{{ route("student.selfTest.results", ["quiz_id" => ":quiz_id"]) }}'
+                    .replace(':quiz_id', data.quiz_id);
+                return;
+            }
+            if (showQuiz === 1 && data.previous && data.previous.question) {
+                showPreviousQuestion(data.previous);
+            }
+            const next = data.next;
+            setTimeout(function() {
+                updateQuestion(next);
+                resetAfterSuccess();
+                if (timerType === 'per_question') {
+                    isFirstAutoSubmit = true;
+                    startTimer();
+                }
+            }, showQuiz === 1 ? 3000 : 0);
+        })
+        .catch(function() {
+            showError('خطا در ارتباط با سرور.');
+            resetAfterError();
+        });
+    }
+
+    // =============================================
+    // پایان آزمون (زمان کل تمام شد)
+    // =============================================
+    function finishTest() {
+        if (isLoading) return;
+        const answerId = document.getElementById('answerId').value;
+        isLoading = true;
+        fetch('{{ route('student.selfTest.next') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                answer_id: answerId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            stopTimer();
+            if (data.finished) {
+                window.location.href = '{{ route("student.selfTest.results", ["quiz_id" => ":quiz_id"]) }}'
+                    .replace(':quiz_id', data.quiz_id);
+            } else {
+                const quizId = document.getElementById('quizId').value;
+                window.location.href = '{{ route("student.selfTest.results", ["quiz_id" => ":quiz_id"]) }}'
+                    .replace(':quiz_id', quizId);
+            }
+        })
+        .catch(() => {
+            const quizId = document.getElementById('quizId').value;
+            window.location.href = '{{ route("student.selfTest.results", ["quiz_id" => ":quiz_id"]) }}'
+                .replace(':quiz_id', quizId);
+        });
+    }
+
+    // =============================================
+    // انتخاب گزینه
+    // =============================================
     function selectOption(element) {
         if (isLoading) return;
         document.querySelectorAll('.option-item').forEach(item => {
@@ -560,20 +856,25 @@
         document.getElementById('submitBtn').disabled = false;
     }
 
-    // ثبت پاسخ
+    // =============================================
+    // ثبت پاسخ دستی (اصلاح شده: توقف تایمر فقط برای per_question)
+    // =============================================
     document.getElementById('submitBtn').addEventListener('click', function(e) {
         e.preventDefault();
         if (isLoading) return;
-
         if (!selectedOption) {
             showError('لطفاً یک گزینه را انتخاب کنید.');
             return;
         }
+        // توقف تایمر فقط در حالت "به ازای هر سوال"
+        if (timerType === 'per_question') {
+            stopTimer();
+        }
+        // در حالت کل آزمون، تایمر را متوقف نکن
 
-        isLoading = true;
         const answerId = document.getElementById('answerId').value;
         const selectedValue = selectedOption.dataset.value;
-
+        isLoading = true;
         this.disabled = true;
         document.querySelectorAll('.option-item').forEach(el => el.style.pointerEvents = 'none');
 
@@ -596,22 +897,24 @@
                 resetAfterError();
                 return;
             }
-
             if (data.finished) {
+                stopTimer();
                 window.location.href = '{{ route("student.selfTest.results", ["quiz_id" => ":quiz_id"]) }}'
                     .replace(':quiz_id', data.quiz_id);
                 return;
             }
-
-            // نمایش پاسخ قبلی اگر show_quiz == 1
             if (showQuiz === 1 && data.previous && data.previous.question) {
                 showPreviousQuestion(data.previous);
             }
-
             const next = data.next;
             setTimeout(function() {
                 updateQuestion(next);
                 resetAfterSuccess();
+                if (timerType === 'per_question') {
+                    isFirstAutoSubmit = true;
+                    startTimer();
+                }
+                // برای total، تایمر از قبل در حال اجراست و نیازی به restart ندارد
             }, showQuiz === 1 ? 3000 : 0);
         })
         .catch(function() {
@@ -620,11 +923,13 @@
         });
     });
 
-    // نمایش سوال قبلی در همان باکس
+    // =============================================
+    // نمایش سوال قبلی (در حالت show_quiz==1)
+    // =============================================
     function showPreviousQuestion(prev) {
         const fb = document.getElementById('feedbackBox');
         fb.className = 'feedback-box ' + (prev.is_correct ? 'correct' : 'incorrect');
-        fb.textContent = (prev.is_correct ? '✅' : '❌') + ' ' + (prev.is_correct ? 'پاسخ شما صحیح بود!' : 'پاسخ شما صحیح نبود.');
+        fb.textContent = (prev.is_correct ? '✅ پاسخ شما صحیح بود!' : '❌ پاسخ شما صحیح نبود.');
 
         document.getElementById('questionText').textContent = prev.question;
 
@@ -645,7 +950,9 @@
         document.getElementById('submitBtn').disabled = true;
     }
 
+    // =============================================
     // بارگذاری سوال بعدی
+    // =============================================
     function updateQuestion(next) {
         document.getElementById('questionText').textContent = next.question_text;
 
@@ -666,9 +973,14 @@
         document.getElementById('feedbackBox').className = 'feedback-box';
         document.getElementById('feedbackBox').textContent = '';
         document.getElementById('submitBtn').disabled = false;
+        selectedOption = null;
+        isLoading = false;
+        document.querySelectorAll('.option-item').forEach(el => el.style.pointerEvents = '');
     }
 
-    // کمک‌ها
+    // =============================================
+    // توابع کمکی
+    // =============================================
     function showError(msg) {
         const box = document.getElementById('errorBox');
         box.textContent = '⚠️ ' + msg;
@@ -690,7 +1002,7 @@
     }
 
     // =============================================
-    // مودال گزارش ایراد (دقیقاً مانند قبل)
+    // مودال گزارش ایراد
     // =============================================
     function openReportModal() {
         const modal = document.getElementById('reportModal');
@@ -793,6 +1105,15 @@
             }
         }, 5000);
     }
+
+    // =============================================
+    // راه‌اندازی اولیه
+    // =============================================
+    document.addEventListener('DOMContentLoaded', function() {
+        if (timerEnabled) {
+            startTimer();
+        }
+    });
 </script>
 
 @endsection

@@ -333,7 +333,7 @@ class ExamController extends Controller
     }
 
     /**
-     * شروع خودآزمایی دانشجو
+     * شروع خودآزمایی دانشجو (ویرایش شده برای تایمر)
      */
     public function startSelfTest($courseId)
     {
@@ -402,8 +402,25 @@ class ExamController extends Controller
         $num = 1;
         $showQuiz = $setting->show_quiz ?? 0;
 
-        // ارسال یک متغیر برای مشخص کردن اینکه در صفحه اول هستیم (برای جاوااسکریپت)
-        $isFirstQuestion = true;
+        // ---------- اطلاعات تایمر ----------
+        $timerData = [
+            'enabled' => false,
+            'type' => null, // 'per_question' or 'total'
+            'time_per_question' => null, // seconds
+            'total_time' => null, // seconds
+        ];
+
+        if ($setting->time_limit_khod == 1) {
+            if ($setting->time_per_question > 0) {
+                $timerData['enabled'] = true;
+                $timerData['type'] = 'per_question';
+                $timerData['time_per_question'] = $setting->time_per_question;
+            } elseif ($setting->total_time_limit > 0) {
+                $timerData['enabled'] = true;
+                $timerData['type'] = 'total';
+                $timerData['total_time'] = $setting->total_time_limit * 60; // convert to seconds
+            }
+        }
 
         return view('student.self-test', compact(
             'question',
@@ -413,7 +430,8 @@ class ExamController extends Controller
             'course',
             'showQuiz',
             'shuffledOptions',
-            'isFirstQuestion'
+            'timerData',
+            'quiz'
         ))->with([
             'pageTitle'        => 'خودآزمایی',
             'pageName'         => 'خودآزمایی',
@@ -422,7 +440,7 @@ class ExamController extends Controller
     }
 
     /**
-     * دریافت سوال بعدی خودآزمایی (اصلاح شده)
+     * دریافت سوال بعدی (ویرایش شده برای پذیرش پاسخ null و تایمر)
      */
     public function nextQuestion(Request $request)
     {
@@ -453,16 +471,16 @@ class ExamController extends Controller
         $q_num = $setting->q_num ?? 10;
         $showQuiz = $setting->show_quiz ?? 0;
 
-        // ─── ذخیره پاسخ کاربر ───
+        // ─── ذخیره پاسخ کاربر (اگر ارسال شده باشد) ───
         $previousQuestion = null;
         $isCorrect = false;
         $userAnswerIndex = null;
         $shuffledOptionsPrev = null;
         $correctIndexPrev = null;
+        $hasAnswer = $request->has('answer') && $request->answer !== null && $request->answer !== '';
 
-        if ($request->has('answer')) {
+        if ($hasAnswer) {
             $userAnswerIndex = (int) $request->answer; // ۰ تا ۳
-            // ذخیره با +۱ برای هماهنگی با دیتابیس
             $currentAnswer->answer = $userAnswerIndex + 1;
             $currentAnswer->save();
 
@@ -471,23 +489,37 @@ class ExamController extends Controller
                 $shuffledData = \Session::get('shuffled_question_' . $previousQuestion->id);
                 if ($shuffledData) {
                     $shuffledOptionsPrev = $shuffledData['options'];
-                    $correctIndexPrev    = $shuffledData['correct_index']; // ۰ تا ۳
-                    // برای مقایسه باید از مقدار ذخیره‌شده (۱ تا ۴) استفاده کنیم
-                    // پس $currentAnswer->answer را با ($correctIndexPrev + 1) مقایسه می‌کنیم
+                    $correctIndexPrev    = $shuffledData['correct_index'];
                     $isCorrect = ($currentAnswer->answer == ($correctIndexPrev + 1));
+                }
+            }
+        } else {
+            // بدون پاسخ -> غلط محسوب می‌شود
+            $currentAnswer->answer = null; // نشانه عدم پاسخ
+            $currentAnswer->save();
+
+            if ($showQuiz == 1) {
+                $previousQuestion = Question::find($currentAnswer->question_id);
+                $shuffledData = \Session::get('shuffled_question_' . $previousQuestion->id);
+                if ($shuffledData) {
+                    $shuffledOptionsPrev = $shuffledData['options'];
+                    $correctIndexPrev    = $shuffledData['correct_index'];
+                    $isCorrect = false;
+                    $userAnswerIndex = null;
                 }
             }
         }
 
-        // ─── دریافت سوالات قبلی ───
+        // ─── دریافت سوالات قبلی (همه سوالات این آزمون) ───
         $oldQuestions = Answer::where('quiz_id', $currentAnswer->quiz_id)
-            ->whereNotNull('answer')
-            ->pluck('question_id');
+            ->pluck('question_id')
+            ->toArray();
 
         $sessions = $course->sessions()->pluck('id');
 
         // ─── بررسی پایان آزمون ───
-        if ($oldQuestions->count() >= $q_num) {
+        $totalAnswered = Answer::where('quiz_id', $currentAnswer->quiz_id)->count();
+        if ($totalAnswered >= $q_num) {
             // پایان آزمون
             if ($request->ajax()) {
                 return response()->json([
@@ -543,7 +575,7 @@ class ExamController extends Controller
             'question_id' => $nextQuestion->id,
         ]);
 
-        $num = $oldQuestions->count() + 1;
+        $num = Answer::where('quiz_id', $quiz->id)->count();
 
         // ─── پاسخ AJAX ───
         if ($request->ajax()) {
@@ -554,9 +586,10 @@ class ExamController extends Controller
                 'previous' => [
                     'question' => $previousQuestion ? $previousQuestion->question : null,
                     'options'  => $shuffledOptionsPrev,
-                    'correct_index' => $correctIndexPrev, // ۰ تا ۳
-                    'user_answer_index' => $userAnswerIndex, // ۰ تا ۳ (همان مقدار اولیه)
-                    'is_correct' => $isCorrect, // قبلاً با +۱ محاسبه شده
+                    'correct_index' => $correctIndexPrev,
+                    'user_answer_index' => $userAnswerIndex,
+                    'is_correct' => $isCorrect,
+                    'has_answer' => $hasAnswer,
                 ],
                 'next' => [
                     'question_id'   => $nextQuestion->id,
@@ -569,7 +602,7 @@ class ExamController extends Controller
             ]);
         }
 
-        // ─── پاسخ معمولی (رفرش صفحه) ───
+        // ─── پاسخ معمولی ───
         return view('student.self-test', compact(
             'nextQuestion',
             'newAnswer',
@@ -627,60 +660,60 @@ class ExamController extends Controller
     }
 
     /**
-     * نمایش نتایج خودآزمایی
+     * نمایش نتایج (ویرایش شده برای پاسخ‌های null)
      */
     public function selfTestResults($quizId)
     {
         $quiz = Quiz::findOrFail($quizId);
         $answers = Answer::where('quiz_id', $quizId)->get();
         $questions = Question::whereIn('id', $answers->pluck('question_id'))->get();
-    
+
         $totalQuestions = $questions->count();
         $correctAnswers = 0;
-    
+
         foreach ($questions as $question) {
             $answer = Answer::where('quiz_id', $quizId)
                 ->where('question_id', $question->id)
                 ->first();
             $question['user_answer'] = $answer;
-    
-            // دریافت اطلاعات شافل شده از session
+
             $shuffledData = \Session::get('shuffled_question_' . $question->id);
             if ($shuffledData) {
-                $question['shuffled_options'] = $shuffledData['options']; // آرایه‌ی شافل شده
-                $question['shuffled_correct_index'] = $shuffledData['correct_index']; // ۰ تا ۳
+                $question['shuffled_options'] = $shuffledData['options'];
+                $question['shuffled_correct_index'] = $shuffledData['correct_index'];
             } else {
-                // اگر در session نبود، از ترتیب اصلی استفاده کن
                 $question['shuffled_options'] = [
                     ['value' => $question->answer1, 'index' => 0],
                     ['value' => $question->answer2, 'index' => 1],
                     ['value' => $question->answer3, 'index' => 2],
                     ['value' => $question->answer4, 'index' => 3],
                 ];
-                $question['shuffled_correct_index'] = $question->answer - 1; // تبدیل ۱ تا ۴ به ۰ تا ۳
+                $question['shuffled_correct_index'] = $question->answer - 1;
             }
-    
-            // اندیس پاسخ کاربر (۰ تا ۳)
+
             if ($answer) {
-                $question['user_answer_index'] = $answer->answer - 1; // چون answer در دیتابیس ۱ تا ۴ است
-                // بررسی صحت پاسخ با استفاده از اندیس شافل شده
-                if ($answer->answer == ($question['shuffled_correct_index'] + 1)) {
-                    $correctAnswers++;
+                if ($answer->answer === null) {
+                    $question['user_answer_index'] = null;
+                } else {
+                    $question['user_answer_index'] = $answer->answer - 1;
+                    if ($answer->answer == ($question['shuffled_correct_index'] + 1)) {
+                        $correctAnswers++;
+                    }
                 }
             } else {
                 $question['user_answer_index'] = null;
             }
         }
-    
+
         $score = $totalQuestions > 0 ? ($correctAnswers * 20) / $totalQuestions : 0;
         $motivational = $this->getMotivationalMessage($score);
-    
+
         $course = Course::find($quiz->course_id);
         if ($course->settings->natije != 1) {
             return redirect()->route('view.coure.St', $course->id);
         }
         $user = User::find($quiz->user_id);
-    
+
         return view('student.self-test-result', compact(
             'questions',
             'course',
@@ -728,15 +761,12 @@ class ExamController extends Controller
         };
 
         return Question::whereIn('session_id', $sessions)
+            ->whereIn('status', $statusFilter)
             ->whereNotIn('id', $oldQuestions)
             ->inRandomOrder()
             ->first();
-        // ->whereIn('status', $statusFilter)
     }
 
-    /**
-     * دریافت پیام انگیزشی بر اساس امتیاز
-     */
     private function getMotivationalMessage($score)
     {
         $level = match (true) {
