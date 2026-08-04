@@ -6,6 +6,121 @@
 
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-courses.css')}}">
+<style>
+    /* بج‌های اطلاعات */
+    .course-info .info-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 8px 0 6px 0;
+    }
+    
+    .course-info .info-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: #e9ecef;
+        color: #495057;
+        padding: 2px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: 1px solid #dee2e6;
+    }
+    
+    .course-info .info-badge i {
+        font-size: 12px;
+        color: #1e6f9f;
+    }
+    
+    .course-info .info-badge:hover {
+        background: #dee2e6;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    /* توضیحات */
+    .course-info .description-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 6px;
+        margin: 6px 0 8px 0;
+        padding: 6px 10px;
+        background: #f1f8ff;
+        border-radius: 6px;
+        border-right: 2px solid #1e6f9f;
+        font-size: 12px;
+        color: #495057;
+        line-height: 1.6;
+    }
+    
+    .course-info .description-item i {
+        color: #1e6f9f;
+        font-size: 13px;
+        margin-top: 2px;
+    }
+    
+    .course-info .description-item span {
+        flex: 1;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* بج‌های وضعیت */
+    .course-status-badge,
+    .dore-badge,
+    .private-badge {
+        font-size: 11px !important;
+        padding: 2px 10px !important;
+        margin: 2px 2px !important;
+        border-radius: 20px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+    }
+    
+    /* حالت خاتمه یافته */
+    .course-card.ended .info-badge {
+        background: #f1f3f5;
+        color: #6c757d;
+        border-color: #dee2e6;
+    }
+    
+    .course-card.ended .info-badge i {
+        color: #adb5bd;
+    }
+    
+    .course-card.ended .description-item {
+        background: #f8f9fa;
+        border-right-color: #adb5bd;
+        opacity: 0.8;
+    }
+    
+    /* ریسپانسیو */
+    @media (max-width: 768px) {
+        .course-info .info-badges {
+            gap: 4px;
+        }
+        
+        .course-info .info-badge {
+            font-size: 10px;
+            padding: 1px 8px;
+        }
+        
+        .course-info .info-badge i {
+            font-size: 10px;
+        }
+        
+        .course-info .description-item {
+            font-size: 11px;
+            padding: 4px 8px;
+        }
+    }
+</style>
 @endsection
 
 @section('mohtava')
@@ -50,8 +165,24 @@
                 <div class="course-info">
                     <h3 class="course-title">{{ $cours->name }}</h3>
                     <p class="course-code">کد: {{ $cours->code }}</p>
-                    
-                    <!-- نمایش وضعیت برگزاری -->
+
+                    <div class="description-item">
+                        <i class="fas fa-file-alt"></i>
+                        <span>{{ $cours->desc ?? 'توضیحاتی ثبت نشده است' }}</span>
+                    </div>
+                        <span class="info-badge">
+                            <i class="fas fa-user-graduate"></i>
+                            مدرس : {{ Auth::user()->name }} 
+                        </span>
+                        <span class="info-badge">
+                            <i class="fas fa-clock"></i>
+                            مدت زمان دوره : {{ $cours->length ?? '-' }} 
+                        </span>
+                        <span class="info-badge">
+                            <i class="fas fa-video"></i>
+                            تعداد جلسات : {{ $cours->sessions_length ?? '-' }}
+                        </span>
+                    <!-- وضعیت برگزاری -->
                     <span class="course-status-badge {{ $isEnded ? 'course-status-inactive' : 'course-status-active' }}">
                         <i class="fas fa-circle"></i>
                         {{ $isEnded ? '● خاتمه یافته' : '● در حال برگزاری' }}
@@ -70,6 +201,7 @@
                         {{ $isPrivate ? 'خصوصی' : 'عمومی' }}
                     </span>
                     
+                    <!-- کلاس مجازی -->
                     @if(isset($cours->majazi))
                         @php
                             $baseUrl = 'https://testnn.malisan.ir/teacher/';
