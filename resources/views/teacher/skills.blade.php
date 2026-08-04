@@ -154,12 +154,21 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="majazi">لینک کلاس مجازی (اختیاری)</label>
-                    <input type="url" id="majazi" name="majazi" class="form-control" 
-                           placeholder="https://example.com/class">
+                    <label for="desc">مختصری درباره مهارت (اختیاری)</label>
+                    <input type="text" id="desc" name="desc" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="length">طول دوره (روز)</label>
+                    <input type="tel" id="length" name="length" class="form-control">
+                </div>
+    
+                <div class="form-group">
+                    <label for="sessions_length">تعداد جلسات</label>
+                    <input type="tel" id="sessions_length" name="sessions_length" class="form-control">
                 </div>
             </div>
-            
+
             <div class="modal-footer">
                 <button type="button" class="btn-cancel" onclick="closeModal()">انصراف</button>
                 <button type="submit" class="btn-submit">
@@ -242,6 +251,13 @@
         const modalTitle = document.getElementById('modalTitle');
         const submitButtonText = document.getElementById('submitButtonText');
         
+        // بررسی وجود المنت‌ها
+        if (!modal) {
+            console.error('Modal not found!');
+            showToast('خطا: مودال پیدا نشد', 'error');
+            return;
+        }
+        
         if (copyId) {
             modalTitle.textContent = 'کپی مهارت';
             submitButtonText.textContent = 'کپی مهارت';
@@ -261,8 +277,12 @@
                         return;
                     }
                     
-                    document.getElementById('name').value = data.name;
-                    document.getElementById('majazi').value = data.majazi || '';
+                    // فقط فیلدهایی که وجود دارند را مقداردهی کنید
+                    const nameInput = document.getElementById('name');
+                    if (nameInput) nameInput.value = data.name;
+                    
+                    const majaziInput = document.getElementById('majazi');
+                    if (majaziInput) majaziInput.value = data.majazi || '';
                     
                     modal.classList.add('active');
                     showToast('اطلاعات مهارت بارگذاری شد.', 'success');
@@ -275,12 +295,17 @@
         } else {
             modalTitle.textContent = 'ایجاد مهارت جدید';
             submitButtonText.textContent = 'ایجاد مهارت';
-            document.getElementById('name').value = '';
-            document.getElementById('majazi').value = '';
+            
+            // ریست کردن فرم
+            const nameInput = document.getElementById('name');
+            if (nameInput) nameInput.value = '';
+            
+            const majaziInput = document.getElementById('majazi');
+            if (majaziInput) majaziInput.value = '';
+            
             modal.classList.add('active');
         }
     }
-
     function closeModal() {
         const modal = document.getElementById('createCourseModal');
         modal.classList.remove('active');

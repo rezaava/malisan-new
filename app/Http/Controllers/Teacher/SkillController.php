@@ -737,8 +737,10 @@ class SkillController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'majazi' => 'nullable|url|max:255',
-            'copy' => 'nullable|exists:courses,id'
+            'desc' => 'nullable|max:255',
+            'copy' => 'nullable|exists:courses,id',
+            'length' => 'nullable',
+            'sessions_length' => 'nullable',
         ]);
 
         if ($validator->fails()) {
@@ -757,12 +759,14 @@ class SkillController extends Controller
             
             $course = new Course();
             $course->name = $request->name;
-            $course->majazi = $this->cleanUrl($request->majazi);
+            $course->desc = $request->desc;
+            $course->length = $request->length;
+            $course->sessions_length = $request->sessions_length;
             $course->max_session = 16;
             $course->code = $code;
             $course->is_dore = 0;
             $course->is_skill = 1; 
-            $course->header = rand(0, 30);
+            $course->header = rand(1, 29);
             $course->save();
             
             $this->createCourseAssociations($course);
