@@ -421,7 +421,7 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
         Route::get('/', [StudentSkillController::class, 'courses'])->name('skill.st');
         Route::get('/view/{id}', [StudentSkillController::class, 'view'])->name('view.skill.St');
 
-        Route::post('/join-course', [StudentSkillController::class, 'join'])->name('join.skill');
+        Route::post('/join-course', [StudentCourseController::class, 'join'])->name('join.skill');
 
         Route::get('/adjectives/{studentId}', [StudentAdjectiveController::class, 'index']);
         Route::post('/adjectives', [StudentAdjectiveController::class, 'store']);

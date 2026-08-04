@@ -25,7 +25,7 @@ class StudentSkillController extends Controller
     {
         $user = Auth::user();
 
-        $skills = $user->courses()->where('courses.archieve', 0)->where('courses.is_skill', 1)->get();
+        $skills = $user->courses()->where('courses.archieve', 0)->whereIn('courses.type', [1,2])->get();
 
         return view('student.skills', compact('skills'));
     }
@@ -33,7 +33,7 @@ class StudentSkillController extends Controller
     {
         $course = Course::with(['sessions' => function ($query) {
             $query->orderBy('number', 'desc');
-        }, 'settings'])->where('is_skill', 1)->findOrFail($id);
+        }, 'settings'])->whereIn('type', [1,2])->findOrFail($id);
 
         $user = Auth::user();
         $studentRole = Role::where('name', 'student')->first();
@@ -51,7 +51,7 @@ class StudentSkillController extends Controller
         $paid = ($course->price == 0 || ($courseUser && $courseUser->paid == 1)) ? 1 : 0;
 
         $sessionIdsForJudgment = Session::where('course_id', $id)->whereHas('course', function($query) {
-            $query->where('is_skill', 1);
+            $query->whereIn('type', [1,2]);
         })->pluck('id');
         $pendingQuestionsCount = Question::whereNull('status')
             ->whereIn('session_id', $sessionIdsForJudgment)
@@ -146,7 +146,7 @@ class StudentSkillController extends Controller
             // پیدا کردن آخرین جلسه
             $lastSession = Session::where('course_id', $course->id)
                 ->whereHas('course', function($query) {
-                    $query->where('is_skill', 1);
+                    $query->whereIn('type', [1,2]);
                 })
                 ->orderBy('id', 'desc')
                 ->first();
@@ -205,11 +205,11 @@ class StudentSkillController extends Controller
         }
 
         $course['sessions'] = $course->sessions()->whereHas('course', function($query) {
-            $query->where('is_skill', 1);
+            $query->whereIn('type', [1,2]);
         })->count();
         $course['count'] = ($studentRole) 
-            ? $course->users()->where('role_id', $studentRole->id)->whereHas('course', function($query) {
-                $query->where('is_skill', 1);
+            ? $course->users()->where('role_id', $studentRole->id)->whereHas('courses', function($query) {
+                $query->whereIn('type', [1,2]);
             })->count() 
             : 0;
 
@@ -233,142 +233,5 @@ class StudentSkillController extends Controller
         ))->with([
             'student' => (int) $isStudent,
         ]);
-    }
-    
-    public function join(Request $request)
-    {
-        // اعتبارسنجی
-        $validator = Validator::make($request->all(), [
-            'code' => 'required|string|max:10',
-        ], [
-            'code.required' => 'لطفاً کد مهارت را وارد کنید',
-            'code.max' => 'کد مهارت نباید بیشتر از ۱۰ کاراکتر باشد',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        DB::beginTransaction();
-        try {
-            $user = Auth::user();
-            $studentRole = Role::where('name', 'student')->first();
-
-            // پیدا کردن دوره با کد - فقط دوره‌های مهارتی
-            $course = Course::where('code', $request->code)
-                ->where('is_skill', 1)
-                ->first();
-
-            if (!$course) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'کد درس وارد شده نامعتبر است'
-                ], 404);
-            }
-
-            // بررسی آرشیو بودن دوره
-            if ($course->archive == 1) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'این دوره آرشیو شده و امکان عضویت در آن وجود ندارد'
-                ], 403);
-            }
-
-            // بررسی تکراری بودن عضویت
-            $existingMembership = $user->courses()->where('course_id', $course->id)->first();
-            if ($existingMembership) {
-                // اگر کاربر قبلاً درخواست داده و وضعیت pending است
-                if ($existingMembership->pivot->status == 2) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'درخواست شما قبلاً ثبت شده و در انتظار تأیید است'
-                    ], 409);
-                }
-                // اگر کاربر قبلاً عضو شده است
-                return response()->json([
-                    'success' => false,
-                    'message' => 'شما قبلاً در این کلاس عضو هستید'
-                ], 409);
-            }
-
-            // بررسی خصوصی بودن دوره
-            if ($course->private == 1) {
-                // برای دوره‌های خصوصی، عضویت با وضعیت pending (2) ثبت می‌شود
-                $status = 2; // pending request
-                
-                // عضویت دانشجو در دوره با وضعیت pending
-                $course->users()->attach($user, [
-                    'role_id' => $studentRole->id,
-                    'status' => $status
-                ]);
-
-                DB::commit();
-                
-                return response()->json([
-                    'success' => true,
-                    'message' => 'درخواست شما برای استاد درس ارسال شد. لطفاً تا زمان تأیید ایشان صبر کنید. به محض تأیید، دسترسی شما به درس فعال خواهد شد.',
-                    'course_name' => $course->name,
-                    'status' => 'pending'
-                ]);
-            }
-
-            // برای دوره‌های عمومی، عضویت با وضعیت approved (1) ثبت می‌شود
-            $status = 1; // approved
-
-            // عضویت دانشجو در دوره
-            $course->users()->attach($user, [
-                'role_id' => $studentRole->id,
-                'status' => $status
-            ]);
-
-            // ایجاد Scoring برای دانشجو با مقادیر پیش‌فرض ۰
-            $scoring = Scoring::create([
-                'course_id' => $course->id,
-                'user_id' => $user->id,
-                'q_1' => 0,
-                'q_2' => 0,
-                'q_3' => 0,
-                'q_4' => 0,
-                'd_1' => 0,
-                'd_2' => 0,
-                'd_3' => 0,
-                'd_4' => 0,
-                'e_1' => 0,
-                'e_2' => 0,
-                'e_3' => 0,
-                'e_4' => 0,
-                's_1' => 0,
-                's_2' => 0,
-                's_3' => 0,
-                's_4' => 0,
-            ]);
-
-            // اطمینان از وجود Setting برای دوره (اگر وجود نداشت)
-            Setting::firstOrCreate(
-                ['course_id' => $course->id],
-                ['course_id' => $course->id]
-            );
-
-            DB::commit();
-            
-            return response()->json([
-                'success' => true,
-                'message' => 'عضویت با موفقیت انجام شد',
-                'course_name' => $course->name,
-                'status' => 'approved',
-                'redirect' => route('view.skill.St', $course->id)
-            ]);
-            
-        } catch (\Exception $exception) {
-            DB::rollBack();
-            \Log::error('Join course failed: ' . $exception->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'خطایی در سرور رخ داده است: ' . $exception->getMessage()
-            ], 500);
-        }
     }
 }

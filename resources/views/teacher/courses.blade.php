@@ -6,6 +6,129 @@
 
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-courses.css')}}">
+<style>
+    /* استایل‌های جدید برای کارت‌ها */
+    .course-card .course-info-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin: 6px 0 4px 0;
+    }
+    
+    .course-card .course-info-badges .mini-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        padding: 2px 8px;
+        background: #f1f3f5;
+        border-radius: 12px;
+        font-size: 10px;
+        color: #495057;
+        border: 1px solid #e9ecef;
+    }
+    
+    .course-card .course-info-badges .mini-badge i {
+        font-size: 10px;
+        color: #1e6f9f;
+    }
+    
+    .course-card .course-info-badges .mini-badge.teacher {
+        background: #e3f2fd;
+        border-color: #bbdefb;
+    }
+    
+    .course-card .course-info-badges .mini-badge.teacher i {
+        color: #0d47a1;
+    }
+    
+    .course-card .course-info-badges .mini-badge.duration {
+        background: #e8f5e9;
+        border-color: #c8e6c9;
+    }
+    
+    .course-card .course-info-badges .mini-badge.duration i {
+        color: #2e7d32;
+    }
+    
+    .course-card .course-info-badges .mini-badge.sessions {
+        background: #fff3e0;
+        border-color: #ffe0b2;
+    }
+    
+    .course-card .course-info-badges .mini-badge.sessions i {
+        color: #e65100;
+    }
+    
+    .course-card .course-description {
+        font-size: 11px;
+        color: #6c757d;
+        margin: 4px 0 6px 0;
+        padding: 4px 8px;
+        background: #f8f9fa;
+        border-radius: 6px;
+        border-right: 2px solid #1e6f9f;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.5;
+        min-height: 32px;
+    }
+    
+    .course-card .course-description.empty {
+        color: #adb5bd;
+        font-style: italic;
+        border-right-color: #dee2e6;
+    }
+    
+    .course-card .course-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 10px;
+        padding: 2px 8px;
+        border-radius: 12px;
+        margin-top: 4px;
+    }
+    
+    .course-card .course-status.active {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+    
+    .course-card .course-status.ended {
+        background: #fbe9e7;
+        color: #d32f2f;
+    }
+    
+    .course-card .course-status i {
+        font-size: 8px;
+    }
+    
+    .course-badge.active {
+        background: #4CAF50;
+        color: white;
+    }
+    
+    .course-badge.inactive {
+        background: #f44336;
+        color: white;
+    }
+    
+    @media (max-width: 768px) {
+        .course-card .course-info-badges .mini-badge {
+            font-size: 9px;
+            padding: 1px 6px;
+        }
+        
+        .course-card .course-description {
+            font-size: 10px;
+            padding: 3px 6px;
+            min-height: 28px;
+        }
+    }
+</style>
 @endsection
 
 @section('mohtava')
@@ -31,8 +154,16 @@
         @php
             // is_ended: 1 = خاتمه یافته، 0 = در حال برگزاری
             $isEnded = ($cours->is_ended == 1);
-            $isDore = ($cours->is_dore == 1);
+            // type: 2 = مهارت, 0 = غیرمهارت
+            $isDore = ($cours->type == 2);
             $isPrivate = ($cours->private == 1);
+            
+            // دریافت نام مدرس
+            $teacherRoleId = App\Models\Role::where('name', 'teacher')->value('id');
+            $teacher = $cours->users()
+                ->wherePivot('role_id', $teacherRoleId)
+                ->first();
+            $teacherName = $teacher ? $teacher->name : 'نامشخص';
         @endphp
         <div class="course-card {{ $isEnded ? 'ended' : '' }}" 
              data-course-id="{{ $cours->id }}"
@@ -50,17 +181,17 @@
                 <div class="course-info">
                     <h3 class="course-title">{{ $cours->name }}</h3>
                     <p class="course-code">کد: {{ $cours->code }}</p>
-                    
+
                     <!-- نمایش وضعیت برگزاری -->
                     <span class="course-status-badge {{ $isEnded ? 'course-status-inactive' : 'course-status-active' }}">
                         <i class="fas fa-circle"></i>
                         {{ $isEnded ? '● خاتمه یافته' : '● در حال برگزاری' }}
                     </span>
                     
-                    <!-- نشانگر دوره‌ای بودن درس -->
+                    <!-- نشانگر مهارت بودن درس -->
                     @if($isDore)
                         <span class="dore-badge" id="doreBadge-{{ $cours->id }}">
-                            <i class="fas fa-calendar-check"></i> دوره‌ای
+                            <i class="fas fa-calendar-check"></i> مهارت
                         </span>
                     @endif
                     
@@ -107,12 +238,12 @@
                     <i class="fas fa-archive"></i>
                     <span class="action-tooltip">آرشیو</span>
                 </div>
-                <!-- دکمه تغییر وضعیت دوره‌ای/غیردوره‌ای -->
+                <!-- دکمه تغییر وضعیت مهارت/غیرمهارت -->
                 <div class="action-item" 
-                     data-action="دوره‌ای" 
+                     data-action="مهارت" 
                      onclick="event.preventDefault(); event.stopPropagation(); toggleDore({{ $cours->id }})">
                     <i class="fas {{ $isDore ? 'fa-calendar-check' : 'fa-calendar-times' }}"></i>
-                    <span class="action-tooltip">{{ $isDore ? 'غیردوره‌ای' : 'دوره‌ای' }}</span>
+                    <span class="action-tooltip">{{ $isDore ? 'غیرمهارت' : 'مهارت' }}</span>
                 </div>
                 <!-- دکمه تغییر وضعیت خاتمه یافته/در حال برگزاری (is_ended) -->
                 <div class="action-item" data-action="خاتمه/فعال" onclick="event.preventDefault(); event.stopPropagation(); toggleEnded({{ $cours->id }})">
@@ -187,7 +318,7 @@
 <div class="modal-overlay" id="archivedModalOverlay">
     <div class="modal-container" style="max-width: 700px;">
         <div class="modal-header" style="background: linear-gradient(135deg, #6c757d, #495057);">
-            <h4><i class="fas fa-archive"></i> دوره‌های آرشیو شده</h4>
+            <h4><i class="fas fa-archive"></i> مهارت‌های آرشیو شده</h4>
             <button class="modal-close" onclick="closeArchivedModal()">
                 <i class="fas fa-times"></i>
             </button>
@@ -380,7 +511,7 @@
                     container.innerHTML = `
                         <div class="empty-archived">
                             <i class="fas fa-box-open"></i>
-                            <p>هیچ دوره‌ای آرشیو نشده است</p>
+                            <p>هیچ مهارت آرشیو نشده است</p>
                         </div>
                     `;
                     return;
@@ -388,7 +519,7 @@
 
                 var html = `
                     <div style="margin-bottom:16px;padding:12px 16px;background:#f8f9fa;border-radius:10px;border-right:3px solid #6c757d;">
-                        <span style="font-weight:700;color:#495057;">تعداد دوره‌های آرشیو شده: ${data.data.length}</span>
+                        <span style="font-weight:700;color:#495057;">تعداد مهارت‌های آرشیو شده: ${data.data.length}</span>
                     </div>
                 `;
 
@@ -449,7 +580,7 @@
     }
 
     function restoreCourse(courseId) {
-        if (!confirm('آیا از بازگرداندن این دوره از آرشیو اطمینان دارید؟')) {
+        if (!confirm('آیا از بازگرداندن این مهارت از آرشیو اطمینان دارید؟')) {
             return;
         }
         
@@ -507,6 +638,106 @@
         event.preventDefault();
         event.stopPropagation();
         openCreateModal(courseId);
+    }
+
+    // ============================================
+    // TOGGLE DORE (مهارت/غیرمهارت)
+    // ============================================
+
+    function toggleDore(courseId) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        const targetBtn = event?.currentTarget;
+        if (targetBtn) {
+            targetBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            targetBtn.style.pointerEvents = 'none';
+        }
+        
+        fetch(`/teacher/courses/toggle-dore/${courseId}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.message || 'خطا در تغییر وضعیت');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                // به‌روزرسانی وضعیت در کارت
+                const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
+                if (card) {
+                    const isDore = data.type == 2;
+                    card.dataset.isDore = isDore ? '1' : '0';
+                    
+                    // به‌روزرسانی دکمه
+                    if (targetBtn) {
+                        targetBtn.innerHTML = `
+                            <i class="fas ${isDore ? 'fa-calendar-check' : 'fa-calendar-times'}"></i>
+                            <span class="action-tooltip">${isDore ? 'غیرمهارت' : 'مهارت'}</span>
+                        `;
+                        targetBtn.style.pointerEvents = 'auto';
+                    }
+                    
+                    // به‌روزرسانی بج
+                    let doreBadge = card.querySelector('.dore-badge');
+                    if (isDore) {
+                        if (!doreBadge) {
+                            doreBadge = document.createElement('span');
+                            doreBadge.className = 'dore-badge';
+                            doreBadge.id = `doreBadge-${courseId}`;
+                            doreBadge.innerHTML = '<i class="fas fa-calendar-check"></i> مهارت';
+                            const infoDiv = card.querySelector('.course-info');
+                            const statusBadge = infoDiv.querySelector('.course-status-badge');
+                            if (statusBadge) {
+                                statusBadge.after(doreBadge);
+                            } else {
+                                infoDiv.appendChild(doreBadge);
+                            }
+                        } else {
+                            doreBadge.style.display = 'inline-block';
+                        }
+                    } else {
+                        if (doreBadge) {
+                            doreBadge.style.display = 'none';
+                        }
+                    }
+                }
+            } else {
+                showToast(data.message || 'خطا در تغییر وضعیت', 'error');
+                if (targetBtn) {
+                    const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
+                    const isDore = card?.dataset?.isDore === '1';
+                    targetBtn.innerHTML = `
+                        <i class="fas ${isDore ? 'fa-calendar-check' : 'fa-calendar-times'}"></i>
+                        <span class="action-tooltip">${isDore ? 'غیرمهارت' : 'مهارت'}</span>
+                    `;
+                    targetBtn.style.pointerEvents = 'auto';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast(error.message || 'خطا در ارتباط با سرور', 'error');
+            if (targetBtn) {
+                const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
+                const isDore = card?.dataset?.isDore === '1';
+                targetBtn.innerHTML = `
+                    <i class="fas ${isDore ? 'fa-calendar-check' : 'fa-calendar-times'}"></i>
+                    <span class="action-tooltip">${isDore ? 'غیرمهارت' : 'مهارت'}</span>
+                `;
+                targetBtn.style.pointerEvents = 'auto';
+            }
+        });
     }
 
     // ============================================
@@ -697,108 +928,6 @@
     }
 
     // ============================================
-    // تغییر وضعیت دوره‌ای/غیردوره‌ای (is_dore)
-    // ============================================
-
-    function toggleDore(courseId) {
-        event.preventDefault();
-        event.stopPropagation();
-        
-        const targetBtn = event?.currentTarget;
-        if (targetBtn) {
-            targetBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            targetBtn.style.pointerEvents = 'none';
-        }
-        
-        fetch(`/teacher/courses/toggle-dore/${courseId}`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(data => {
-                    throw new Error(data.message || 'خطا در تغییر وضعیت');
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                showToast(data.message, 'success');
-                updateDoreStatus(courseId, data.is_dore);
-            } else {
-                showToast(data.message || 'خطا در تغییر وضعیت', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast(error.message || 'خطا در ارتباط با سرور', 'error');
-        })
-        .finally(() => {
-            if (targetBtn) {
-                const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
-                const isDore = card?.dataset?.isDore === '1';
-                targetBtn.innerHTML = `
-                    <i class="fas ${isDore ? 'fa-calendar-check' : 'fa-calendar-times'}"></i>
-                    <span class="action-tooltip">${isDore ? 'غیردوره‌ای' : 'دوره‌ای'}</span>
-                `;
-                targetBtn.style.pointerEvents = 'auto';
-            }
-        });
-    }
-
-    function updateDoreStatus(courseId, isDore) {
-        const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
-        if (!card) return;
-        
-        card.dataset.isDore = isDore ? '1' : '0';
-        
-        const doreBtn = card.querySelector('.action-item[data-action="دوره‌ای"]');
-        if (doreBtn) {
-            doreBtn.innerHTML = `
-                <i class="fas ${isDore ? 'fa-calendar-check' : 'fa-calendar-times'}"></i>
-                <span class="action-tooltip">${isDore ? 'غیردوره‌ای' : 'دوره‌ای'}</span>
-            `;
-        }
-        
-        let doreBadge = card.querySelector('.dore-badge');
-        const infoDiv = card.querySelector('.course-info');
-        
-        if (isDore) {
-            if (!doreBadge) {
-                doreBadge = document.createElement('span');
-                doreBadge.className = 'dore-badge';
-                doreBadge.id = `doreBadge-${courseId}`;
-                doreBadge.innerHTML = '<i class="fas fa-calendar-check"></i> دوره‌ای';
-                if (infoDiv) {
-                    const statusBadge = infoDiv.querySelector('.course-status-badge');
-                    if (statusBadge) {
-                        statusBadge.after(doreBadge);
-                    } else {
-                        infoDiv.appendChild(doreBadge);
-                    }
-                }
-            } else {
-                doreBadge.style.display = 'inline-block';
-            }
-            if (doreBadge) {
-                doreBadge.classList.add('updating');
-                setTimeout(() => {
-                    doreBadge.classList.remove('updating');
-                }, 500);
-            }
-        } else {
-            if (doreBadge) {
-                doreBadge.style.display = 'none';
-            }
-        }
-    }
-
-    // ============================================
     // تغییر وضعیت عمومی/خصوصی (private) با toggleVisibility
     // ============================================
 
@@ -963,14 +1092,12 @@
         
         card.dataset.isEnded = isEnded ? '1' : '0';
         
-        // به‌روزرسانی کلاس ended
         if (isEnded) {
             card.classList.add('ended');
         } else {
             card.classList.remove('ended');
         }
         
-        // به‌روزرسانی دکمه
         const endedBtn = card.querySelector('.action-item[data-action="خاتمه/فعال"]');
         if (endedBtn) {
             endedBtn.innerHTML = `
@@ -979,7 +1106,6 @@
             `;
         }
         
-        // به‌روزرسانی badge روی تصویر
         const badge = card.querySelector('.course-badge');
         if (badge) {
             if (isEnded) {
@@ -991,7 +1117,6 @@
             }
         }
         
-        // به‌روزرسانی status badge زیر عنوان
         const statusBadge = card.querySelector('.course-status-badge');
         if (statusBadge) {
             if (isEnded) {

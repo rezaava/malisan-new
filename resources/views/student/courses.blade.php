@@ -6,6 +6,129 @@
 
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-courses.css')}}">
+<style>
+    /* استایل‌های جدید برای کارت‌ها */
+    .course-card .course-info-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin: 6px 0 4px 0;
+    }
+    
+    .course-card .course-info-badges .mini-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        padding: 2px 8px;
+        background: #f1f3f5;
+        border-radius: 12px;
+        font-size: 10px;
+        color: #495057;
+        border: 1px solid #e9ecef;
+    }
+    
+    .course-card .course-info-badges .mini-badge i {
+        font-size: 10px;
+        color: #1e6f9f;
+    }
+    
+    .course-card .course-info-badges .mini-badge.teacher {
+        background: #e3f2fd;
+        border-color: #bbdefb;
+    }
+    
+    .course-card .course-info-badges .mini-badge.teacher i {
+        color: #0d47a1;
+    }
+    
+    .course-card .course-info-badges .mini-badge.duration {
+        background: #e8f5e9;
+        border-color: #c8e6c9;
+    }
+    
+    .course-card .course-info-badges .mini-badge.duration i {
+        color: #2e7d32;
+    }
+    
+    .course-card .course-info-badges .mini-badge.sessions {
+        background: #fff3e0;
+        border-color: #ffe0b2;
+    }
+    
+    .course-card .course-info-badges .mini-badge.sessions i {
+        color: #e65100;
+    }
+    
+    .course-card .course-description {
+        font-size: 11px;
+        color: #6c757d;
+        margin: 4px 0 6px 0;
+        padding: 4px 8px;
+        background: #f8f9fa;
+        border-radius: 6px;
+        border-right: 2px solid #1e6f9f;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.5;
+        min-height: 32px;
+    }
+    
+    .course-card .course-description.empty {
+        color: #adb5bd;
+        font-style: italic;
+        border-right-color: #dee2e6;
+    }
+    
+    .course-card .course-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 10px;
+        padding: 2px 8px;
+        border-radius: 12px;
+        margin-top: 4px;
+    }
+    
+    .course-card .course-status.active {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+    
+    .course-card .course-status.ended {
+        background: #fbe9e7;
+        color: #d32f2f;
+    }
+    
+    .course-card .course-status i {
+        font-size: 8px;
+    }
+    
+    .course-badge.active {
+        background: #4CAF50;
+        color: white;
+    }
+    
+    .course-badge.inactive {
+        background: #f44336;
+        color: white;
+    }
+    
+    @media (max-width: 768px) {
+        .course-card .course-info-badges .mini-badge {
+            font-size: 9px;
+            padding: 1px 6px;
+        }
+        
+        .course-card .course-description {
+            font-size: 10px;
+            padding: 3px 6px;
+            min-height: 28px;
+        }
+    }
+</style>
 @endsection
 
 @section('mohtava')
@@ -24,21 +147,26 @@
 
 <div class="courses-grid">
     @forelse ($courses as $cours)
+        @php
+            $isEnded = $cours->is_ended ?? 0;
+        @endphp
         <div class="course-card">
-            <a href="{{ route('view.coure.St',$cours->id)}}" class="course-link">
+            <a href="{{ route('view.coure.St', $cours->id) }}" class="course-link">
                 <div class="course-image">
                     <img src="{{ asset('/files/icons/' . $cours->header . '.jpg') }}" alt="{{ $cours->name }}">
-                    <div class="course-badge">
-                        @if ($cours->archieve == 1)
-                            غیر فعال
-                        @else
-                            فعال
-                        @endif
+                    <div class="course-badge {{ $cours->archieve == 1 ? 'inactive' : 'active' }}">
+                        {{ $cours->archieve == 1 ? 'غیر فعال' : 'فعال' }}
                     </div>
                 </div>
                 <div class="course-info">
                     <h3 class="course-title">{{ $cours->name }}</h3>
                     <p class="course-code">کد: {{ $cours->code }}</p>
+
+                    {{-- وضعیت --}}
+                    <span class="course-status {{ $isEnded ? 'ended' : 'active' }}">
+                        <i class="fas fa-circle"></i>
+                        {{ $isEnded ? 'خاتمه یافته' : 'در حال برگزاری' }}
+                    </span>
                     
                     {{-- نمایش لینک کلاس مجازی --}}
                     @if(isset($cours->majazi))
@@ -177,7 +305,10 @@
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
-            body: JSON.stringify({ code: code })
+            body: JSON.stringify({ 
+                code: code,
+                type: 'lesson'
+            })
         })
         .then(response => response.json())
         .then(data => {
@@ -211,120 +342,6 @@
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> <span>عضویت</span>';
         });
-    }
-
-    // ============================================
-    // CREATE MODAL FUNCTIONS (همان کد قبلی)
-    // ============================================
-    
-    function openCreateModal(copyId = null) {
-        const modal = document.getElementById('createCourseModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const submitButtonText = document.getElementById('submitButtonText');
-        
-        if (copyId) {
-            modalTitle.textContent = 'کپی درس';
-            submitButtonText.textContent = 'کپی درس';
-            document.getElementById('copyCourseId').value = copyId;
-            
-            showToast('در حال بارگذاری اطلاعات درس...', 'info');
-            
-            fetch(`/teacher/courses/copy/${copyId}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.error) {
-                        showToast(data.error, 'error');
-                        return;
-                    }
-                    
-                    document.getElementById('name').value = data.name;
-                    document.getElementById('majazi').value = data.majazi || '';
-                    
-                    modal.classList.add('active');
-                    showToast('اطلاعات درس بارگذاری شد.', 'success');
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showToast('خطا در بارگذاری اطلاعات درس', 'error');
-                    modal.classList.add('active');
-                });
-        } else {
-            modalTitle.textContent = 'ایجاد درس جدید';
-            submitButtonText.textContent = 'ایجاد درس';
-            document.getElementById('name').value = '';
-            document.getElementById('majazi').value = '';
-            document.getElementById('copyCourseId').value = '';
-            modal.classList.add('active');
-        }
-    }
-
-    function closeModal() {
-        const modal = document.getElementById('createCourseModal');
-        modal.classList.remove('active');
-        document.getElementById('createCourseForm').reset();
-        document.getElementById('copyCourseId').value = '';
-    }
-
-    document.getElementById('createCourseModal')?.addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeModal();
-        }
-    });
-
-    // ============================================
-    // COURSE ACTIONS
-    // ============================================
-    
-    function copyCourse(courseId) {
-        event.preventDefault();
-        event.stopPropagation();
-        openCreateModal(courseId);
-    }
-
-    function deleteCourse(courseId) {
-        event.preventDefault();
-        event.stopPropagation();
-        if (confirm('آیا از حذف این درس اطمینان دارید؟')) {
-            showToast('در حال حذف درس...', 'info');
-        }
-    }
-
-    function editCourse(courseId) {
-        event.preventDefault();
-        event.stopPropagation();
-        showToast('در حال ویرایش درس...', 'info');
-    }
-
-    function shareCourse(courseId) {
-        event.preventDefault();
-        event.stopPropagation();
-        const courseCode = prompt('کد درس را برای اشتراک گذاری کپی کنید:');
-        if (courseCode) {
-            navigator.clipboard.writeText(courseCode).then(() => {
-                showToast('کد درس کپی شد!', 'success');
-            }).catch(() => {
-                showToast('خطا در کپی کردن کد', 'error');
-            });
-        }
-    }
-
-    function archiveCourse(courseId) {
-        event.preventDefault();
-        event.stopPropagation();
-        if (confirm('آیا از آرشیو کردن این درس اطمینان دارید؟')) {
-            showToast('در حال آرشیو کردن درس...', 'info');
-        }
-    }
-
-    function toggleCourseStatus(courseId) {
-        event.preventDefault();
-        event.stopPropagation();
-        showToast('در حال تغییر وضعیت درس...', 'info');
     }
 
     // ============================================
@@ -386,28 +403,7 @@
             if (joinModal.classList.contains('active')) {
                 closeJoinModal();
             }
-            
-            const createModal = document.getElementById('createCourseModal');
-            if (createModal.classList.contains('active')) {
-                closeModal();
-            }
         }
-    });
-
-    // ============================================
-    // FORM SUBMISSION HANDLING
-    // ============================================
-    
-    document.getElementById('createCourseForm')?.addEventListener('submit', function(e) {
-        const submitButton = this.querySelector('.btn-submit');
-        const originalText = submitButton.innerHTML;
-        submitButton.innerHTML = '<span class="spinner"></span> در حال ارسال...';
-        submitButton.disabled = true;
-        
-        setTimeout(() => {
-            submitButton.innerHTML = originalText;
-            submitButton.disabled = false;
-        }, 5000);
     });
 
     console.log('✅ Course management loaded successfully!');

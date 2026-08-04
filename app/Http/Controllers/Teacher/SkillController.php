@@ -36,7 +36,7 @@ class SkillController extends Controller
         
         $courses = $user->courses()
             ->where('archieve', 0)
-            ->where('is_skill', 1)
+            ->whereIn('type', [1,2])
             ->wherePivot('role_id', $teacherRole->id)
             ->withCount(['users as pending_requests_count' => function($query) {
                 $query->where('course_user.status', 2); // Use the pivot table name directly
@@ -457,7 +457,7 @@ class SkillController extends Controller
     {
         $course = Course::with(['sessions' => function ($query) {
             $query->orderBy('number', 'desc');
-        }, 'settings'])->where('is_skill', 1)->findOrFail($id);
+        }, 'settings'])->whereIn('type', [1,2])->findOrFail($id);
 
         $user = Auth::user();
         $isStudent = $user->hasRole('student');

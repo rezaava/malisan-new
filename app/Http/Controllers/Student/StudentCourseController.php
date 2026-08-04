@@ -225,9 +225,10 @@ class StudentCourseController extends Controller
         // اعتبارسنجی
         $validator = Validator::make($request->all(), [
             'code' => 'required|string|max:10',
+            'type' => 'nullable|in:lesson,skill' // اضافه شده برای تشخیص نوع درخواست
         ], [
-            'code.required' => 'لطفاً کد درس را وارد کنید',
-            'code.max' => 'کد درس نباید بیشتر از ۱۰ کاراکتر باشد',
+            'code.required' => 'لطفاً کد را وارد کنید',
+            'code.max' => 'کد نباید بیشتر از ۱۰ کاراکتر باشد',
         ]);
 
         if ($validator->fails()) {
@@ -248,41 +249,57 @@ class StudentCourseController extends Controller
             if (!$course) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'کد درس وارد شده نامعتبر است'
+                    'message' => 'کد وارد شده نامعتبر است'
                 ], 404);
             }
 
-            // بررسی آرشیو بودن دوره
-            if ($course->archive == 1) {
+            // بررسی نوع دوره بر اساس پارامتر type
+            $requestType = $request->type ?? 'lesson'; // پیش‌فرض درس
+            
+            if ($requestType === 'skill' && !$course->isSkill()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'این دوره آرشیو شده و امکان عضویت در آن وجود ندارد'
+                    'message' => 'این کد مربوط به مهارت نیست'
+                ], 404);
+            }
+            
+            if ($requestType === 'lesson' && !$course->isLesson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'این کد مربوط به درس نیست'
+                ], 404);
+            }
+
+            // تشخیص نوع دوره برای پیام مناسب
+            $courseTypeName = $course->isSkill() ? 'مهارت' : 'درس';
+
+            // بررسی آرشیو بودن دوره
+            if ($course->archieve == 1) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "این {$courseTypeName} آرشیو شده و امکان عضویت در آن وجود ندارد"
                 ], 403);
             }
 
             // بررسی تکراری بودن عضویت
             $existingMembership = $user->courses()->where('course_id', $course->id)->first();
             if ($existingMembership) {
-                // اگر کاربر قبلاً درخواست داده و وضعیت pending است
                 if ($existingMembership->pivot->status == 2) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'درخواست شما قبلاً ثبت شده و در انتظار تأیید است'
+                        'message' => "درخواست شما برای {$courseTypeName} قبلاً ثبت شده و در انتظار تأیید است"
                     ], 409);
                 }
-                // اگر کاربر قبلاً عضو شده است
                 return response()->json([
                     'success' => false,
-                    'message' => 'شما قبلاً در این کلاس عضو هستید'
+                    'message' => "شما قبلاً در این {$courseTypeName} عضو هستید"
                 ], 409);
             }
 
             // بررسی خصوصی بودن دوره
             if ($course->private == 1) {
-                // برای دوره‌های خصوصی، عضویت با وضعیت pending (2) ثبت می‌شود
                 $status = 2; // pending request
                 
-                // عضویت دانشجو در دوره با وضعیت pending
                 $course->users()->attach($user, [
                     'role_id' => $studentRole->id,
                     'status' => $status
@@ -292,22 +309,22 @@ class StudentCourseController extends Controller
                 
                 return response()->json([
                     'success' => true,
-                    'message' => 'درخواست شما برای استاد درس ارسال شد. لطفاً تا زمان تأیید ایشان صبر کنید. به محض تأیید، دسترسی شما به درس فعال خواهد شد.',
+                    'message' => "درخواست شما برای {$courseTypeName} به استاد ارسال شد. لطفاً تا زمان تأیید ایشان صبر کنید.",
                     'course_name' => $course->name,
+                    'course_type' => $courseTypeName,
                     'status' => 'pending'
                 ]);
             }
 
-            // برای دوره‌های عمومی، عضویت با وضعیت approved (1) ثبت می‌شود
+            // برای دوره‌های عمومی
             $status = 1; // approved
 
-            // عضویت دانشجو در دوره
             $course->users()->attach($user, [
                 'role_id' => $studentRole->id,
                 'status' => $status
             ]);
 
-            // ایجاد Scoring برای دانشجو با مقادیر پیش‌فرض ۰
+            // ایجاد Scoring برای دانشجو
             $scoring = Scoring::create([
                 'course_id' => $course->id,
                 'user_id' => $user->id,
@@ -329,7 +346,6 @@ class StudentCourseController extends Controller
                 's_4' => 0,
             ]);
 
-            // اطمینان از وجود Setting برای دوره (اگر وجود نداشت)
             Setting::firstOrCreate(
                 ['course_id' => $course->id],
                 ['course_id' => $course->id]
@@ -337,12 +353,18 @@ class StudentCourseController extends Controller
 
             DB::commit();
             
+            // مسیر بر اساس نوع دوره
+            $redirectRoute = $course->isSkill() 
+                ? route('view.skill.St', $course->id) 
+                : route('view.coure.St', $course->id);
+            
             return response()->json([
                 'success' => true,
-                'message' => 'عضویت با موفقیت انجام شد',
+                'message' => "عضویت در {$courseTypeName} با موفقیت انجام شد",
                 'course_name' => $course->name,
+                'course_type' => $courseTypeName,
                 'status' => 'approved',
-                'redirect' => route('view.coure.St', $course->id)
+                'redirect' => $redirectRoute
             ]);
             
         } catch (\Exception $exception) {

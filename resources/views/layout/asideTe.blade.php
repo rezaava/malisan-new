@@ -37,6 +37,17 @@
                 <i class="fas fa-book-open"></i> <span>درس های من</span>
             </a>
         @endif
+
+
+        @if($isTeacherRoute)
+            <a href="{{ route('skill') }}" class="menu-item {{ request()->routeIs('skill') ? 'active-menu' : '' }}">
+                <i class="fas fa-book-open"></i> <span>مهارت های من</span>
+            </a>
+        @elseif($isStudentRoute)
+            <a href="{{ route('skill.st') }}" class="menu-item {{ request()->routeIs('skill.st') ? 'active-menu' : '' }}">
+                <i class="fas fa-book-open"></i> <span>مهارت های من</span>
+            </a>
+        @endif
         
         {{-- مکالمات --}}
         @if($isAdminRoute)

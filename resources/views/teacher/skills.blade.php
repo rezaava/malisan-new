@@ -154,7 +154,7 @@
              data-is-dore="{{ $isDore ? '1' : '0' }}"
              data-is-private="{{ $isPrivate ? '1' : '0' }}"
              data-is-ended="{{ $isEnded ? '1' : '0' }}">
-            <a href="{{ route('view.coure',$cours->id)}}" class="course-link">
+            <a href="{{ route('view.skill',$cours->id)}}" class="course-link">
                 <div class="course-image">
                     <img src="{{ asset('/files/icons/' . $cours->header . '.jpg') }}" alt="{{ $cours->name }}">
                     <div class="course-badge {{ $isEnded ? 'badge-ended' : 'badge-active' }}">

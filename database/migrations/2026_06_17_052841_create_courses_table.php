@@ -11,15 +11,13 @@ return new class extends Migration
         Schema::create('courses', function (Blueprint $table) {
             $table->id();
             $table->string('name', 191);
-            $table->tinyInteger('is_dore')->default(0);
-            $table->tinyInteger('is_skill')->default(0);
             $table->tinyInteger('is_ended')->default(0);
             $table->integer('archieve')->default(0);
             $table->string('header', 191)->nullable();
             $table->string('code', 191);
             $table->integer('private')->default(0);
             $table->integer('period')->default(3);
-            $table->integer('type')->default(0);
+            $table->integer('type')->default(0)->comment('0 lesson 1 skill 2 both');
             $table->text('desc')->nullable();
             $table->integer('price')->default(0);
             $table->integer('length')->default(0);

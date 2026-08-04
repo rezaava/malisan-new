@@ -13,6 +13,7 @@ return new class extends Migration
             $table->bigInteger('user_id');
             $table->bigInteger('course_id');
             $table->integer('role_id');
+            $table->integer('course_type')->default(0)->comment('0: both, 1: lesson, 2: skill');
             $table->tinyInteger('status')->default(1)->comment('1: approved, 2: pending request');
             $table->string('term', 191)->nullable();
             $table->integer('paid')->default(0);

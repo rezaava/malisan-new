@@ -14,24 +14,40 @@ class Course extends Model
         'name', 'archieve', 'header', 'code', 'private', 'period', 'type',
         'desc', 'price', 'length', 'sessions_length', 'majazi', 'max_session',
         'num_q', 'score_e', 'score_d', 'score_q', 'status', 'active', 'quiz',
-        'davari', 'faaliat', 'pishraft', 'is_dore'
+        'davari', 'faaliat', 'pishraft'
     ];
 
     // روابط
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'course_user', 'course_id', 'user_id');
+    }
+
+    public function teachers()
+    {
+        $roleId = Role::where('name', 'teacher')->value('id');
+        
+        if (!$roleId) {
+            // اگر نقش teacher وجود نداشت، یک رابطه خالی برگردان
+            return $this->belongsToMany(User::class, 'course_user', 'course_id', 'user_id')
+                ->whereRaw('1 = 0');
+        }
+        
+        return $this->belongsToMany(User::class, 'course_user', 'course_id', 'user_id')
+            ->wherePivot('role_id', $roleId);
+    }
+
     public function students()
     {
         $studentRole = Role::where('name', 'student')->first();
         
         if (!$studentRole) {
-            return collect();
+            return $this->belongsToMany(User::class, 'course_user', 'course_id', 'user_id')
+                ->whereRaw('1 = 0');
         }
         
         return $this->belongsToMany(User::class, 'course_user', 'course_id', 'user_id')
             ->wherePivot('role_id', $studentRole->id);
-    }
-    public function users()
-    {
-        return $this->belongsToMany(User::class, 'course_user', 'course_id', 'user_id');
     }
 
     public function amalis()

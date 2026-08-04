@@ -247,14 +247,13 @@ class CourseController extends Controller
         try {
             $course = Course::findOrFail($id);
             
-            // تغییر وضعیت is_dore
-            $course->is_dore = $course->is_dore ? 0 : 1;
+            $course->type = $course->type ? 0 : 2;
             $course->save();
             
             return response()->json([
                 'success' => true,
-                'message' => $course->is_dore ? 'درس به حالت دوره‌ای تغییر یافت' : 'درس به حالت غیردوره‌ای تغییر یافت',
-                'is_dore' => $course->is_dore
+                'message' => $course->type ? 'درس به حالت دوره‌ای تغییر یافت' : 'درس به حالت غیردوره‌ای تغییر یافت',
+                'type' => $course->type
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -727,7 +726,7 @@ class CourseController extends Controller
             $course->majazi = $this->cleanUrl($request->majazi);
             $course->max_session = 16;
             $course->code = $code;
-            $course->is_dore = 0;
+            $course->type = 0;
             $course->header = rand(0, 30);
             $course->save();
             
@@ -754,11 +753,23 @@ class CourseController extends Controller
     {
         $course = Course::findOrFail($id);
         $role = Role::where("name", "student")->first();
-        
-        $users = $course->users()
+
+        $query = $course->users()
             ->wherePivotNull('deleted_at')
-            ->where('role_id', $role->id)
-            ->orderBy('family', 'asc')
+            ->where('role_id', $role->id);
+        
+        // فیلتر بر اساس type دوره
+        // type: 0 = lesson, 1 = skill, 2 = both
+        if ($course->type == 0) {
+            // فقط درس (course_type = 1)
+            $query->wherePivot('course_type', 1);
+        } elseif ($course->type == 1) {
+            // فقط مهارت (course_type = 2)
+            $query->wherePivot('course_type', 2);
+        }
+        // اگر type == 2 باشد، هر دو را نشان می‌دهد (بدون فیلتر)
+        
+        $users = $query->orderBy('family', 'asc')
             ->withCount(['studentEvents', 'studentAdjectives'])
             ->get();
 
@@ -782,6 +793,7 @@ class CourseController extends Controller
             // وضعیت آنلاین
             $user->online = $user->isOnline() ? 1 : 0;
         }
+        
         $removedCount = CourseUser::onlyTrashed()
             ->where('course_id', $course->id)
             ->where('role_id', $role->id)
