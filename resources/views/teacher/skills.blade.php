@@ -40,34 +40,50 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
-        /* توضیحات */
-        .course-info .description-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 6px;
+        /* ===== استایل جدید توضیحات ===== */
+        .description-wrapper {
             margin: 6px 0 8px 0;
+            position: relative;
+        }
+
+        .description-text {
+            font-size: 12px;
+            color: #495057;
+            line-height: 1.6;
             padding: 6px 10px;
             background: #f1f8ff;
             border-radius: 6px;
             border-right: 2px solid #1e6f9f;
-            font-size: 12px;
-            color: #495057;
-            line-height: 1.6;
-        }
-
-        .course-info .description-item i {
-            color: #1e6f9f;
-            font-size: 13px;
-            margin-top: 2px;
-        }
-
-        .course-info .description-item span {
-            flex: 1;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
             text-overflow: ellipsis;
+            word-break: break-word;
+        }
+
+        .description-text.empty {
+            color: #adb5bd;
+            font-style: italic;
+            border-right-color: #dee2e6;
+            background: #f8f9fa;
+        }
+
+        .more-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: #1e6f9f;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 2px 6px;
+            margin-top: 2px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .more-btn:hover {
+            color: #0d47a1;
+            text-decoration: underline;
         }
 
         /* بج‌های وضعیت */
@@ -94,13 +110,157 @@
             color: #adb5bd;
         }
 
-        .course-card.ended .description-item {
+        .course-card.ended .description-text {
             background: #f8f9fa;
             border-right-color: #adb5bd;
             opacity: 0.8;
         }
 
+        /* ===== استایل مودال توضیحات (طراحی جدید) ===== */
+        #descriptionModal .modal-container {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border-radius: 24px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+            max-width: 620px;
+            width: 95%;
+            animation: modalFadeIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            overflow: hidden;
+        }
+
+        #descriptionModal .modal-header {
+            background: linear-gradient(135deg, #1a3a5c, #1e6f9f);
+            padding: 20px 28px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        #descriptionModal .modal-header h3 {
+            color: #fff;
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0;
+        }
+
+        #descriptionModal .modal-header h3 i {
+            color: #ffd966;
+            font-size: 22px;
+        }
+
+        #descriptionModal .modal-close {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #descriptionModal .modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        #descriptionModal .modal-body {
+            padding: 28px 32px 20px 32px;
+            max-height: 65vh;
+            overflow-y: auto;
+            color: #1e293b;
+            font-size: 15px;
+            line-height: 1.9;
+            white-space: pre-wrap;
+            word-break: break-word;
+            background: transparent;
+        }
+
+        #descriptionModal .modal-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #descriptionModal .modal-body::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+        }
+
+        #descriptionModal .modal-body::-webkit-scrollbar-thumb {
+            background: #1e6f9f;
+            border-radius: 10px;
+        }
+
+        #descriptionModal .modal-footer {
+            padding: 16px 32px 28px 32px;
+            border-top: 1px solid rgba(0, 0, 0, 0.04);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        #descriptionModal .modal-footer .btn-cancel {
+            background: #f1f5f9;
+            color: #334155;
+            border: none;
+            padding: 10px 28px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #descriptionModal .modal-footer .btn-cancel:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        @keyframes modalFadeIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.92) translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
         /* ریسپانسیو */
+        @media (max-width: 576px) {
+            #descriptionModal .modal-header {
+                padding: 16px 20px;
+            }
+            #descriptionModal .modal-header h3 {
+                font-size: 17px;
+            }
+            #descriptionModal .modal-body {
+                padding: 20px 20px 16px 20px;
+                font-size: 14px;
+            }
+            #descriptionModal .modal-footer {
+                padding: 12px 20px 20px 20px;
+            }
+            #descriptionModal .modal-footer .btn-cancel {
+                padding: 8px 20px;
+                font-size: 13px;
+            }
+        }
+
+        /* ریسپانسیو عمومی */
         @media (max-width: 768px) {
             .course-info .info-badges {
                 gap: 4px;
@@ -115,7 +275,7 @@
                 font-size: 10px;
             }
 
-            .course-info .description-item {
+            .description-text {
                 font-size: 11px;
                 padding: 4px 8px;
             }
@@ -164,10 +324,22 @@
                         <h3 class="course-title">{{ $cours->name }}</h3>
                         <p class="course-code">کد: {{ $cours->code }}</p>
 
-                        <div class="description-item">
-                            <i class="fas fa-file-alt"></i>
-                            <span>{{ $cours->desc ?? 'توضیحاتی ثبت نشده است' }}</span>
+                        {{-- ===== توضیحات جدید ===== --}}
+                        <div class="description-wrapper">
+                            @if(!empty($cours->desc))
+                                <div class="description-text" data-full="{{ $cours->desc }}">
+                                    {{ $cours->desc }}
+                                </div>
+                                <button class="more-btn" data-name="{{ $cours->name }}" data-text="{{ $cours->desc }}">
+                                    بیشتر
+                                </button>
+                            @else
+                                <div class="description-text empty">
+                                    <i class="fas fa-edit"></i> توضیحاتی ثبت نشده است
+                                </div>
+                            @endif
                         </div>
+
                         <span class="info-badge">
                             <i class="fas fa-user-graduate"></i>
                             مدرس : {{ Auth::user()->name }}
@@ -370,6 +542,29 @@
             </form>
         </div>
     </div>
+
+    <!-- ===== مودال نمایش کامل توضیحات (طراحی جدید) ===== -->
+    <div class="modal-overlay" id="descriptionModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>
+                    <i class="fas fa-align-left"></i>
+                    <span id="descModalTitle">توضیحات مهارت</span>
+                </h3>
+                <button class="modal-close" onclick="closeDescriptionModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="descModalBody">
+                <!-- متن کامل در اینجا قرار می‌گیرد -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeDescriptionModal()">
+                    <i class="fas fa-check"></i> متوجه شدم
+                </button>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('js')
@@ -473,6 +668,19 @@
             }
 
             loadArchivedCount();
+
+            // ===== تشخیص سرریز توضیحات و نمایش دکمه بیشتر =====
+            document.querySelectorAll('.description-wrapper').forEach(function(wrapper) {
+                const desc = wrapper.querySelector('.description-text');
+                const moreBtn = wrapper.querySelector('.more-btn');
+                if (desc && moreBtn && !desc.classList.contains('empty')) {
+                    requestAnimationFrame(function() {
+                        if (desc.scrollHeight > desc.clientHeight) {
+                            moreBtn.style.display = 'inline-block';
+                        }
+                    });
+                }
+            });
         });
 
         function openArchivedModal() {
@@ -1418,6 +1626,46 @@
                 if (editModal && editModal.classList.contains('active')) {
                     closeEditModal();
                 }
+                // بستن مودال توضیحات با ESC
+                var descModal = document.getElementById('descriptionModal');
+                if (descModal && descModal.classList.contains('active')) {
+                    closeDescriptionModal();
+                }
+            }
+        });
+
+        // ============================================
+        // DESCRIPTION MODAL FUNCTIONS (جدید)
+        // ============================================
+
+        function openDescriptionModal(title, text) {
+            document.getElementById('descModalTitle').textContent = title || 'توضیحات مهارت';
+            document.getElementById('descModalBody').textContent = text || 'متن توضیحات موجود نیست.';
+            document.getElementById('descriptionModal').classList.add('active');
+        }
+
+        function closeDescriptionModal() {
+            document.getElementById('descriptionModal').classList.remove('active');
+        }
+
+        // کلیک روی overlay مودال توضیحات برای بستن
+        document.getElementById('descriptionModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDescriptionModal();
+            }
+        });
+
+        // ============================================
+        // CLICK HANDLER FOR "بیشتر" BUTTONS (Event Delegation)
+        // ============================================
+
+        document.addEventListener('click', function(e) {
+            const target = e.target.closest('.more-btn');
+            if (target) {
+                e.preventDefault();
+                const name = target.getAttribute('data-name') || 'توضیحات مهارت';
+                const text = target.getAttribute('data-text') || '';
+                openDescriptionModal(name, text);
             }
         });
 

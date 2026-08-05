@@ -7,7 +7,15 @@
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-courses.css')}}">
 <style>
-    /* استایل‌های جدید برای کارت‌ها */
+    /* ===== استایل‌های کارت ===== */
+    .course-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .course-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+    }
+
     .course-card .course-info-badges {
         display: flex;
         flex-wrap: wrap;
@@ -58,38 +66,65 @@
     .course-card .course-info-badges .mini-badge.sessions i {
         color: #e65100;
     }
-    
+
+    /* ===== توضیحات ===== */
+    .course-description-wrapper {
+        margin: 4px 0 6px 0;
+        position: relative;
+    }
+
     .course-card .course-description {
         font-size: 11px;
-        color: #6c757d;
-        margin: 4px 0 6px 0;
-        padding: 4px 8px;
+        color: #495057;
+        padding: 4px 10px;
         background: #f8f9fa;
-        border-radius: 6px;
-        border-right: 2px solid #1e6f9f;
+        border-radius: 8px;
+        border-right: 3px solid #1e6f9f;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
         text-overflow: ellipsis;
-        line-height: 1.5;
-        min-height: 32px;
+        line-height: 1.6;
+        min-height: 34px;
+        word-break: break-word;
+        transition: all 0.2s;
     }
-    
+
     .course-card .course-description.empty {
         color: #adb5bd;
         font-style: italic;
         border-right-color: #dee2e6;
+        background: #f8f9fa;
     }
-    
+
+    .more-btn {
+        display: none;
+        background: none;
+        border: none;
+        color: #1e6f9f;
+        font-size: 11px;
+        cursor: pointer;
+        padding: 2px 6px;
+        margin-top: 2px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+    .more-btn:hover {
+        color: #0d47a1;
+        text-decoration: underline;
+        transform: translateX(-2px);
+    }
+
     .course-card .course-status {
         display: inline-flex;
         align-items: center;
         gap: 4px;
         font-size: 10px;
-        padding: 2px 8px;
-        border-radius: 12px;
+        padding: 2px 10px;
+        border-radius: 20px;
         margin-top: 4px;
+        font-weight: 500;
     }
     
     .course-card .course-status.active {
@@ -103,7 +138,7 @@
     }
     
     .course-card .course-status i {
-        font-size: 8px;
+        font-size: 7px;
     }
     
     .course-badge.active {
@@ -115,17 +150,247 @@
         background: #f44336;
         color: white;
     }
-    
+
+    /* ===== مودال عضویت ===== */
+    #joinCourseModal .modal-container {
+        border-radius: 20px;
+        box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+        overflow: hidden;
+    }
+    #joinCourseModal .modal-header {
+        background: linear-gradient(135deg, #1a3a5c, #1e6f9f);
+        padding: 18px 24px;
+        border-bottom: none;
+    }
+    #joinCourseModal .modal-header h3 {
+        color: #fff;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+        font-size: 20px;
+    }
+    #joinCourseModal .modal-header h3::before {
+        content: '\f0c0';
+        font-family: 'Font Awesome 5 Free';
+        font-weight: 900;
+        color: #ffd966;
+        font-size: 22px;
+    }
+    #joinCourseModal .modal-close {
+        background: rgba(255,255,255,0.15);
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        color: #fff;
+        font-size: 18px;
+        cursor: pointer;
+        transition: all 0.25s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    #joinCourseModal .modal-close:hover {
+        background: rgba(255,255,255,0.3);
+        transform: rotate(90deg);
+    }
+    #joinCourseModal .modal-body {
+        padding: 24px 28px 12px;
+    }
+    #joinCourseModal .modal-footer {
+        padding: 12px 28px 24px;
+        border-top: 1px solid #e9ecef;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+    #joinCourseModal .btn-submit {
+        background: linear-gradient(135deg, #1e6f9f, #155a82);
+        border: none;
+        color: #fff;
+        padding: 10px 28px;
+        border-radius: 40px;
+        font-weight: 600;
+        transition: all 0.25s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+    }
+    #joinCourseModal .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(30,111,159,0.35);
+    }
+    #joinCourseModal .btn-cancel {
+        background: #f1f3f5;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 40px;
+        font-weight: 600;
+        color: #495057;
+        transition: all 0.25s;
+        cursor: pointer;
+    }
+    #joinCourseModal .btn-cancel:hover {
+        background: #e9ecef;
+    }
+
+    /* ===== مودال توضیحات (طراحی جدید) ===== */
+    #descriptionModal .modal-container {
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+        border-radius: 24px;
+        box-shadow: 0 40px 80px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+        max-width: 620px;
+        width: 95%;
+        animation: modalFadeIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        overflow: hidden;
+    }
+
+    @keyframes modalFadeIn {
+        0% {
+            opacity: 0;
+            transform: scale(0.92) translateY(30px);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    #descriptionModal .modal-header {
+        background: linear-gradient(135deg, #1a3a5c, #1e6f9f);
+        padding: 20px 28px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    #descriptionModal .modal-header h3 {
+        color: #fff;
+        font-size: 20px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0;
+    }
+
+    #descriptionModal .modal-header h3 i {
+        color: #ffd966;
+        font-size: 22px;
+    }
+
+    #descriptionModal .modal-close {
+        background: rgba(255, 255, 255, 0.12);
+        border: none;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        color: #fff;
+        font-size: 18px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #descriptionModal .modal-close:hover {
+        background: rgba(255, 255, 255, 0.25);
+        transform: rotate(90deg);
+    }
+
+    #descriptionModal .modal-body {
+        padding: 28px 32px 20px;
+        max-height: 60vh;
+        overflow-y: auto;
+        color: #1e293b;
+        font-size: 15px;
+        line-height: 1.9;
+        white-space: pre-wrap;
+        word-break: break-word;
+        background: transparent;
+    }
+
+    #descriptionModal .modal-body::-webkit-scrollbar {
+        width: 6px;
+    }
+    #descriptionModal .modal-body::-webkit-scrollbar-track {
+        background: rgba(0,0,0,0.04);
+        border-radius: 10px;
+    }
+    #descriptionModal .modal-body::-webkit-scrollbar-thumb {
+        background: #1e6f9f;
+        border-radius: 10px;
+    }
+
+    #descriptionModal .modal-footer {
+        padding: 12px 32px 28px;
+        border-top: 1px solid rgba(0, 0, 0, 0.04);
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+
+    #descriptionModal .modal-footer .btn-cancel {
+        background: #f1f5f9;
+        color: #334155;
+        border: none;
+        padding: 10px 32px;
+        border-radius: 40px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    #descriptionModal .modal-footer .btn-cancel:hover {
+        background: #e2e8f0;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    /* ===== ریسپانسیو ===== */
     @media (max-width: 768px) {
         .course-card .course-info-badges .mini-badge {
             font-size: 9px;
             padding: 1px 6px;
         }
-        
         .course-card .course-description {
             font-size: 10px;
-            padding: 3px 6px;
+            padding: 3px 8px;
             min-height: 28px;
+        }
+        #descriptionModal .modal-body {
+            font-size: 14px;
+            padding: 20px 20px 16px;
+        }
+        #descriptionModal .modal-header {
+            padding: 16px 20px;
+        }
+        #descriptionModal .modal-header h3 {
+            font-size: 17px;
+        }
+        #descriptionModal .modal-footer {
+            padding: 12px 20px 20px;
+        }
+        #descriptionModal .modal-footer .btn-cancel {
+            padding: 8px 24px;
+            font-size: 13px;
+        }
+        #joinCourseModal .modal-body {
+            padding: 18px 20px 8px;
+        }
+        #joinCourseModal .modal-footer {
+            padding: 8px 20px 18px;
         }
     }
 </style>
@@ -180,14 +445,21 @@
                         </span>
                     </div>
                     
-                    {{-- توضیحات --}}
-                    @if(!empty($skill->desc))
-                        <div class="course-description">{{ $skill->desc }}</div>
-                    @else
-                        <div class="course-description empty">
-                            <i class="fas fa-edit"></i> توضیحاتی ثبت نشده است
-                        </div>
-                    @endif
+                    {{-- توضیحات با دکمه بیشتر --}}
+                    <div class="course-description-wrapper">
+                        @if(!empty($skill->desc))
+                            <div class="course-description" data-full="{{ $skill->desc }}">
+                                {{ $skill->desc }}
+                            </div>
+                            <button class="more-btn" data-name="{{ $skill->name }}" data-text="{{ $skill->desc }}">
+                                بیشتر
+                            </button>
+                        @else
+                            <div class="course-description empty">
+                                <i class="fas fa-edit"></i> توضیحاتی ثبت نشده است
+                            </div>
+                        @endif
+                    </div>
                     
                     {{-- وضعیت --}}
                     <span class="course-status {{ $isEnded ? 'ended' : 'active' }}">
@@ -254,6 +526,31 @@
         </div>
     </div>
 </div>
+
+<!-- ============================================
+     مودال نمایش کامل توضیحات (طراحی جدید)
+     ============================================ -->
+<div class="modal-overlay" id="descriptionModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>
+                <i class="fas fa-align-left"></i>
+                <span id="descModalTitle">توضیحات مهارت</span>
+            </h3>
+            <button class="modal-close" onclick="closeDescriptionModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="descModalBody">
+            <!-- متن کامل توضیحات در اینجا قرار می‌گیرد -->
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-cancel" onclick="closeDescriptionModal()">
+                <i class="fas fa-check"></i> متوجه شدم
+            </button>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('js')
@@ -304,7 +601,6 @@
         const errorEl = document.getElementById('codeError');
         const submitBtn = document.getElementById('joinSubmitBtn');
         
-        // اعتبارسنجی سمت کلاینت
         if (!code) {
             errorEl.textContent = 'لطفاً کد مهارت را وارد کنید';
             errorEl.classList.add('show');
@@ -317,15 +613,12 @@
             return;
         }
         
-        // پاک کردن خطا
         errorEl.classList.remove('show');
         errorEl.textContent = '';
         
-        // غیرفعال کردن دکمه
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span class="spinner"></span> در حال عضویت...';
         
-        // ارسال درخواست
         fetch('{{ route("join.skill") }}', {
             method: 'POST',
             headers: {
@@ -340,18 +633,15 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // موفقیت
                 showToast(data.message, 'success');
                 closeJoinModal();
                 
-                // ریدایرکت به صفحه مهارت
                 if (data.redirect) {
                     setTimeout(() => {
                         window.location.href = data.redirect;
                     }, 1500);
                 }
             } else {
-                // خطا
                 showToast(data.message, 'error');
                 if (data.errors) {
                     const errors = Object.values(data.errors).flat();
@@ -365,11 +655,64 @@
             showToast('خطا در ارتباط با سرور', 'error');
         })
         .finally(() => {
-            // فعال کردن دکمه
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> <span>عضویت</span>';
         });
     }
+
+    // ============================================
+    // DESCRIPTION MODAL FUNCTIONS
+    // ============================================
+    
+    function openDescriptionModal(title, text) {
+        document.getElementById('descModalTitle').textContent = title || 'توضیحات مهارت';
+        document.getElementById('descModalBody').textContent = text || 'متن توضیحات موجود نیست.';
+        document.getElementById('descriptionModal').classList.add('active');
+    }
+
+    function closeDescriptionModal() {
+        document.getElementById('descriptionModal').classList.remove('active');
+    }
+
+    // کلیک روی overlay مودال توضیحات برای بستن
+    document.getElementById('descriptionModal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeDescriptionModal();
+        }
+    });
+
+    // ============================================
+    // DETECT OVERFLOW & SHOW "بیشتر" BUTTON
+    // ============================================
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.course-description-wrapper').forEach(function(wrapper) {
+            const desc = wrapper.querySelector('.course-description');
+            const moreBtn = wrapper.querySelector('.more-btn');
+            
+            if (desc && moreBtn && !desc.classList.contains('empty')) {
+                requestAnimationFrame(function() {
+                    if (desc.scrollHeight > desc.clientHeight) {
+                        moreBtn.style.display = 'inline-block';
+                    }
+                });
+            }
+        });
+    });
+
+    // ============================================
+    // CLICK HANDLER FOR "بیشتر" BUTTONS (Event Delegation)
+    // ============================================
+    
+    document.addEventListener('click', function(e) {
+        const target = e.target.closest('.more-btn');
+        if (target) {
+            e.preventDefault();
+            const name = target.getAttribute('data-name') || 'توضیحات مهارت';
+            const text = target.getAttribute('data-text') || '';
+            openDescriptionModal(name, text);
+        }
+    });
 
     // ============================================
     // TOAST NOTIFICATION
@@ -429,6 +772,10 @@
             const joinModal = document.getElementById('joinCourseModal');
             if (joinModal.classList.contains('active')) {
                 closeJoinModal();
+            }
+            const descModal = document.getElementById('descriptionModal');
+            if (descModal.classList.contains('active')) {
+                closeDescriptionModal();
             }
         }
     });

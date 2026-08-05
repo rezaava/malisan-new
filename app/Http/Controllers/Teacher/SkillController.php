@@ -743,7 +743,7 @@ class SkillController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'desc' => 'nullable|max:255',
+            'desc' => 'nullable',
             'copy' => 'nullable|exists:courses,id',
             'length' => 'nullable',
             'sessions_length' => 'nullable',
