@@ -153,7 +153,7 @@
             $isEnded = $skill->is_ended ?? 0;
         @endphp
         <div class="course-card">
-            <a href="{{ route('view.coure.St', $skill->id) }}" class="course-link">
+            <a href="{{ route('view.skill.St', $skill->id) }}" class="course-link">
                 <div class="course-image">
                     <img src="{{ asset('/files/icons/' . $skill->header . '.jpg') }}" alt="{{ $skill->name }}">
                     <div class="course-badge {{ $skill->archieve == 1 ? 'inactive' : 'active' }}">

@@ -5,15 +5,23 @@
 @endsection
 
 @section('head')
+<link rel="stylesheet" href="{{asset('css/badge.css')}}">
 <link rel="stylesheet" href="{{asset('css/style-course.css')}}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 @endsection
 
 @section('mohtava')
 <div class="course-detail-container">
-    <div class="course-header">
-        <h4 class="course-title-main">{{ $course->name ?? 'عنوان درس' }}</h4>
+    <div class="course-actions-bar">
+        <div class="info-badge course-badge">
+            <span class="badge-icon">
+                <i class="fas fa-book-open"></i>
+            </span>
+            <span class="badge-label">درس:</span>
+            <span class="badge-value">{{ $course->name ?? 'عنوان درس' }}</span>
+        </div>
     </div>
+
     
     <div class="course-chips">
         @if($course->quiz == 1)

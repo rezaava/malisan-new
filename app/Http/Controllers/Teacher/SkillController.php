@@ -30,17 +30,20 @@ use Log;
 
 class SkillController extends Controller
 {
-    public function skill() {
+    public function skill()
+    {
         $user = Auth::user();
         $teacherRole = Role::where('name', 'teacher')->first();
-        
+
         $courses = $user->courses()
             ->where('archieve', 0)
-            ->whereIn('type', [1,2])
+            ->whereIn('type', [1, 2])
             ->wherePivot('role_id', $teacherRole->id)
-            ->withCount(['users as pending_requests_count' => function($query) {
-                $query->where('course_user.status', 2); // Use the pivot table name directly
-            }])
+            ->withCount([
+                'users as pending_requests_count' => function ($query) {
+                    $query->where('course_user.status', 2); // Use the pivot table name directly
+                }
+            ])
             ->get();
 
         return view('teacher.skills', compact('courses'));
@@ -51,17 +54,17 @@ class SkillController extends Controller
     public function editQuestion($id)
     {
         $question = Question::findOrFail($id);
-        
+
         // بررسی دسترسی استاد به این سوال
         $course = $question->session->course;
-        
+
         if (!$course || $course->is_skill != 1) {
             return response()->json([
                 'success' => false,
                 'message' => 'شما دسترسی به ویرایش این سوال ندارید.'
             ], 403);
         }
-        
+
         return response()->json([
             'success' => true,
             'question' => $question
@@ -74,7 +77,7 @@ class SkillController extends Controller
     public function updateQuestion(Request $request, $id)
     {
         $question = Question::findOrFail($id);
-        
+
         // بررسی دسترسی استاد به این سوال
         $course = $question->session->course ?? null;
         if (!$course || $course->is_skill != 1) {
@@ -83,7 +86,7 @@ class SkillController extends Controller
                 'message' => 'شما دسترسی به ویرایش این سوال ندارید.'
             ], 403);
         }
-        
+
         // اعتبارسنجی
         $validator = Validator::make($request->all(), [
             'question' => 'required|string|max:1000',
@@ -94,14 +97,14 @@ class SkillController extends Controller
             'answer' => 'required|integer|min:1|max:4',
             'status' => 'nullable|integer|in:1,2,3,4',
         ]);
-        
+
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'errors' => $validator->errors()
             ], 422);
         }
-        
+
         try {
             // بروزرسانی سوال
             $question->question = $request->question;
@@ -116,18 +119,18 @@ class SkillController extends Controller
             if ($request->has('status') && $request->status !== null) {
                 $question->status = $request->status;
             }
-            
+
             // ثبت اینکه سوال ویرایش شده است
             $question->is_edit = $question->is_edit + 1;
-            
+
             $question->save();
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'سوال با موفقیت ویرایش شد.',
                 'question' => $question
             ]);
-            
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -135,7 +138,7 @@ class SkillController extends Controller
             ], 500);
         }
     }
-    
+
     /**
      * دریافت توضیحات ارسال گزارش برای درس خاص
      */
@@ -144,16 +147,16 @@ class SkillController extends Controller
         try {
             // دریافت course_id از درخواست
             $courseId = $request->input('course_id');
-            
+
             if (!$courseId) {
                 return response()->json([
                     'success' => false,
                     'message' => 'شناسه درس ارسال نشده است'
                 ], 400);
             }
-            
-            $course = Course::where('is_skill', 1)->findOrFail($courseId);
-            
+
+            $course = Course::whereIn('type', [1, 2])->findOrFail($courseId);
+
             // بررسی دسترسی
             $user = Auth::user();
             $teacherRole = Role::where('name', 'teacher')->first();
@@ -162,31 +165,31 @@ class SkillController extends Controller
                 ->where('course_id', $course->id)
                 ->where('role_id', $teacherRole->id)
                 ->exists();
-                
+
             if (!$isOwner) {
                 return response()->json([
                     'success' => false,
                     'message' => 'شما دسترسی به این درس ندارید'
                 ], 403);
             }
-            
+
             // گرفتن تنظیمات این درس
             $setting = Setting::where('course_id', $course->id)->first();
-            
+
             if (!$setting) {
                 $setting = Setting::create([
                     'course_id' => $course->id,
                     'ersal_gozaresh_desc' => 'موضوع اصلی این جلسه چه بود و چه هدفی داشت؟ لطفاً یک نکتهٔ آموزنده از مطالب ارائه شده را با بیانی دیگر (به زبان خودتان) بازنویسی کنید.'
                 ]);
             }
-            
+
             return response()->json([
                 'success' => true,
                 'data' => [
                     'description' => $setting->ersal_gozaresh_desc ?? 'موضوع اصلی این جلسه چه بود و چه هدفی داشت؟ لطفاً یک نکتهٔ آموزنده از مطالب ارائه شده را با بیانی دیگر (به زبان خودتان) بازنویسی کنید.'
                 ]
             ]);
-            
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -194,7 +197,7 @@ class SkillController extends Controller
             ], 500);
         }
     }
-    
+
     /**
      * به‌روزرسانی توضیحات ارسال گزارش برای درس خاص
      */
@@ -204,18 +207,18 @@ class SkillController extends Controller
             'description' => 'required|string|max:5000',
             'course_id' => 'required|exists:courses,id'
         ]);
-    
+
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'errors' => $validator->errors()
             ], 422);
         }
-    
+
         try {
             $courseId = $request->course_id;
-            $course = Course::where('is_skill', 1)->findOrFail($courseId);
-            
+            $course = Course::whereIn('type', [1, 2])->findOrFail($courseId);
+
             // بررسی دسترسی
             $user = Auth::user();
             $teacherRole = Role::where('name', 'teacher')->first();
@@ -224,24 +227,24 @@ class SkillController extends Controller
                 ->where('course_id', $course->id)
                 ->where('role_id', $teacherRole->id)
                 ->exists();
-                
+
             if (!$isOwner) {
                 return response()->json([
                     'success' => false,
                     'message' => 'شما دسترسی به این درس ندارید'
                 ], 403);
             }
-            
+
             $setting = Setting::where('course_id', $course->id)->first();
-            
+
             if (!$setting) {
                 $setting = new Setting();
                 $setting->course_id = $course->id;
             }
-            
+
             $setting->ersal_gozaresh_desc = $request->description;
             $setting->save();
-    
+
             return response()->json([
                 'success' => true,
                 'message' => 'توضیحات با موفقیت به‌روزرسانی شد',
@@ -249,7 +252,7 @@ class SkillController extends Controller
                     'description' => $setting->ersal_gozaresh_desc
                 ]
             ]);
-    
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -257,16 +260,16 @@ class SkillController extends Controller
             ], 500);
         }
     }
-    
+
     public function toggleDore($id)
     {
         try {
-            $course = Course::where('is_skill', 1)->findOrFail($id);
-            
+            $course = Course::whereIn('type', [1, 2])->findOrFail($id);
+
             // تغییر وضعیت is_dore
             $course->is_dore = $course->is_dore ? 0 : 1;
             $course->save();
-            
+
             return response()->json([
                 'success' => true,
                 'message' => $course->is_dore ? 'درس به حالت دوره‌ای تغییر یافت' : 'درس به حالت غیردوره‌ای تغییر یافت',
@@ -282,15 +285,15 @@ class SkillController extends Controller
 
     public function reportsList($courseId)
     {
-        $course = Course::where('is_skill', 1)->findOrFail($courseId);
+        $course = Course::whereIn('type', [1, 2])->findOrFail($courseId);
         $sessionIds = $course->sessions()->pluck('id');
-        
+
         // دریافت همه گزارش‌های این درس به همراه اطلاعات کاربر و جلسه
         $reports = Discussion::whereIn('session_id', $sessionIds)
             ->with(['user', 'session'])
             ->orderBy('created_at', 'desc')
             ->get();
-        
+
         // آمار گزارش‌ها
         $stats = [
             'total' => $reports->count(),
@@ -301,11 +304,11 @@ class SkillController extends Controller
 
         return view('teacher.reports-list', compact('course', 'reports', 'stats'));
     }
-    
+
     public function getReportDetail($reportId)
     {
         $report = Discussion::with(['user', 'session.course'])->findOrFail($reportId);
-        
+
         // بررسی اینکه دوره مهارتی باشد
         if ($report->session->course->is_skill != 1) {
             return response()->json([
@@ -313,7 +316,7 @@ class SkillController extends Controller
                 'message' => 'دسترسی غیرمجاز'
             ], 403);
         }
-        
+
         return response()->json([
             'success' => true,
             'data' => [
@@ -333,14 +336,14 @@ class SkillController extends Controller
             ]
         ]);
     }
-    
+
     public function studentActivities(Course $course)
     {
         // اطمینان از مهارتی بودن دوره
         if ($course->is_skill != 1) {
             abort(403, 'دسترسی غیرمجاز');
         }
-        
+
         $role = Role::where('name', 'student')->first();
         $users = $course->users()
             ->where('role_id', $role->id)
@@ -455,9 +458,12 @@ class SkillController extends Controller
      */
     public function view($id)
     {
-        $course = Course::with(['sessions' => function ($query) {
-            $query->orderBy('number', 'desc');
-        }, 'settings'])->whereIn('type', [1,2])->findOrFail($id);
+        $course = Course::with([
+            'sessions' => function ($query) {
+                $query->orderBy('number', 'desc');
+            },
+            'settings'
+        ])->whereIn('type', [1, 2])->findOrFail($id);
 
         $user = Auth::user();
         $isStudent = $user->hasRole('student');
@@ -466,7 +472,7 @@ class SkillController extends Controller
         $courseUser = CourseUser::where('course_id', $course->id)
             ->where('user_id', $user->id)
             ->first();
-        
+
         $member = ($courseUser) ? 1 : 0;
         $paid = ($course->price == 0 || ($courseUser && $courseUser->paid == 1)) ? 1 : 0;
 
@@ -482,7 +488,7 @@ class SkillController extends Controller
 
         if ($isStudent) {
             $sessions = $course->sessions->where('active', 1);
-            
+
             if ($sessions->isEmpty()) {
                 $sessions = collect();
             } else {
@@ -515,17 +521,17 @@ class SkillController extends Controller
             }
         } else {
             $sessions = $course->sessions;
-            
+
             if ($sessions->isEmpty()) {
                 $sessions = collect();
             }
         }
 
         $khodazmaii = 0;
-        
+
         if (!$sessions->isEmpty() && $setting) {
             $sessionIds = $sessions->pluck('id');
-            
+
             $statusFilter = match ($setting->sath_khod) {
                 1 => [1],
                 2 => [1, 2],
@@ -537,7 +543,7 @@ class SkillController extends Controller
                 $questionCount = Question::whereIn('session_id', $sessionIds)
                     ->whereIn('status', $statusFilter)
                     ->count();
-                
+
                 $khodazmaii = ($questionCount >= $setting->q_num) ? 1 : 0;
             }
         }
@@ -568,8 +574,8 @@ class SkillController extends Controller
 
         // اصلاح: حذف whereHas اضافی
         $course['sessions'] = $course->sessions()->count();
-        $course['count'] = ($studentRole) 
-            ? $course->users()->where('role_id', $studentRole->id)->count() 
+        $course['count'] = ($studentRole)
+            ? $course->users()->where('role_id', $studentRole->id)->count()
             : 0;
 
         if ($teacherRole) {
@@ -587,7 +593,7 @@ class SkillController extends Controller
             ->where('status', 'pending')
             ->count();
 
-        return view('teacher.course', compact(
+        return view('teacher.skill', compact(
             'setting',
             'khodazmaii',
             'sessions',
@@ -597,13 +603,13 @@ class SkillController extends Controller
             'reportCount',
             'paid'
         ))->with([
-            'pageTitle' => 'صفحه مدیریت درس',
-            'pageName' => 'درس',
-            'pageDescription' => $isStudent 
-                ? "دوست من ! اینجا صفحه مدیریت کلاس درسته" 
-                : "مدرس گرامی ! داشبورد مدیریت درس در اختیار شماست",
-            'student' => (int) $isStudent,
-        ]);
+                    'pageTitle' => 'صفحه مدیریت درس',
+                    'pageName' => 'درس',
+                    'pageDescription' => $isStudent
+                        ? "دوست من ! اینجا صفحه مدیریت کلاس درسته"
+                        : "مدرس گرامی ! داشبورد مدیریت درس در اختیار شماست",
+                    'student' => (int) $isStudent,
+                ]);
     }
 
     /**
@@ -611,7 +617,7 @@ class SkillController extends Controller
      */
     public function create($id)
     {
-        $course = Course::where('is_skill', 1)->findOrFail($id);
+        $course = Course::whereIn('type', [1, 2])->findOrFail($id);
         $sessionsCount = Session::where('course_id', $course->id)->count();
         $nextSessionNumber = $sessionsCount + 1;
 
@@ -652,8 +658,8 @@ class SkillController extends Controller
         DB::beginTransaction();
 
         try {
-            $course = Course::where('is_skill', 1)->findOrFail($id);
-            
+            $course = Course::whereIn('type', [1, 2])->findOrFail($id);
+
             $session = new Session();
             $session->name = $request->name;
             $session->text = $request->text;
@@ -661,7 +667,7 @@ class SkillController extends Controller
             $session->number = $request->number;
             $session->course_id = $course->id;
             $session->active = $request->has('active') ? 1 : 0;
-            
+
             $session->majazi = $this->cleanUrl($request->majazi);
             $session->link = $this->cleanUrl($request->link);
             $session->aparat = $request->aparat;
@@ -671,11 +677,11 @@ class SkillController extends Controller
                 $file = $request->file('file');
                 $fileName = $id . "_" . time() . "." . $file->getClientOriginalExtension();
                 $destinationPath = public_path('files/session');
-                
+
                 if (!file_exists($destinationPath)) {
                     mkdir($destinationPath, 0777, true);
                 }
-                
+
                 $file->move($destinationPath, $fileName);
                 $session->file = '/' . $fileName; // اصلاح مسیر
             }
@@ -700,29 +706,29 @@ class SkillController extends Controller
     public function getCopyData($id)
     {
         try {
-            $course = Course::where('is_skill', 1)->findOrFail($id);
-            
+            $course = Course::whereIn('type', [1, 2])->findOrFail($id);
+
             $user = Auth::user();
             $teacherRole = Role::where('name', 'teacher')->first();
-            
+
             $isOwner = DB::table('course_user')
                 ->where('user_id', $user->id)
                 ->where('course_id', $course->id)
                 ->where('role_id', $teacherRole->id)
                 ->exists();
-                
+
             if (!$isOwner) {
                 return response()->json([
                     'error' => 'شما دسترسی به این درس ندارید'
                 ], 403);
             }
-            
+
             return response()->json([
                 'id' => $course->id,
                 'name' => $course->name,
                 'majazi' => $course->majazi,
             ]);
-            
+
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'خطا در دریافت اطلاعات درس'
@@ -754,33 +760,32 @@ class SkillController extends Controller
         try {
             $user = Auth::user();
             $teacherRole = Role::where('name', 'teacher')->first();
-            
+
             $code = $this->generateUniqueCode();
-            
+
             $course = new Course();
             $course->name = $request->name;
             $course->desc = $request->desc;
             $course->length = $request->length;
+            $course->type = 1;
             $course->sessions_length = $request->sessions_length;
             $course->max_session = 16;
             $course->code = $code;
-            $course->is_dore = 0;
-            $course->is_skill = 1; 
             $course->header = rand(1, 29);
             $course->save();
-            
+
             $this->createCourseAssociations($course);
             $course->users()->attach($user, ['role_id' => $teacherRole->id]);
-            
+
             if ($request->filled('copy')) {
                 $this->copyCourseSessions($request->copy, $course->id);
             }
-            
+
             DB::commit();
-            
+
             return redirect()->route('skill')
                 ->with('crete', 'ok');
-                
+
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Course creation failed: ' . $e->getMessage());
@@ -790,9 +795,9 @@ class SkillController extends Controller
 
     public function studentsList($id)
     {
-        $course = Course::where('is_skill', 1)->findOrFail($id);
+        $course = Course::whereIn('type', [1, 2])->findOrFail($id);
         $role = Role::where("name", "student")->first();
-        
+
         $users = $course->users()
             ->wherePivotNull('deleted_at')
             ->where('role_id', $role->id)
@@ -825,33 +830,33 @@ class SkillController extends Controller
             ->where('role_id', $role->id)
             ->count();
 
-        return view('teacher.students-list', compact('users', 'course', 'setting','removedCount'))->with([
+        return view('teacher.students-list', compact('users', 'course', 'setting', 'removedCount'))->with([
             'pageTitle' => 'صفحه دانشجویان دروس',
             'pageName' => 'دانشجویان درس',
             'pageDescription' => 'مدرس گرامی ! لیست دانشجو های شما به شرح زیر می باشد',
         ]);
     }
-    
+
     public function studentProfile($id)
     {
         $user = User::findOrFail($id);
-        
+
         // بررسی اینکه کاربر دانشجو باشد
         if (!$user->hasRole('student')) {
             return redirect()->back()->with('error', 'این کاربر دانشجو نیست');
         }
-        
+
         return view('teacher.student-profile', compact('user'))->with([
             'pageTitle' => 'پروفایل دانشجو',
             'pageName' => 'پروفایل دانشجو',
             'pageDescription' => 'مشخصات دانشجو',
         ]);
     }
-    
+
     public function updateStudentProfile(Request $request, $id)
     {
         $user = User::findOrFail($id);
-        
+
         $validator = Validator::make($request->all(), [
             'name' => 'nullable|string|max:255',
             'family' => 'nullable|string|max:255',
@@ -861,37 +866,37 @@ class SkillController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'password' => 'nullable|min:8',
         ]);
-        
+
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
-        
+
         try {
             $data = $request->except(['_token', '_method', 'password', 'image']);
-            
+
             // تغییر رمز عبور
             if ($request->filled('password')) {
                 $data['password'] = bcrypt($request->password);
             }
-            
+
             // آپلود عکس
             if ($request->hasFile('image')) {
                 $file = $request->file('image');
                 $fileName = time() . '_' . $user->id . '.' . $file->getClientOriginalExtension();
                 $destinationPath = public_path('files/users');
-                
+
                 if (!file_exists($destinationPath)) {
                     mkdir($destinationPath, 0777, true);
                 }
-                
+
                 $file->move($destinationPath, $fileName);
                 $data['image'] = '/files/users/' . $fileName;
             }
-            
+
             $user->update($data);
-            
+
             return redirect()->back()->with('success', 'پروفایل با موفقیت به‌روزرسانی شد');
-            
+
         } catch (\Exception $e) {
             \Log::error('Update profile failed: ' . $e->getMessage());
             return redirect()->back()->with('error', 'خطا در به‌روزرسانی پروفایل');
@@ -902,8 +907,8 @@ class SkillController extends Controller
     {
         try {
             $user = User::findOrFail($userId);
-            $course = Course::where('is_skill', 1)->findOrFail($courseId);
-            
+            $course = Course::whereIn('type', [1, 2])->findOrFail($courseId);
+
             // پیدا کردن رکورد عضویت دانشجو در دوره
             $courseUser = CourseUser::where('user_id', $userId)
                 ->where('course_id', $courseId)
@@ -940,21 +945,21 @@ class SkillController extends Controller
     public function toggleStatus($id)
     {
         try {
-            $course = Course::where('is_skill', 1)->findOrFail($id);
-            
+            $course = Course::whereIn('type', [1, 2])->findOrFail($id);
+
             // تغییر وضعیت private (1 -> 0 یا 0 -> 1)
             $course->private = $course->private == 1 ? 0 : 1;
             $course->save();
-            
+
             $status = $course->private == 1 ? 'فعال' : 'غیرفعال';
-            
+
             return response()->json([
                 'success' => true,
                 'message' => "وضعیت دوره با موفقیت به {$status} تغییر یافت",
                 'private' => $course->private,
                 'status_text' => $status
             ]);
-            
+
         } catch (\Exception $e) {
             \Log::error('Toggle course status failed: ' . $e->getMessage());
             return response()->json([
@@ -970,21 +975,21 @@ class SkillController extends Controller
     public function toggleArchive($id)
     {
         try {
-            $course = Course::where('is_skill', 1)->findOrFail($id);
-            
+            $course = Course::whereIn('type', [1, 2])->findOrFail($id);
+
             // تغییر وضعیت archieve (1 -> 0 یا 0 -> 1)
             $course->archieve = $course->archieve == 1 ? 0 : 1;
             $course->save();
-            
+
             $status = $course->archieve == 1 ? 'آرشیو شده' : 'فعال';
-            
+
             return response()->json([
                 'success' => true,
                 'message' => "دوره با موفقیت {$status} شد",
                 'archieve' => $course->archieve,
                 'status_text' => $status
             ]);
-            
+
         } catch (\Exception $e) {
             \Log::error('Toggle archive failed: ' . $e->getMessage());
             return response()->json([
@@ -1002,19 +1007,19 @@ class SkillController extends Controller
         try {
             $user = Auth::user();
             $teacherRole = Role::where('name', 'teacher')->first();
-            
+
             $archivedCourses = $user->courses()
                 ->wherePivot('role_id', $teacherRole->id)
                 ->where('archieve', 1)
-                ->where('is_skill', 1)
+                ->whereIn('type', [1, 2])
                 ->orderBy('updated_at', 'desc')
                 ->get();
-            
+
             return response()->json([
                 'success' => true,
                 'data' => $archivedCourses
             ]);
-            
+
         } catch (\Exception $e) {
             \Log::error('Get archived courses failed: ' . $e->getMessage());
             return response()->json([
@@ -1031,24 +1036,24 @@ class SkillController extends Controller
     {
         $user = Auth::user();
         $teacherRole = Role::where('name', 'teacher')->first();
-        
+
         // فقط دوره‌هایی که آرشیو نشده‌اند (archieve = 0) و مهارتی هستند
         $courses = $user->courses()
             ->wherePivot('role_id', $teacherRole->id)
             ->where('archieve', 0)
-            ->where('is_skill', 1)
+            ->whereIn('type', [1, 2])
             ->orderBy('created_at', 'desc')
             ->get();
-        
+
         return view('teacher.courses', compact('courses'));
     }
-    
+
     public function restoreUser($userId, $courseId)
     {
         try {
             $user = User::findOrFail($userId);
-            $course = Course::where('is_skill', 1)->findOrFail($courseId);
-            
+            $course = Course::whereIn('type', [1, 2])->findOrFail($courseId);
+
             // پیدا کردن رکورد حذف شده
             $courseUser = CourseUser::withTrashed()
                 ->where('user_id', $userId)
@@ -1092,8 +1097,8 @@ class SkillController extends Controller
     public function removedStudents($courseId)
     {
         try {
-            $course = Course::where('is_skill', 1)->findOrFail($courseId);
-            
+            $course = Course::whereIn('type', [1, 2])->findOrFail($courseId);
+
             $removedStudents = CourseUser::onlyTrashed()
                 ->where('course_id', $courseId)
                 ->with('user')
@@ -1115,14 +1120,14 @@ class SkillController extends Controller
 
     public function setting($id)
     {
-        $course = Course::where('is_skill', 1)->findOrFail($id);
-        
+        $course = Course::whereIn('type', [1, 2])->findOrFail($id);
+
         // دریافت تنظیمات (Setting)
         $setting = Setting::firstOrCreate(
             ['course_id' => $course->id],
             ['course_id' => $course->id]
         );
-        
+
         // دریافت بارم‌بندی (Scoring)
         $scoring = Scoring::firstOrCreate(
             ['course_id' => $course->id],
@@ -1162,7 +1167,7 @@ class SkillController extends Controller
             'time_per_question' => 'nullable|numeric|min:1|max:300',
             'total_time_limit' => 'nullable|numeric|min:0|max:120',
             'time_type' => 'nullable|in:per_question,total',
-       ]);
+        ]);
 
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
@@ -1171,8 +1176,8 @@ class SkillController extends Controller
         DB::beginTransaction();
 
         try {
-            $course = Course::where('is_skill', 1)->findOrFail($request->course_id);
-            
+            $course = Course::whereIn('type', [1, 2])->findOrFail($request->course_id);
+
             // ==========================================
             // 1. به‌روزرسانی بارم‌بندی (Scoring)
             // ==========================================
@@ -1200,7 +1205,7 @@ class SkillController extends Controller
             // 2. به‌روزرسانی تنظیمات (Setting)
             // ==========================================
             $setting = Setting::firstOrCreate(['course_id' => $course->id]);
-            
+
             // فیلدهای عددی
             $setting->fill([
                 'tarahi_soal_nomre' => $request->tarahi_soal_nomre ?? 0,
@@ -1246,12 +1251,12 @@ class SkillController extends Controller
             // ==========================================
             // فیلدهای چک‌باکس (boolean)
             // ==========================================
-            
+
             // بخش فعالیت‌ها
             $setting->soal_last = $request->has('soal_last') ? 1 : 0;
             $setting->gozaresh_last = $request->has('gozaresh_last') ? 1 : 0;
             $setting->taklif_last = $request->has('taklif_last') ? 1 : 0;
-            
+
             // بخش خودآزمایی - چک‌باکس‌ها
             $setting->show_khod = $request->input('show_khod', 0) == 1 ? 1 : 0;
             $setting->natije = $request->input('natije', 0) == 1 ? 1 : 0;
@@ -1261,26 +1266,26 @@ class SkillController extends Controller
             // تنظیمات محدودیت زمانی خودآزمایی
             // ==========================================
             $setting->time_limit_khod = $request->input('time_limit_khod', 0) == 1 ? 1 : 0;
-            
+
             if ($setting->time_limit_khod == 1) {
                 $time_type = $request->input('time_type', 'per_question');
-                
+
                 if ($time_type == 'total') {
                     // حالت کل آزمون
                     $total_minutes = $request->input('total_time_limit', 0);
-                    
+
                     // اگر کاربر مقدار وارد نکرده باشد، از مقدار پیش‌فرض استفاده کن
                     if ($total_minutes == 0) {
                         $q_num = $request->input('q_num', 10);
                         $total_minutes = round(($q_num * 45) / 60);
                     }
-                    
+
                     $setting->total_time_limit = $total_minutes;
                     $setting->time_per_question = 0; // غیرفعال
                 } else {
                     // حالت به ازای هر سوال
                     $time_per_question = $request->input('time_per_question', 45);
-                    
+
                     $setting->time_per_question = $time_per_question;
                     $setting->total_time_limit = 0; // غیرفعال
                 }
@@ -1302,18 +1307,18 @@ class SkillController extends Controller
             return redirect()->back()->with('error', 'خطا در ذخیره تنظیمات: ' . $e->getMessage());
         }
     }
-    
+
     /**
      * نمایش ارزشیابی دانشجو
      */
     public function studentEvaluation($courseId, $userId)
     {
-        $course = Course::where('is_skill', 1)->findOrFail($courseId);
+        $course = Course::whereIn('type', [1, 2])->findOrFail($courseId);
         $setting = Setting::where('course_id', $course->id)->first();
         $scorring = Scoring::where('course_id', $course->id)->first();
 
         $user = User::findOrFail($userId);
-        
+
         // بررسی دسترسی
         if (Auth::user()->hasRole('student') && $user->id != Auth::id()) {
             return redirect()->back()->with('error', 'شما مجاز به مشاهده این صفحه نیستید.');
@@ -1328,7 +1333,7 @@ class SkillController extends Controller
         $questions_all = Question::where('user_id', $userId)
             ->whereIn('session_id', $sessions)
             ->count();
-            
+
         $questions_1 = Question::where('user_id', $userId)
             ->whereIn('session_id', $sessions)
             ->where('status', '1')->count();
@@ -1355,12 +1360,13 @@ class SkillController extends Controller
         foreach (Question::where('user_id', $userId)->whereIn('session_id', $sessions)->get() as $qq) {
             $q_scores += $qq->score;
         }
-        $q_scores = ($questions_all != 0) ? $q_scores / ($questions_all * (20/25)) : 0;
-        if ($q_scores > 20) $q_scores = 20;
+        $q_scores = ($questions_all != 0) ? $q_scores / ($questions_all * (20 / 25)) : 0;
+        if ($q_scores > 20)
+            $q_scores = 20;
 
         // نمره نهایی سوالات
-        $q_nomre = ($scorring->q_1 * $questions_1) + ($scorring->q_2 * $questions_2) + 
-                ($scorring->q_3 * $questions_3) + ($scorring->q_4 * $questions_4);
+        $q_nomre = ($scorring->q_1 * $questions_1) + ($scorring->q_2 * $questions_2) +
+            ($scorring->q_3 * $questions_3) + ($scorring->q_4 * $questions_4);
         $nomre_har_soal = $setting->tarahi_soal_nomre / ($setting->jalasat * ($setting->max_soal - 1));
         $q_nomre *= $nomre_har_soal;
         if ($q_nomre > $setting->tarahi_soal_nomre) {
@@ -1374,7 +1380,7 @@ class SkillController extends Controller
         $disc_all = Discussion::where('user_id', $userId)
             ->whereIn('session_id', $sessions)
             ->count();
-            
+
         $disc_1 = Discussion::where('user_id', $userId)
             ->whereIn('session_id', $sessions)
             ->where('status', '1')->count();
@@ -1401,12 +1407,13 @@ class SkillController extends Controller
         foreach (Discussion::where('user_id', $userId)->whereIn('session_id', $sessions)->get() as $dd) {
             $d_scores += $dd->score;
         }
-        $d_scores = ($disc_all != 0) ? $d_scores / ($disc_all * (20/25)) : 0;
-        if ($d_scores > 20) $d_scores = 20;
+        $d_scores = ($disc_all != 0) ? $d_scores / ($disc_all * (20 / 25)) : 0;
+        if ($d_scores > 20)
+            $d_scores = 20;
 
         // نمره نهایی گزارش‌ها
-        $d_nomre = ($scorring->d_1 * $disc_1) + ($scorring->d_2 * $disc_2) + 
-                ($scorring->d_3 * $disc_3) + ($scorring->d_4 * $disc_4);
+        $d_nomre = ($scorring->d_1 * $disc_1) + ($scorring->d_2 * $disc_2) +
+            ($scorring->d_3 * $disc_3) + ($scorring->d_4 * $disc_4);
         if ($d_nomre > $setting->ersal_gozaresh_nomre) {
             $d_nomre = $setting->ersal_gozaresh_nomre;
         }
@@ -1418,7 +1425,7 @@ class SkillController extends Controller
         // 3. آمار تکالیف
         // ==========================================
         $exercises = Exercise::whereIn('session_id', $sessions)->pluck('id');
-        
+
         $exer_1 = ExerciseAnswer::where('user_id', $userId)
             ->whereIn('exercise_id', $exercises)
             ->where('status', '1')->count();
@@ -1444,8 +1451,8 @@ class SkillController extends Controller
         ];
 
         // نمره نهایی تکالیف
-        $e_nomre = ($scorring->e_1 * $exer_1) + ($scorring->e_2 * $exer_2) + 
-                ($scorring->e_3 * $exer_3) + ($scorring->e_4 * $exer_4);
+        $e_nomre = ($scorring->e_1 * $exer_1) + ($scorring->e_2 * $exer_2) +
+            ($scorring->e_3 * $exer_3) + ($scorring->e_4 * $exer_4);
         if ($e_nomre > $setting->taklif_seminar_nomre) {
             $e_nomre = $setting->taklif_seminar_nomre;
         }
@@ -1464,7 +1471,8 @@ class SkillController extends Controller
             $qu_scores += $qq->score;
         }
         $qu_scores = ($questions_all != 0) ? $qu_scores / $questions_all : 0;
-        if ($qu_scores > 20) $qu_scores = 20;
+        if ($qu_scores > 20)
+            $qu_scores = 20;
 
         // ==========================================
         // 5. آمار داوری
@@ -1492,13 +1500,13 @@ class SkillController extends Controller
         // ==========================================
         // 6. محاسبه امتیازات
         // ==========================================
-        
+
         // 6.1. فعالیت کلاسی
         $score_soal = min(8, ($questions_all * 8) / ($max_session * $setting->max_soal * 5 / 6));
         $score_gozaresh = min(5, $disc_all * 5 / $max_session);
         $score_davari = min(8, (($davarii['q'] + $davarii['gozaresh']) * 8) / ($max_session * (1 + $setting->max_soal) * 3));
         $score_azmoon = min(9, $count_azmoon * 9 / ($setting->min_w_khod * $max_session));
-        
+
         $kelasi = min(30, $score_soal + $score_gozaresh + $score_azmoon + $score_davari);
 
         // 6.2. پیشرفت درسی
@@ -1506,12 +1514,13 @@ class SkillController extends Controller
         $score_pish_gozaresh = ($score_gozaresh > 0) ? min(10, $d_scores * 10 / $score_gozaresh) : 0;
         $score_pish_azmoon = ($score_azmoon > 0) ? min(24, ($qu_scores / 24) * $score_azmoon) : 0;
         $score_keifiat = min(14, ((($q_scores + $d_scores + $qu_scores + 5) / 4) * 14));
-        
+
         $pishraft = min(70, $score_pish_soal + $score_pish_gozaresh + $score_pish_azmoon + 5 + $score_keifiat);
 
         // 6.3. ارزشیابی مستمر
         $mostamer = ($pishraft + $kelasi) * 12 / 100;
-        if ($mostamer > 12) $mostamer = 12;
+        if ($mostamer > 12)
+            $mostamer = 12;
         $mostamer_score = ($setting->mostamar_nomre > 0) ? ($mostamer * 20 / $setting->mostamar_nomre) : 0;
 
         // 6.4. نمرات سایر بخش‌ها
@@ -1521,7 +1530,7 @@ class SkillController extends Controller
         $talash_davari_soal = min(5, $nomre_har_talash * $davarii['q'] / ($setting->jalasat * 2 * 6));
         $talash_davari_gozaresh = min(5, $nomre_har_talash * $davarii['gozaresh'] / ($setting->jalasat * 6));
         $talash_khod = min(5, $nomre_har_talash * $count_azmoon / ($setting->jalasat * (7 * 5)));
-        
+
         $nomre['talash'] = round($talash_davari_soal + $talash_davari_gozaresh + $talash_soal + $talash_gozaresh + $talash_khod, 2);
 
         // ==========================================
@@ -1564,10 +1573,10 @@ class SkillController extends Controller
             'score_pish_azmoon',
             'score_keifiat'
         ))->with([
-            'pageTitle' => 'ارزشیابی دانشجو',
-            'pageName' => 'ارزشیابی',
-            'pageDescription' => 'مشاهده وضعیت پیشرفت درسی دانشجو',
-        ]);
+                    'pageTitle' => 'ارزشیابی دانشجو',
+                    'pageName' => 'ارزشیابی',
+                    'pageDescription' => 'مشاهده وضعیت پیشرفت درسی دانشجو',
+                ]);
     }
 
     /**
@@ -1575,7 +1584,7 @@ class SkillController extends Controller
      */
     public function gradesList($courseId)
     {
-        $course = Course::with(['settings'])->where('is_skill', 1)->findOrFail($courseId);
+        $course = Course::with(['settings'])->whereIn('type', [1, 2])->findOrFail($courseId);
         $setting = $course->settings;
 
         $studentRole = Role::where('name', 'student')->first();
@@ -1588,7 +1597,7 @@ class SkillController extends Controller
             ->get();
 
         $sessions = Session::where('course_id', $course->id)->pluck('id');
-        
+
         if ($course->status == 1) {
             $max_session = $course->max_session;
         } else {
@@ -1601,7 +1610,7 @@ class SkillController extends Controller
         // ==========================================
         // دریافت تمام داده‌های مورد نیاز با یک کوئری
         // ==========================================
-        
+
         // دریافت تمام سوالات کاربران
         $questions = Question::whereIn('session_id', $sessions)
             ->whereIn('user_id', $users->pluck('id'))
@@ -1639,7 +1648,7 @@ class SkillController extends Controller
         $all_d = Discussion::whereIn('session_id', $sessions)->pluck('id');
 
         $davari_counts = Score::withTrashed()
-            ->where(function($query) use ($all_q, $all_d) {
+            ->where(function ($query) use ($all_q, $all_d) {
                 $query->whereIn('sub_id', $all_q)
                     ->orWhereIn('sub_id', $all_d);
             })
@@ -1665,7 +1674,8 @@ class SkillController extends Controller
             $questions_all = $userQuestions->count();
             $q_scores = $userQuestions->sum('score');
             $q_scores = $questions_all != 0 ? $q_scores / ($questions_all * (20 / 25)) : 0;
-            if ($q_scores > 20) $q_scores = 20;
+            if ($q_scores > 20)
+                $q_scores = 20;
 
             // ==========================================
             // گزارش‌های این کاربر
@@ -1674,7 +1684,8 @@ class SkillController extends Controller
             $disc_all = $userDiscussions->count();
             $d_scores = $userDiscussions->sum('score');
             $d_scores = $disc_all != 0 ? $d_scores / ($disc_all * (20 / 25)) : 0;
-            if ($d_scores > 20) $d_scores = 20;
+            if ($d_scores > 20)
+                $d_scores = 20;
 
             // ==========================================
             // خودآزمایی‌های این کاربر
@@ -1683,7 +1694,8 @@ class SkillController extends Controller
             $count_azmoon = $userQuizzes->count();
             $qu_scores = $userQuizzes->sum('score');
             $qu_scores = ($count_azmoon != 0 && $questions_all != 0) ? $qu_scores / $questions_all : 0;
-            if ($qu_scores > 20) $qu_scores = 20;
+            if ($qu_scores > 20)
+                $qu_scores = 20;
 
             // ==========================================
             // داوری‌های این کاربر
@@ -1720,10 +1732,11 @@ class SkillController extends Controller
             $kelasi = min($score_soal + $score_gozaresh + $score_azmoon + $score_davari, 30);
 
             $mostamer = ($pishraft + $kelasi) * 12 / 100;
-            if ($mostamer > 12) $mostamer = 12;
+            if ($mostamer > 12)
+                $mostamer = 12;
 
-            $user->mostamar_nomre = $setting->mostamar_nomre > 0 
-                ? round($mostamer * 20 / $setting->mostamar_nomre, 2) 
+            $user->mostamar_nomre = $setting->mostamar_nomre > 0
+                ? round($mostamer * 20 / $setting->mostamar_nomre, 2)
                 : 0;
 
             // ==========================================
@@ -1732,15 +1745,16 @@ class SkillController extends Controller
             $weightedScores = [];
 
             foreach ($azmons as $azmon) {
-                $zarib = is_null($azmon->zarib) ? 1 : (float)$azmon->zarib;
+                $zarib = is_null($azmon->zarib) ? 1 : (float) $azmon->zarib;
 
                 $quiz = $userQuizzes->where('azmon_id', $azmon->id)->first();
 
-                if (!$quiz) continue;
+                if (!$quiz)
+                    continue;
 
                 $answersForQuiz = $answers->get($quiz->id, collect());
                 $total_answers = $answersForQuiz->count();
-                $correct = $answersForQuiz->filter(function($answer) {
+                $correct = $answersForQuiz->filter(function ($answer) {
                     $q = $answer->question;
                     return $q && $q->answer == $answer->answer;
                 })->count();
@@ -1767,7 +1781,7 @@ class SkillController extends Controller
      */
     public function saveGrades(Request $request, $courseId)
     {
-        $course = Course::where('is_skill', 1)->findOrFail($courseId);
+        $course = Course::whereIn('type', [1, 2])->findOrFail($courseId);
         $setting = Setting::where('course_id', $course->id)->first();
 
         try {
@@ -1822,10 +1836,10 @@ class SkillController extends Controller
      */
     public function allProgress($id)
     {
-        $course = Course::where('is_skill', 1)->findOrFail($id);
+        $course = Course::whereIn('type', [1, 2])->findOrFail($id);
         $sessions = Session::where('course_id', $course->id)->pluck('id');
         $studentRole = Role::where('name', 'student')->first();
-        
+
         $users = $course->users()
             ->where('role_id', $studentRole->id)
             ->orderBy('family', 'asc')
@@ -1912,7 +1926,7 @@ class SkillController extends Controller
             'pageDescription' => 'مشاهده فعالیت‌های دانشجویان در درس',
         ]);
     }
-    
+
     /**
      * دریافت فعالیت‌های دانشجویان بر اساس بازه زمانی (AJAX)
      */
@@ -1920,11 +1934,11 @@ class SkillController extends Controller
     {
         $days = $request->days ?? 3;
         $courseId = $id;
-        
-        $course = Course::where('is_skill', 1)->findOrFail($courseId);
+
+        $course = Course::whereIn('type', [1, 2])->findOrFail($courseId);
         $sessions = Session::where('course_id', $course->id)->pluck('id');
         $studentRole = Role::where('name', 'student')->first();
-        
+
         $users = $course->users()
             ->where('role_id', $studentRole->id)
             ->orderBy('family', 'asc')
@@ -1984,9 +1998,9 @@ class SkillController extends Controller
      */
     public function questionBank($courseId)
     {
-        $course = Course::with('sessions')->where('is_skill', 1)->findOrFail($courseId);
+        $course = Course::with('sessions')->whereIn('type', [1, 2])->findOrFail($courseId);
         $sessions = $course->sessions()->pluck('id');
-        
+
         // دریافت تمام سوالات
         $questions = Question::whereIn('session_id', $sessions)
             ->with('user')
@@ -1997,8 +2011,8 @@ class SkillController extends Controller
         foreach ($questions as $question) {
             // اطلاعات طراح
             if ($question->user) {
-                $question->designer_name = $question->user->hasRole('teacher') 
-                    ? 'استاد' 
+                $question->designer_name = $question->user->hasRole('teacher')
+                    ? 'استاد'
                     : $question->user->name . ' ' . $question->user->family;
             } else {
                 $question->designer_name = 'نامشخص';
@@ -2021,7 +2035,7 @@ class SkillController extends Controller
                 ->orderBy('id', 'desc')
                 ->with('user')
                 ->get();
-            
+
             foreach ($nazars as $nazar) {
                 if ($nazar->user) {
                     $nazar->user_name = $nazar->user->name . ' ' . $nazar->user->family;
@@ -2041,10 +2055,10 @@ class SkillController extends Controller
             'starred' => $questions->where('star', 1)->count(),
             'teacher_questions' => $teacherQuestionsCount,
         ];
-        
+
         return view('teacher.question-bank', compact('course', 'questions', 'stats'));
     }
-    
+
     /**
      * تغییر وضعیت ستاره سوال
      */
@@ -2138,8 +2152,8 @@ class SkillController extends Controller
         }
 
         try {
-            $course = Course::where('is_skill', 1)->findOrFail($id);
-            
+            $course = Course::whereIn('type', [1, 2])->findOrFail($id);
+
             // بررسی دسترسی
             $user = Auth::user();
             $teacherRole = Role::where('name', 'teacher')->first();
@@ -2148,18 +2162,18 @@ class SkillController extends Controller
                 ->where('course_id', $course->id)
                 ->where('role_id', $teacherRole->id)
                 ->exists();
-                
+
             if (!$isOwner) {
                 return response()->json([
                     'success' => false,
                     'message' => 'شما دسترسی به ویرایش این درس ندارید'
                 ], 403);
             }
-            
+
             $course->name = $request->name;
             $course->majazi = $this->cleanUrl($request->majazi);
             $course->save();
-            
+
             // اگر درخواست Ajax باشد، پاسخ JSON برگردان
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
@@ -2174,20 +2188,20 @@ class SkillController extends Controller
                     ]
                 ]);
             }
-            
+
             // در غیر این صورت به حالت قبل (ردایرکت)
             return redirect()->route('courses')->with('success', 'درس با موفقیت ویرایش شد');
-            
+
         } catch (\Exception $e) {
             \Log::error('Update course failed: ' . $e->getMessage());
-            
+
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'خطا در ویرایش درس: ' . $e->getMessage()
                 ], 500);
             }
-            
+
             return redirect()->back()->with('error', 'خطا در ویرایش درس');
         }
     }
@@ -2198,8 +2212,8 @@ class SkillController extends Controller
     public function getEditData($id)
     {
         try {
-            $course = Course::where('is_skill', 1)->findOrFail($id);
-            
+            $course = Course::whereIn('type', [1, 2])->findOrFail($id);
+
             // بررسی دسترسی
             $user = Auth::user();
             $teacherRole = Role::where('name', 'teacher')->first();
@@ -2208,14 +2222,14 @@ class SkillController extends Controller
                 ->where('course_id', $course->id)
                 ->where('role_id', $teacherRole->id)
                 ->exists();
-                
+
             if (!$isOwner) {
                 return response()->json([
                     'success' => false,
                     'message' => 'شما دسترسی به این درس ندارید'
                 ], 403);
             }
-            
+
             return response()->json([
                 'success' => true,
                 'course' => [
@@ -2225,7 +2239,7 @@ class SkillController extends Controller
                     'code' => $course->code
                 ]
             ]);
-            
+
         } catch (\Exception $e) {
             \Log::error('Get edit data failed: ' . $e->getMessage());
             return response()->json([
@@ -2241,8 +2255,8 @@ class SkillController extends Controller
     public function destroy($id)
     {
         try {
-            $course = Course::where('is_skill', 1)->findOrFail($id);
-            
+            $course = Course::whereIn('type', [1, 2])->findOrFail($id);
+
             // بررسی دسترسی
             $user = Auth::user();
             $teacherRole = Role::where('name', 'teacher')->first();
@@ -2251,28 +2265,28 @@ class SkillController extends Controller
                 ->where('course_id', $course->id)
                 ->where('role_id', $teacherRole->id)
                 ->exists();
-                
+
             if (!$isOwner) {
                 return response()->json([
                     'success' => false,
                     'message' => 'شما دسترسی به حذف این درس ندارید'
                 ], 403);
             }
-            
+
             // حذف وابسته‌ها
             $course->sessions()->delete();
             $course->settings()->delete();
             $course->scorings()->delete();
             $course->users()->detach();
-            
+
             // حذف درس
             $course->delete();
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'درس با موفقیت حذف شد'
             ]);
-            
+
         } catch (\Exception $e) {
             \Log::error('Delete course failed: ' . $e->getMessage());
             return response()->json([
@@ -2287,19 +2301,19 @@ class SkillController extends Controller
      */
     public function exerciseCorrection($courseId)
     {
-        $course = Course::where('is_skill', 1)->findOrFail($courseId);
-        
+        $course = Course::whereIn('type', [1, 2])->findOrFail($courseId);
+
         $sessionsWithExercises = Session::where('course_id', $courseId)
             ->with([
-                'exercises' => function($query) {
+                'exercises' => function ($query) {
                     $query->withCount('exerciseAnswers');
                 }
             ])
             ->withCount(['questions', 'discussions'])
             ->orderBy('number', 'desc')
             ->get();
-        
-        
+
+
         return view('teacher.exercise-correction', compact('course', 'sessionsWithExercises'))->with([
             'pageTitle' => 'تصحیح تکالیف',
             'pageName' => 'تصحیح تکالیف',
@@ -2315,7 +2329,7 @@ class SkillController extends Controller
     {
         try {
             $exercise = Exercise::with(['session.course'])->findOrFail($exerciseId);
-            
+
             // بررسی مهارتی بودن دوره
             if ($exercise->session->course->is_skill != 1) {
                 return response()->json([
@@ -2323,22 +2337,24 @@ class SkillController extends Controller
                     'message' => 'دسترسی غیرمجاز'
                 ], 403);
             }
-            
+
             // دریافت تمام پاسخ‌های این تکلیف به همراه اطلاعات دانشجو
             $answers = ExerciseAnswer::where('exercise_id', $exerciseId)
-                ->with(['user' => function($query) {
-                    $query->select('id', 'name', 'family', 'email');
-                }])
+                ->with([
+                    'user' => function ($query) {
+                        $query->select('id', 'name', 'family', 'email');
+                    }
+                ])
                 ->orderBy('created_at', 'desc')
                 ->get();
-            
+
             return response()->json([
                 'success' => true,
                 'exercise' => $exercise,
                 'answers' => $answers,
                 'total' => $answers->count()
             ]);
-            
+
         } catch (\Exception $e) {
             Log::error('Get exercise answers failed: ' . $e->getMessage());
             return response()->json([
@@ -2355,7 +2371,7 @@ class SkillController extends Controller
     {
         try {
             $session = Session::with(['questions.user'])->findOrFail($sessionId);
-            
+
             // بررسی مهارتی بودن دوره
             if ($session->course->is_skill != 1) {
                 return response()->json([
@@ -2363,9 +2379,9 @@ class SkillController extends Controller
                     'message' => 'دسترسی غیرمجاز'
                 ], 403);
             }
-            
+
             $questions = $session->questions()->with('user')->orderBy('created_at', 'desc')->get();
-            
+
             return response()->json([
                 'success' => true,
                 'questions' => $questions,
@@ -2387,7 +2403,7 @@ class SkillController extends Controller
     {
         try {
             $session = Session::with(['discussions.user'])->findOrFail($sessionId);
-            
+
             // بررسی مهارتی بودن دوره
             if ($session->course->is_skill != 1) {
                 return response()->json([
@@ -2395,9 +2411,9 @@ class SkillController extends Controller
                     'message' => 'دسترسی غیرمجاز'
                 ], 403);
             }
-            
+
             $discussions = $session->discussions()->with('user')->orderBy('created_at', 'desc')->get();
-            
+
             return response()->json([
                 'success' => true,
                 'discussions' => $discussions,
@@ -2411,7 +2427,7 @@ class SkillController extends Controller
             ], 500);
         }
     }
-    
+
     /**
      * ثبت نمره برای پاسخ تکلیف
      */
@@ -2419,32 +2435,32 @@ class SkillController extends Controller
     {
         try {
             $answer = ExerciseAnswer::findOrFail($answerId);
-            
+
             $validator = Validator::make($request->all(), [
                 'status' => 'required|in:1,2,3,4'
             ]);
-            
+
             if ($validator->fails()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'لطفاً یک مقدار معتبر انتخاب کنید'
                 ], 422);
             }
-            
+
             $answer->status = $request->status;
             $answer->comment = $request->comment ?? null;
             $answer->save();
-            
+
             // دریافت اطلاعات برای نمایش
             $statusText = ['', 'عالی', 'خوب', 'متوسط', 'بد'][$request->status] ?? 'نامشخص';
-            
+
             return response()->json([
                 'success' => true,
                 'message' => "نمره با موفقیت ثبت شد: {$statusText}",
                 'status' => $request->status,
                 'status_text' => $statusText
             ]);
-            
+
         } catch (\Exception $e) {
             Log::error('Score exercise answer failed: ' . $e->getMessage());
             return response()->json([
@@ -2461,7 +2477,7 @@ class SkillController extends Controller
     {
         try {
             $session = Session::findOrFail($id);
-            
+
             // بررسی دسترسی
             $user = Auth::user();
             $teacherRole = Role::where('name', 'teacher')->first();
@@ -2470,14 +2486,14 @@ class SkillController extends Controller
                 ->where('course_id', $session->course_id)
                 ->where('role_id', $teacherRole->id)
                 ->exists();
-                
+
             if (!$isOwner) {
                 return response()->json([
                     'success' => false,
                     'message' => 'شما دسترسی به ویرایش این جلسه ندارید'
                 ], 403);
             }
-            
+
             // بررسی مهارتی بودن دوره
             if ($session->course->is_skill != 1) {
                 return response()->json([
@@ -2485,7 +2501,7 @@ class SkillController extends Controller
                     'message' => 'دسترسی غیرمجاز'
                 ], 403);
             }
-            
+
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -2502,7 +2518,7 @@ class SkillController extends Controller
                     'course_id' => $session->course_id
                 ]
             ]);
-            
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -2539,7 +2555,7 @@ class SkillController extends Controller
 
         try {
             $session = Session::findOrFail($id);
-            
+
             // بررسی دسترسی
             $user = Auth::user();
             $teacherRole = Role::where('name', 'teacher')->first();
@@ -2548,14 +2564,14 @@ class SkillController extends Controller
                 ->where('course_id', $session->course_id)
                 ->where('role_id', $teacherRole->id)
                 ->exists();
-                
+
             if (!$isOwner) {
                 return response()->json([
                     'success' => false,
                     'message' => 'شما دسترسی به ویرایش این جلسه ندارید'
                 ], 403);
             }
-            
+
             // بررسی مهارتی بودن دوره
             if ($session->course->is_skill != 1) {
                 return response()->json([
@@ -2582,15 +2598,15 @@ class SkillController extends Controller
                         unlink($oldFilePath);
                     }
                 }
-                
+
                 $file = $request->file('file');
                 $fileName = $session->course_id . "_" . time() . "." . $file->getClientOriginalExtension();
                 $destinationPath = public_path('files/session');
-                
+
                 if (!file_exists($destinationPath)) {
                     mkdir($destinationPath, 0777, true);
                 }
-                
+
                 $file->move($destinationPath, $fileName);
                 $session->file = '/' . $fileName;
             }
@@ -2618,7 +2634,7 @@ class SkillController extends Controller
     {
         try {
             $session = Session::findOrFail($id);
-            
+
             // بررسی دسترسی
             $user = Auth::user();
             $teacherRole = Role::where('name', 'teacher')->first();
@@ -2627,14 +2643,14 @@ class SkillController extends Controller
                 ->where('course_id', $session->course_id)
                 ->where('role_id', $teacherRole->id)
                 ->exists();
-                
+
             if (!$isOwner) {
                 return response()->json([
                     'success' => false,
                     'message' => 'شما دسترسی به حذف این جلسه ندارید'
                 ], 403);
             }
-            
+
             // بررسی مهارتی بودن دوره
             if ($session->course->is_skill != 1) {
                 return response()->json([
@@ -2642,7 +2658,7 @@ class SkillController extends Controller
                     'message' => 'دسترسی غیرمجاز'
                 ], 403);
             }
-            
+
             // حذف فایل
             if ($session->file) {
                 $filePath = public_path('files/session' . $session->file);
@@ -2650,14 +2666,14 @@ class SkillController extends Controller
                     unlink($filePath);
                 }
             }
-            
+
             $session->delete();
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'جلسه با موفقیت حذف شد'
             ]);
-            
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -2673,7 +2689,7 @@ class SkillController extends Controller
     {
         try {
             $session = Session::findOrFail($id);
-            
+
             // بررسی مهارتی بودن دوره
             if ($session->course->is_skill != 1) {
                 return response()->json([
@@ -2681,16 +2697,16 @@ class SkillController extends Controller
                     'message' => 'دسترسی غیرمجاز'
                 ], 403);
             }
-            
+
             $session->active = $session->active == 1 ? 0 : 1;
             $session->save();
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'وضعیت جلسه با موفقیت تغییر کرد',
                 'active' => $session->active
             ]);
-            
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -2706,7 +2722,7 @@ class SkillController extends Controller
     {
         try {
             $session = Session::findOrFail($id);
-            
+
             // بررسی مهارتی بودن دوره
             if ($session->course->is_skill != 1) {
                 return response()->json([
@@ -2714,7 +2730,7 @@ class SkillController extends Controller
                     'message' => 'دسترسی غیرمجاز'
                 ], 403);
             }
-            
+
             if ($session->file) {
                 $filePath = public_path('files/session' . $session->file);
                 if (file_exists($filePath)) {
@@ -2723,12 +2739,12 @@ class SkillController extends Controller
                 $session->file = null;
                 $session->save();
             }
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'فایل با موفقیت حذف شد'
             ]);
-            
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -2736,26 +2752,26 @@ class SkillController extends Controller
             ], 500);
         }
     }
-    
+
     public function toggleVisibility(Request $request, $id)
     {
         try {
-            $course = Course::where('is_skill', 1)->findOrFail($id);
+            $course = Course::whereIn('type', [1, 2])->findOrFail($id);
             $field = $request->input('field');
             $value = $request->input('value');
-            
-            $validFields = ['private','active', 'quiz', 'davari', 'faaliat', 'pishraft','is_ended'];
-            
+
+            $validFields = ['private', 'active', 'quiz', 'davari', 'faaliat', 'pishraft', 'is_ended'];
+
             if (!in_array($field, $validFields)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'فیلد نامعتبر است'
                 ], 400);
             }
-            
+
             $course->$field = $value;
             $course->save();
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'وضعیت با موفقیت به‌روزرسانی شد',
@@ -2769,10 +2785,10 @@ class SkillController extends Controller
             ], 500);
         }
     }
-    
+
     /**
      * به‌روزرسانی تنظیمات همه دوره‌ها (برای course_id = 99999)
-    */
+     */
     private function updateAllSettings($request)
     {
         DB::beginTransaction();
@@ -2836,7 +2852,7 @@ class SkillController extends Controller
             return redirect()->back()->with('error', 'خطا در به‌روزرسانی تنظیمات: ' . $e->getMessage());
         }
     }
-    
+
     // ==========================================
     // متدهای کمکی (Helper Methods)
     // ==========================================
@@ -2846,7 +2862,7 @@ class SkillController extends Controller
         do {
             $code = Str::random(5);
         } while (Course::where('code', $code)->exists());
-        
+
         return $code;
     }
 
@@ -2855,10 +2871,10 @@ class SkillController extends Controller
         if (empty($url)) {
             return null;
         }
-        
+
         $url = trim($url);
         $url = str_replace(['http://', 'https://'], '', $url);
-        
+
         return $url ?: null;
     }
 
@@ -2873,11 +2889,11 @@ class SkillController extends Controller
         $sessions = Session::where('course_id', $sourceCourseId)
             ->orderBy('id', 'asc')
             ->get();
-        
+
         if ($sessions->isEmpty()) {
             return;
         }
-        
+
         foreach ($sessions as $index => $session) {
             Session::create([
                 'course_id' => $targetCourseId,

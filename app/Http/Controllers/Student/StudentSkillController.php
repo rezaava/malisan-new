@@ -222,7 +222,7 @@ class StudentSkillController extends Controller
             ? $course->users()->where('role_id', $studentRole->id)->take(5)->get()
             : collect();
 
-        return view('student.course', compact(
+        return view('student.skill', compact(
             'setting',
             'khodazmaii',
             'sessions',

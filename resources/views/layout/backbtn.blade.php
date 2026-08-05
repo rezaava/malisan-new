@@ -1,5 +1,5 @@
  <style>
-    .back-btn {
+.back-btn {
     background: linear-gradient(135deg, #1e6f9f, #0b4a6e);
 }
 
@@ -19,6 +19,16 @@
     text-decoration: none;
 }
 </style>
+@if ($course->type = 0)
 <a href="{{ route('view.coure',$course->id) }}" class="back-action-btn back-btn">
     <i class="fas fa-arrow-right"></i>
 </a>
+@elseif ($course->type = 1)
+<a href="{{ route('view.skill',$course->id) }}" class="back-action-btn back-btn">
+    <i class="fas fa-arrow-right"></i>
+</a>
+@elseif ($course->type = 2)
+<a href="{{ route('view.skill',$course->id) }}" class="back-action-btn back-btn">
+    <i class="fas fa-arrow-right"></i>
+</a>
+@endif
