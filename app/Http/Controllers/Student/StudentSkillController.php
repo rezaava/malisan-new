@@ -72,26 +72,28 @@ class StudentSkillController extends Controller
                 } else {
                     $totalSessionsCount = $sessions->count();
 
-                    // فیلتر بر اساس عضویت
-                    if ($member == 1 && $course->private == 1) {
+                    // فیلتر بر اساس عضویت (باز شدن خودکار جلسات)
+                    if ($member == 1) { // حذف شرط private
                         $now = Carbon::now();
                         $time = Carbon::parse($courseUser->created_at);
                         $diffInDays = $time->diffInDays($now);
-                        $availableCount = $totalSessionsCount - floor($diffInDays / $course->period) - 1;
 
-                        if ($availableCount > 0) {
-                            $filteredSessions = collect();
-                            $index = 0;
-                            foreach ($sessions as $session) {
-                                if ($index < $availableCount) {
-                                    $filteredSessions->push($session);
-                                }
-                                $index++;
-                            }
-                            $sessions = $filteredSessions;
+                        // محاسبهٔ بازهٔ زمانی هر جلسه (به روز)
+                        if (isset($course->length) && $course->length > 0 && isset($course->sessions_length) && $course->sessions_length > 0) {
+                            $periodPerSession = $course->length / $course->sessions_length;
                         } else {
-                            $sessions = collect();
+                            // fallback به دورهٔ قبلی
+                            $periodPerSession = $course->period ?? 1;
+                            if ($periodPerSession <= 0) $periodPerSession = 1;
                         }
+
+                        $unlockedCount = min($totalSessionsCount, floor($diffInDays / $periodPerSession) + 1);
+
+                        $sessions = $sessions->filter(function ($session) use ($unlockedCount) {
+                            return $session->number <= $unlockedCount;
+                        });
+
+                        $sessions = $sessions->sortByDesc('number')->values();
                     }
 
                     // فیلتر برای کاربر غیرعضو

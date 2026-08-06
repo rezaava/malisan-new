@@ -16,7 +16,15 @@ class Course extends Model
         'num_q', 'score_e', 'score_d', 'score_q', 'status', 'active', 'quiz',
         'davari', 'faaliat', 'pishraft'
     ];
+    public function isSkill()
+    {
+        return in_array($this->type, [1, 2]);
+    }
 
+    public function isLesson()
+    {
+        return $this->type == 1;
+    }
     // روابط
     public function users()
     {
