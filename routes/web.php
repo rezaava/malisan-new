@@ -152,7 +152,7 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         // ارزیابی و نمرات
         Route::get('/student-evaluation/{courseId}/{userId}', [CourseController::class, 'studentEvaluation'])->name('studentEvaluation');
         Route::get('/grades-list/{id}', [CourseController::class, 'gradesList'])->name('gradesList');
-        Route::post('/grades-save/{id}', [CourseController::class, 'saveGPrades'])->name('grades.save');
+        Route::post('/grades-save/{id}', [CourseController::class, 'saveGrades'])->name('grades.save');
 
         // فعالیت‌ها
         Route::get('/activities/{id}', [CourseController::class, 'allProgress'])->name('activities');

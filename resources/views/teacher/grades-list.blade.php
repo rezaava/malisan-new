@@ -39,8 +39,12 @@
                         <th>نمره ارزشیابی (از ۲۰)</th>
                         <th>میانگین نمره آزمون (از ۲۰)</th>
                         @foreach($scoreSections as $key => $section)
-                            <th>{{ $section['title'] }} (از ۲۰)</th>
+                            <th>{{ $section['title'] }} (از {{ $setting->$key ?? 20 }})</th>
                         @endforeach
+                        {{-- ستون جدید تشویقی/ارفاق --}}
+                        <th>تشویقی/ارفاق (خارج از ۲۰)</th>
+                        {{-- ستون نمره نهایی --}}
+                        <th>نمره نهایی (از ۲۰)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -67,31 +71,48 @@
                             @foreach($scoreSections as $key => $section)
                                 <td>
                                     @if($key == 'payan_term_nomre')
-                                        {{-- برای پایان ترم از name=final استفاده می‌کنیم (سازگاری با کنترلر ذخیره‌سازی فعلی) --}}
                                         <input type="number"
                                                name="final[{{ $user->id }}]"
-                                               class="grade-input"
+                                               class="grade-input section-grade"
+                                               data-user-id="{{ $user->id }}"
                                                step="0.01"
                                                min="0"
-                                               max="20"
+                                               max="{{ $setting->$key ?? 20 }}"
                                                placeholder="—"
                                                value="{{ $user->final ?? '' }}">
                                     @else
                                         <input type="number"
                                                name="scores[{{ $user->id }}][{{ $section['type'] }}]"
-                                               class="grade-input"
+                                               class="grade-input section-grade"
+                                               data-user-id="{{ $user->id }}"
                                                step="0.01"
                                                min="0"
-                                               max="20"
+                                               max="{{ $setting->$key ?? 20 }}"
                                                placeholder="—"
                                                value="{{ $user->amali_scores[$section['type']] ?? '' }}">
                                     @endif
                                 </td>
                             @endforeach
+                            {{-- ستون تشویقی/ارفاق --}}
+                            <td>
+                                <input type="number"
+                                       name="extra[{{ $user->id }}]"
+                                       class="grade-input section-grade"
+                                       data-user-id="{{ $user->id }}"
+                                       step="0.01"
+                                       min="0"
+                                       placeholder="—"
+                                       value="{{ $user->amali_scores[7] ?? '' }}">
+                            </td>
+                            {{-- ستون نمره نهایی --}}
+                            <td>
+                                <span class="final-grade" data-user-id="{{ $user->id }}">0.00</span>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ 4 + count($scoreSections) }}" style="text-align:center;padding:40px;color:#6b7a8f;">
+                            {{-- تعداد کل ستون‌ها: 4 ستون ابتدایی + تعداد بخش‌ها + 1 ستون تشویقی + 1 ستون نهایی = 6 + تعداد بخش‌ها --}}
+                            <td colspan="{{ 6 + count($scoreSections) }}" style="text-align:center;padding:40px;color:#6b7a8f;">
                                 <i class="fas fa-users" style="font-size:32px;display:block;margin-bottom:12px;color:#d0d7e2;"></i>
                                 هیچ دانشجویی در این درس ثبت‌نام نکرده است
                             </td>
@@ -140,31 +161,74 @@
                 order: [[0, "asc"]]
             });
         }
-    });
 
-    // ============================================
-    // اعتبارسنجی ورودی نمرات (0 تا 20)
-    // ============================================
-    document.querySelectorAll('.grade-input').forEach(function(input) {
-        input.addEventListener('change', function() {
-            var val = parseFloat(this.value);
-            if (val < 0) {
-                this.value = 0;
-                showToast('نمره نمی‌تواند منفی باشد', 'warning');
-            } else if (val > 20) {
-                this.value = 20;
-                showToast('نمره نمی‌تواند بیشتر از ۲۰ باشد', 'warning');
+        // ============================================
+        // محاسبه و به‌روزرسانی نمره نهایی هر کاربر
+        // ============================================
+        function updateFinalGrade(userId) {
+            const inputs = document.querySelectorAll(`.section-grade[data-user-id="${userId}"]`);
+            let total = 0;
+            inputs.forEach(input => {
+                let val = parseFloat(input.value);
+                if (!isNaN(val) && val >= 0) {
+                    total += val;
+                }
+            });
+            const finalSpan = document.querySelector(`.final-grade[data-user-id="${userId}"]`);
+            if (finalSpan) {
+                finalSpan.textContent = total.toFixed(2);
             }
+        }
+
+        // اتصال رویداد به تمام ورودی‌های نمرات بخش‌ها
+        document.querySelectorAll('.section-grade').forEach(input => {
+            input.addEventListener('input', function() {
+                const userId = this.dataset.userId;
+                updateFinalGrade(userId);
+            });
+
+            // محاسبه اولیه برای هر کاربر
+            const userId = input.dataset.userId;
+            updateFinalGrade(userId);
         });
 
-        input.addEventListener('blur', function() {
-            if (this.value === '' || this.value === null || this.value === '-') {
-                return;
-            }
-            var val = parseFloat(this.value);
-            if (isNaN(val)) {
-                this.value = '';
-            }
+        // ============================================
+        // اعتبارسنجی ورودی نمرات (حداقل 0 و حداکثر بارم هر بخش)
+        // ============================================
+        document.querySelectorAll('.grade-input').forEach(function(input) {
+            input.addEventListener('change', function() {
+                var val = parseFloat(this.value);
+                var maxVal = parseFloat(this.getAttribute('max'));
+                // اگر max وجود نداشته باشد (مثل ستون تشویقی)، محدودیتی اعمال نمی‌کنیم
+                if (maxVal !== null && !isNaN(maxVal)) {
+                    if (val < 0) {
+                        this.value = 0;
+                        showToast('نمره نمی‌تواند منفی باشد', 'warning');
+                    } else if (val > maxVal) {
+                        this.value = maxVal;
+                        showToast('نمره نمی‌تواند بیشتر از ' + maxVal + ' باشد', 'warning');
+                    }
+                } else {
+                    // فقط منفی نباشد
+                    if (val < 0) {
+                        this.value = 0;
+                        showToast('نمره نمی‌تواند منفی باشد', 'warning');
+                    }
+                }
+                // پس از اصلاح، جمع را مجدداً محاسبه کن
+                const userId = this.dataset.userId;
+                if (userId) updateFinalGrade(userId);
+            });
+
+            input.addEventListener('blur', function() {
+                if (this.value === '' || this.value === null || this.value === '-') {
+                    return;
+                }
+                var val = parseFloat(this.value);
+                if (isNaN(val)) {
+                    this.value = '';
+                }
+            });
         });
     });
 

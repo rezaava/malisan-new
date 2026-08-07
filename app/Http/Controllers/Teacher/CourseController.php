@@ -1762,19 +1762,33 @@ class CourseController extends Controller
     /**
      * ذخیره نمرات پایان ترم
      */
+    /**
+     * انواع نمرات دستی (amali) در جدول amali
+     * -----------------------------------------
+     * type 1 : پایان ترم
+     * type 2 : تکلیف/سمینار
+     * type 3 : آزمون
+     * type 4 : حضور و غیاب
+     * type 5 : میان ترم
+     * type 6 : کار عملی
+     * type 7 : تشویقی/ارفاق (خارج از ۲۰)
+     */
     public function saveGrades(Request $request, $courseId)
     {
         $course = Course::findOrFail($courseId);
         $setting = Setting::where('course_id', $course->id)->first();
 
         try {
-            // استخراج شناسه‌های کاربران از کلیدهای آرایه‌های scores و final
+            // استخراج شناسه‌های کاربران از کلیدهای آرایه‌های scores, final و extra
             $userIds = [];
             if ($request->has('scores')) {
                 $userIds = array_keys($request->scores);
             }
             if ($request->has('final')) {
                 $userIds = array_unique(array_merge($userIds, array_keys($request->final)));
+            }
+            if ($request->has('extra')) {
+                $userIds = array_unique(array_merge($userIds, array_keys($request->extra)));
             }
 
             if (empty($userIds)) {
@@ -1785,12 +1799,10 @@ class CourseController extends Controller
                 // پردازش نمرات بخش‌های مختلف (از آرایه scores)
                 if ($request->has('scores') && isset($request->scores[$userId])) {
                     foreach ($request->scores[$userId] as $type => $nomre) {
-                        // اگر نمره خالی یا null بود، رد شو
                         if ($nomre === '' || $nomre === null) {
                             continue;
                         }
                         $type = (int)$type;
-                        // ذخیره یا به‌روزرسانی
                         $amali = Amali::where('course_id', $courseId)
                             ->where('user_id', $userId)
                             ->where('type', $type)
@@ -1807,11 +1819,32 @@ class CourseController extends Controller
                     }
                 }
 
-                // پردازش نمره پایان‌ترم (از فیلد final) برای سازگاری با نسخه قبلی
+                // پردازش نمره پایان‌ترم (از فیلد final)
                 if ($request->has('final') && isset($request->final[$userId])) {
                     $nomre = $request->final[$userId];
                     if ($nomre !== '' && $nomre !== null) {
                         $type = 1; // پایان ترم
+                        $amali = Amali::where('course_id', $courseId)
+                            ->where('user_id', $userId)
+                            ->where('type', $type)
+                            ->first();
+
+                        if (!$amali) {
+                            $amali = new Amali();
+                            $amali->course_id = $courseId;
+                            $amali->user_id = $userId;
+                            $amali->type = $type;
+                        }
+                        $amali->nomre = $nomre;
+                        $amali->save();
+                    }
+                }
+
+                // ===== پردازش نمره تشویقی/ارفاق (extra) با type = 7 =====
+                if ($request->has('extra') && isset($request->extra[$userId])) {
+                    $nomre = $request->extra[$userId];
+                    if ($nomre !== '' && $nomre !== null) {
+                        $type = 7; // تشویقی/ارفاق
                         $amali = Amali::where('course_id', $courseId)
                             ->where('user_id', $userId)
                             ->where('type', $type)
