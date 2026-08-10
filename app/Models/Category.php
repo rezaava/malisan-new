@@ -11,4 +11,9 @@ class Category extends Model
 
     protected $table = 'categories';
     protected $fillable = ['name'];
+
+    public function surveys()
+    {
+        return $this->hasMany(Survey::class, 'cat_id');
+    }
 }

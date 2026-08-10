@@ -276,6 +276,50 @@
         margin-bottom: 12px;
         opacity: 0.3;
     }
+
+    .category-card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px 20px;
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        height: 100%;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+    .category-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        border-color: #0d6efd;
+    }
+    .category-card .cat-icon {
+        font-size: 32px;
+        color: #0d6efd;
+        margin-bottom: 12px;
+    }
+    .category-card .cat-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1a2332;
+    }
+    .category-card .cat-count {
+        font-size: 14px;
+        color: #6c757d;
+        margin-top: 4px;
+    }
+    .category-card .cat-count span {
+        background: #e9ecef;
+        padding: 2px 10px;
+        border-radius: 30px;
+        font-weight: 600;
+        color: #0d6efd;
+    }
+
+    .back-btn {
+        margin-bottom: 20px;
+    }
 </style>
 @endsection
 
@@ -287,10 +331,21 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h4 class="mb-1 fw-bold">مدیریت نظرسنجی‌ها</h4>
-                    <p class="text-muted mb-0">مدیریت و بررسی نظرسنجی‌های دانشجویان و اساتید</p>
+                    <p class="text-muted mb-0">
+                        @if(isset($selectedCategory))
+                            {{ $selectedCategory->name }}
+                        @else
+                            مدیریت و بررسی نظرسنجی‌ها بر اساس دسته‌بندی
+                        @endif
+                    </p>
                 </div>
                 <span class="badge bg-primary bg-opacity-10 text-primary px-4 py-2 rounded-pill">
-                    <i class="fas fa-poll me-2"></i> {{ $surveys->count() }} نظرسنجی
+                    <i class="fas fa-poll me-2"></i> 
+                    @if(isset($selectedCategory))
+                        {{ $surveys->count() }} نظرسنجی
+                    @else
+                        {{ $categories->count() }} دسته
+                    @endif
                 </span>
             </div>
         </div>
@@ -358,98 +413,126 @@
         </div>
     </div>
 
-    <!-- جدول نظرسنجی‌ها -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 fw-semibold">
-                        <i class="fas fa-list me-2 text-primary"></i> لیست نظرسنجی‌ها
-                    </h5>
-                    <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2 rounded-pill">
-                        <i class="fas fa-database me-1"></i> {{ $surveys->count() }} مورد
-                    </span>
+    <!-- بخش اصلی: نمایش دسته‌بندی‌ها یا نظرسنجی‌ها -->
+    @if(isset($categoryId) && isset($selectedCategory))
+        <!-- نمایش نظرسنجی‌های دسته انتخاب‌شده -->
+        <div class="row">
+            <div class="col-12">
+                <div class="back-btn">
+                    <a href="{{ route('admin_survey') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-right me-1"></i> بازگشت به دسته‌بندی‌ها
+                    </a>
                 </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead>
-                                <tr>
-                                    <th style="width: 60px;">#</th>
-                                    <th>متن نظرسنجی</th>
-                                    <th style="width: 120px;">نوع</th>
-                                    <th style="width: 120px;">وضعیت</th>
-                                    <th style="width: 140px;">تاریخ ایجاد</th>
-                                    <th style="width: 70px;">عملیات</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($surveys as $survey)
-                                <tr>
-                                    <td class="fw-bold text-muted">{{ $survey->id }}</td>
-                                    <td>
-                                        <span class="survey-text" title="{{ $survey->text }}">
-                                            {{ Str::limit($survey->text, 55) }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        @switch($survey->type)
-                                            @case(1)
-                                                <span class="badge bg-info bg-opacity-15 badge-type">متن باز</span>
-                                                @break
-                                            @case(2)
-                                                <span class="badge bg-primary bg-opacity-15 badge-type">تک‌انتخابی</span>
-                                                @break
-                                            @case(3)
-                                                <span class="badge bg-warning bg-opacity-15 badge-type">چندانتخابی</span>
-                                                @break
-                                            @default
-                                                <span class="badge bg-secondary bg-opacity-15 badge-type">نامشخص</span>
-                                        @endswitch
-                                    </td>
-                                    <td>
-                                        <span class="status-badge {{ $survey->active ? 'active' : 'inactive' }}">
-                                            {{ $survey->active ? 'فعال' : 'غیرفعال' }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="text-muted" style="font-size: 13px;">
-                                            {{ \Hekmatinasser\Verta\Verta::instance($survey->created_at)->format('Y/m/d') }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <button class="action-btn info" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#surveyDetailModal" 
-                                                data-id="{{ $survey->id }}"
-                                                title="مشاهده جزئیات">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="6">
-                                        <div class="empty-state">
-                                            <i class="fas fa-poll-h"></i>
-                                            <h6 class="fw-normal">هیچ نظرسنجی‌ای یافت نشد</h6>
-                                            <p class="text-muted small">در حال حاضر هیچ نظرسنجی در سیستم ثبت نشده است.</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-semibold">
+                            <i class="fas fa-list me-2 text-primary"></i> نظرسنجی‌های دسته «{{ $selectedCategory->name }}»
+                        </h5>
+                        <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2 rounded-pill">
+                            <i class="fas fa-database me-1"></i> {{ $surveys->count() }} مورد
+                        </span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;">#</th>
+                                        <th>متن نظرسنجی</th>
+                                        <th style="width: 120px;">نوع</th>
+                                        <th style="width: 120px;">وضعیت</th>
+                                        <th style="width: 140px;">تاریخ ایجاد</th>
+                                        <th style="width: 70px;">عملیات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($surveys as $survey)
+                                    <tr>
+                                        <td class="fw-bold text-muted">{{ $survey->id }}</td>
+                                        <td>
+                                            <span class="survey-text" title="{{ $survey->text }}">
+                                                {{ Str::limit($survey->text, 55) }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @switch($survey->type)
+                                                @case(1)
+                                                    <span class="badge bg-info bg-opacity-15 text-info badge-type">متن باز</span>
+                                                    @break
+                                                @case(2)
+                                                    <span class="badge bg-primary bg-opacity-15 text-primary badge-type">تک‌انتخابی</span>
+                                                    @break
+                                                @case(3)
+                                                    <span class="badge bg-warning bg-opacity-15 text-warning badge-type">چندانتخابی</span>
+                                                    @break
+                                                @default
+                                                    <span class="badge bg-secondary bg-opacity-15 text-secondary badge-type">نامشخص</span>
+                                            @endswitch
+                                        </td>
+                                        <td>
+                                            <span class="status-badge {{ $survey->active ? 'active' : 'inactive' }}">
+                                                {{ $survey->active ? 'فعال' : 'غیرفعال' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted" style="font-size: 13px;">
+                                                {{ \Hekmatinasser\Verta\Verta::instance($survey->created_at)->format('Y/m/d') }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button class="action-btn info" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#surveyDetailModal" 
+                                                    data-id="{{ $survey->id }}"
+                                                    title="مشاهده جزئیات">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                        <td colspan="6">
+                                            <div class="empty-state">
+                                                <i class="fas fa-poll-h"></i>
+                                                <h6 class="fw-normal">هیچ نظرسنجی در این دسته وجود ندارد</h6>
+                                                <p class="text-muted small">برای این دسته نظرسنجی ثبت نشده است.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-                @if(method_exists($surveys, 'links'))
-                <div class="card-footer bg-transparent d-flex justify-content-center">
-                    {{ $surveys->links() }}
-                </div>
-                @endif
             </div>
         </div>
-    </div>
+    @else
+        <!-- نمایش دسته‌بندی‌ها -->
+        <div class="row g-4">
+            @forelse($categories as $category)
+            <div class="col-md-4 col-lg-3">
+                <a href="{{ route('admin_survey', ['category' => $category->id]) }}" class="category-card">
+                    <div class="cat-icon">
+                        <i class="fas fa-folder-open"></i>
+                    </div>
+                    <div class="cat-name">{{ $category->name }}</div>
+                    <div class="cat-count">
+                        <span>{{ $category->surveys_count ?? 0 }}</span> نظرسنجی
+                    </div>
+                </a>
+            </div>
+            @empty
+            <div class="col-12">
+                <div class="empty-state">
+                    <i class="fas fa-folder"></i>
+                    <h6 class="fw-normal">هیچ دسته‌بندی ثبت نشده است</h6>
+                    <p class="text-muted small">برای ایجاد دسته‌بندی از بخش مدیریت دسته‌ها اقدام کنید.</p>
+                </div>
+            </div>
+            @endforelse
+        </div>
+    @endif
 </div>
 
 <!-- مودال جزئیات نظرسنجی -->

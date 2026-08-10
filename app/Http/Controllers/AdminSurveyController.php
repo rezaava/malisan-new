@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Survey;
 use App\Models\SiteSetting;
 use App\Models\Option;
@@ -13,17 +14,54 @@ class AdminSurveyController extends Controller
     /**
      * صفحه اصلی مدیریت نظرسنجی‌ها
      */
-    public function angizesh_index()
+    /**
+     * صفحه اصلی مدیریت نظرسنجی‌ها
+     * اگر دسته‌ای انتخاب شده باشد، نظرسنجی‌های آن دسته را نشان می‌دهد
+     * در غیر این صورت، لیست دسته‌بندی‌ها را نمایش می‌دهد
+     */
+    public function index(Request $request)
     {
-        // دریافت تمام نظرسنجی‌ها (به‌صورت صفحه‌بندی شده)
-        $surveys = Survey::with('options')->orderBy('created_at', 'desc')->get();
-        
-        // تنظیمات سایت
+        // دریافت تنظیمات سایت
         $settings = SiteSetting::getSettings();
-        
-        return view('admin.survey', compact('surveys', 'settings'));
-    }
 
+        // دسته‌بندی انتخاب شده
+        $categoryId = $request->input('category');
+
+        if ($categoryId) {
+            // نمایش نظرسنجی‌های یک دسته خاص
+            $surveys = Survey::with('options')
+                ->where('cat_id', $categoryId)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            $selectedCategory = Category::find($categoryId);
+            $categories = Category::withCount('surveys')->get(); // برای منوی بازگشت
+
+            // آمار مخصوص این دسته
+            $totalSurveys = $surveys->count();
+            $answeredSurveys = OptionUser::whereIn('survey_id', $surveys->pluck('id'))
+                ->distinct('survey_id')
+                ->count();
+
+            return view('admin.survey', compact(
+                'surveys', 'settings', 'categories', 'selectedCategory',
+                'totalSurveys', 'answeredSurveys', 'categoryId'
+            ));
+        } else {
+            // نمایش لیست دسته‌بندی‌ها
+            $categories = Category::withCount('surveys')->get();
+            $surveys = collect(); // خالی
+
+            // آمار کلی (همه نظرسنجی‌ها)
+            $totalSurveys = Survey::count();
+            $answeredSurveys = OptionUser::distinct('survey_id')->count();
+
+            return view('admin.survey', compact(
+                'categories', 'surveys', 'settings',
+                'totalSurveys', 'answeredSurveys', 'categoryId'
+            ));
+        }
+    }
     /**
      * دریافت جزئیات یک نظرسنجی برای نمایش در مودال (AJAX)
      */

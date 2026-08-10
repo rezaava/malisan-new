@@ -65,7 +65,7 @@ Route::prefix('/admin')->middleware(['role:admin'])->group(function () {
     });
 
     Route::prefix('/survey')->group(function () {
-        Route::get('/', [AdminSurveyController::class, 'angizesh_index'])->name('admin_survey');
+        Route::get('/', [AdminSurveyController::class, 'index'])->name('admin_survey');
         Route::get('/{id}', [AdminSurveyController::class, 'show'])->name('admin.survey.show');
         Route::post('/toggle-student', [AdminSurveyController::class, 'toggleStudentSurvey'])->name('admin.toggle-student-survey');
         Route::post('/toggle-teacher', [AdminSurveyController::class, 'toggleTeacherSurvey'])->name('admin.toggle-teacher-survey');
