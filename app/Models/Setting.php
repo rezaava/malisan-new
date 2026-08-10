@@ -26,7 +26,7 @@ class Setting extends Model
         'miyan_term_nomre', 'miyan_term_desc',
         'kar_amali_nomre', 'kar_amali_desc',
         'payan_term_nomre', 'payan_term_desc','time_limit_khod',
-        'time_per_question', 'total_time_limit'
+        'time_per_question', 'total_time_limit','daily_judgment_limit',
     ];
 
     public function course()

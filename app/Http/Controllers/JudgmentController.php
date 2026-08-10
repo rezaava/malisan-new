@@ -12,6 +12,7 @@ use App\Models\ScoreDiscussion;
 use App\Models\ScoreExercise;
 use App\Models\ScoreQuestion;
 use App\Models\Session;
+use App\Models\Setting; // <-- اضافه شده
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,32 +23,65 @@ class JudgmentController extends Controller
     /**
      * صفحه اصلی داوری (برای دانشجویان)
      */
+    /**
+     * صفحه اصلی داوری (برای دانشجویان)
+     */
     public function index()
     {
         $user = Auth::user();
-        
-        // فقط دانشجویان می‌توانند داوری کنند
-        if (!$user->hasRole('student')) {
-            return redirect()->back()->with('error', 'فقط دانشجویان می‌توانند داوری کنند.');
+
+        // ===== بررسی محدودیت روزانه برای همه دروس =====
+        $dailyLimitReached = false;
+
+        // دریافت دروسی که کاربر در آنها ثبت‌نام کرده و davari=1 دارند
+        $courseIds = CourseUser::where('user_id', $user->id)
+            ->pluck('course_id')
+            ->toArray();
+
+        if (!empty($courseIds)) {
+            $courseIds = Course::whereIn('id', $courseIds)
+                ->where('davari', 1)
+                ->pluck('id')
+                ->toArray();
+
+            foreach ($courseIds as $courseId) {
+                $setting = Setting::where('course_id', $courseId)->first();
+                $dailyLimit = $setting->daily_judgment_limit ?? 5;
+
+                if ($dailyLimit > 0) {
+                    $todayCount = $this->getTodayJudgmentsCount($user->id, $courseId);
+                    if ($todayCount >= $dailyLimit) {
+                        $dailyLimitReached = true;
+                        $course = Course::find($courseId);
+                    }
+                }
+            }
         }
 
-        // دریافت آیتم‌های نیازمند داوری (که خودش نفرستاده)
-        $items = $this->getPendingItems($user->id);
+        // دریافت آیتم‌ها و تعداد کل
+        $result = $this->getPendingItems($user->id);
+        $items = $result['items'];
+        $totalPending = $result['total'];
 
         $stats = [
-            'total' => count($items),
-            'pending' => count(array_filter($items, function($item) {
-                return $item['score_count'] < 3;
-            })),
-            'done' => count(array_filter($items, function($item) {
-                return $item['score_count'] >= 3;
-            })),
+            'total' => $totalPending,
+            'pending' => $totalPending,
+            'done' => 0,
             'my_judgments' => $this->getMyJudgmentsCount($user->id),
         ];
+
+        // ارسال پیام هشدار به ویو (در صورت وجود)
+        if ($dailyLimitReached) {
+            $warningMessage = 'سقف داوری‌های مجاز امروز شما به پایان رسید. برای ادامهٔ داوری فعالیت‌های دوستان‌تان، فردا نیز سری بزنید.';
+            session()->flash('warning', $warningMessage);
+        }
 
         return view('student.judgment.index', compact('items', 'stats'));
     }
 
+    /**
+     * دریافت آیتم‌های نیازمند داوری (با محدودیت ۱۰۰ تایی)
+     */
     private function getPendingItems($userId)
     {
         $items = [];
@@ -56,9 +90,8 @@ class JudgmentController extends Controller
         $courseIds = CourseUser::where('user_id', $userId)
             ->pluck('course_id')
             ->toArray();
-
         if (empty($courseIds)) {
-            return $items;
+            return ['total' => 0, 'items' => []];
         }
 
         // فیلتر کردن دوره‌هایی که davari=1 دارند
@@ -68,7 +101,7 @@ class JudgmentController extends Controller
             ->toArray();
 
         if (empty($courseIds)) {
-            return $items;
+            return ['total' => 0, 'items' => []];
         }
 
         // دریافت آی‌دی جلسات این درس‌ها
@@ -77,12 +110,11 @@ class JudgmentController extends Controller
             ->toArray();
 
         if (empty($sessionIds)) {
-            return $items;
+            return ['total' => 0, 'items' => []];
         }
 
         // ==========================================
         // 1. سوالات نیازمند داوری (به جز سوالات خودش)
-        // فقط از جلسات درس‌هایی که کاربر ثبت نام کرده
         // ==========================================
         $questions = Question::whereIn('session_id', $sessionIds)
             ->whereNull('status')
@@ -115,7 +147,7 @@ class JudgmentController extends Controller
                         ['label' => 'ب', 'value' => $question->answer2],
                         ['label' => 'ج', 'value' => $question->answer3],
                         ['label' => 'د', 'value' => $question->answer4],
-                    ],  
+                    ],
                     'correct_answer' => $question->answer,
                     'score_count' => $scoreCount,
                     'has_judged' => $hasJudged,
@@ -125,7 +157,6 @@ class JudgmentController extends Controller
 
         // ==========================================
         // 2. گزارش‌ها (بحث‌ها) نیازمند داوری
-        // فقط از جلسات درس‌هایی که کاربر ثبت نام کرده
         // ==========================================
         $discussions = Discussion::whereIn('session_id', $sessionIds)
             ->whereNull('status')
@@ -165,7 +196,17 @@ class JudgmentController extends Controller
             return $b['created_at'] <=> $a['created_at'];
         });
 
-        return $items;
+        // ذخیره تعداد کل و اعمال محدودیت ۱۰۰ تایی
+        $total = count($items);
+        $maxItems = 100;
+        if (count($items) > $maxItems) {
+            $items = array_slice($items, 0, $maxItems);
+        }
+
+        return [
+            'total' => $total,
+            'items' => $items
+        ];
     }
 
     /**
@@ -178,6 +219,61 @@ class JudgmentController extends Controller
         $count += ScoreExercise::where('user_id', $userId)->count();
         return $count;
     }
+
+    // ==========================================
+    // متدهای کمکی برای محدودیت روزانه
+    // ==========================================
+
+    /**
+     * دریافت course_id از آیتم بر اساس نوع
+     */
+    private function getCourseIdFromItem($itemId, $type)
+    {
+        switch ($type) {
+            case 'question':
+                $question = Question::with('session.course')->find($itemId);
+                return $question?->session?->course_id;
+            case 'discussion':
+                $discussion = Discussion::with('session.course')->find($itemId);
+                return $discussion?->session?->course_id;
+            case 'exercise':
+                $exerciseAnswer = ExerciseAnswer::with('exercise.course')->find($itemId);
+                return $exerciseAnswer?->exercise?->course_id;
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * تعداد داوری‌های امروز کاربر برای یک درس خاص
+     */
+    private function getTodayJudgmentsCount($userId, $courseId)
+    {
+        $today = now()->toDateString();
+
+        // داوری‌های سوالات
+        $questionCount = ScoreQuestion::where('score_questions.user_id', $userId)
+            ->whereDate('score_questions.created_at', $today)
+            ->join('questions', 'score_questions.question_id', '=', 'questions.id')
+            ->join('sessions', 'questions.session_id', '=', 'sessions.id')
+            ->where('sessions.course_id', $courseId)
+            ->count();
+
+        // داوری‌های گزارش‌ها
+        $discussionCount = ScoreDiscussion::where('score_discussions.user_id', $userId)
+            ->whereDate('score_discussions.created_at', $today)
+            ->join('discussions', 'score_discussions.discussion_id', '=', 'discussions.id')
+            ->join('sessions', 'discussions.session_id', '=', 'sessions.id')
+            ->where('sessions.course_id', $courseId)
+            ->count();
+
+
+        return $questionCount + $discussionCount;
+    }
+
+    // ==========================================
+    // متدهای اصلی داوری
+    // ==========================================
 
     /**
      * ثبت داوری دانشجو
@@ -196,6 +292,20 @@ class JudgmentController extends Controller
         ]);
 
         $user = Auth::user();
+
+        // ===== بررسی محدودیت روزانه =====
+        $courseId = $this->getCourseIdFromItem($request->item_id, $request->type);
+        if ($courseId) {
+            $setting = Setting::where('course_id', $courseId)->first();
+            $dailyLimit = $setting->daily_judgment_limit ?? 5; // پیش‌فرض ۵
+
+            if ($dailyLimit > 0) {
+                $todayCount = $this->getTodayJudgmentsCount($user->id, $courseId);
+                if ($todayCount >= $dailyLimit) {
+                    return redirect()->back()->with('error', "سقف داوری‌های مجاز امروز شما به پایان رسید. برای ادامهٔ داوری فعالیت‌های دوستان‌تان، فردا نیز سری بزنید.");
+                }
+            }
+        }
 
         // بررسی اینکه کاربر نمی‌تواند سوال خودش را داوری کند
         if ($this->isOwnItem($request->item_id, $request->type, $user->id)) {
@@ -298,15 +408,15 @@ class JudgmentController extends Controller
             case 'question':
                 $data['question_id'] = $request->item_id;
                 return ScoreQuestion::create($data);
-                
+
             case 'discussion':
                 $data['discussion_id'] = $request->item_id;
                 return ScoreDiscussion::create($data);
-                
+
             case 'exercise':
                 $data['exercise_answer_id'] = $request->item_id;
                 return ScoreExercise::create($data);
-                
+
             default:
                 return false;
         }
@@ -353,14 +463,14 @@ class JudgmentController extends Controller
                     ->pluck('score')
                     ->toArray();
                 break;
-                
+
             case 'discussion':
                 $scores = ScoreDiscussion::where('discussion_id', $itemId)
                     ->where('status', ScoreDiscussion::STATUS_APPROVED)
                     ->pluck('score')
                     ->toArray();
                 break;
-                
+
             case 'exercise':
                 $scores = ScoreExercise::where('exercise_answer_id', $itemId)
                     ->where('status', ScoreExercise::STATUS_APPROVED)
@@ -372,11 +482,11 @@ class JudgmentController extends Controller
         // اگر ۳ داور تایید کرده باشند
         if (count($scores) >= 3) {
             $average = array_sum($scores) / count($scores);
-            
+
             $status = match (true) {
                 $average >= 2.5 => 3,
                 $average >= 1.6 => 2,
-                $average >= 1 => 1, 
+                $average >= 1 => 1,
                 default => 4,
             };
 
@@ -387,14 +497,14 @@ class JudgmentController extends Controller
                         'score' => round($average, 2)
                     ]);
                     break;
-                    
+
                 case 'discussion':
                     Discussion::where('id', $itemId)->update([
                         'status' => $status,
                         'score' => round($average, 2)
                     ]);
                     break;
-                    
+
                 case 'exercise':
                     ExerciseAnswer::where('id', $itemId)->update([
                         'status' => 'scored',
@@ -425,7 +535,7 @@ class JudgmentController extends Controller
     public function stats()
     {
         $user = Auth::user();
-        
+
         // آمار سوالات
         $questionStats = [
             'total' => Question::count(),
@@ -464,10 +574,10 @@ class JudgmentController extends Controller
      */
     public function destroy($id)
     {
-        $score = ScoreQuestion::find($id) 
-            ?? ScoreDiscussion::find($id) 
+        $score = ScoreQuestion::find($id)
+            ?? ScoreDiscussion::find($id)
             ?? ScoreExercise::find($id);
-            
+
         if ($score) {
             $score->delete();
             return redirect()->back()->with('success', 'داوری با موفقیت حذف شد.');
@@ -482,15 +592,15 @@ class JudgmentController extends Controller
     public function returnedItems()
     {
         $user = Auth::user();
-        
+
         $returnedQuestions = Question::where('user_id', $user->id)
             ->where('status', 0)
             ->get();
-            
+
         $returnedDiscussions = Discussion::where('user_id', $user->id)
             ->where('status', 0)
             ->get();
-            
+
         $returnedExercises = ExerciseAnswer::where('user_id', $user->id)
             ->where('status', 'returned')
             ->get();
@@ -526,7 +636,7 @@ class JudgmentController extends Controller
                 $item->comment = null;
                 $item->save();
                 break;
-                
+
             case 'discussion':
                 $item = Discussion::where('id', $request->item_id)
                     ->where('user_id', $user->id)
@@ -537,7 +647,7 @@ class JudgmentController extends Controller
                 $item->comment = null;
                 $item->save();
                 break;
-                
+
             case 'exercise':
                 $item = ExerciseAnswer::where('id', $request->item_id)
                     ->where('user_id', $user->id)

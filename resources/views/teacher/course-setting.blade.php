@@ -1168,6 +1168,19 @@
                                     <input type="number" name="max_soal" value="{{ $setting->max_soal ?? 3 }}" class="form-input" min="1">
                                 </td>
                             </tr>
+                            <!-- ===== اضافه کردن ردیف سقف داوری روزانه ===== -->
+                            <tr>
+                                <td>
+                                    سقف تعداد داوری‌های دانشجو در هر روز
+                                    <span class="min-score-badge" style="background: #e0f2fe; color: #0369a1;">پیش‌فرض: ۵</span>
+                                </td>
+                                <td>
+                                    <input type="tel" name="daily_judgment_limit" id="daily_judgment_limit"value="{{ old('daily_judgment_limit', $setting->daily_judgment_limit ?? 5) }}" class="form-input" style="max-width: 150px;">
+                                    <small style="display:block; font-size:12px; color:#6b7280; margin-top:4px;">
+                                        حداکثر تعداد داوری‌هایی که هر دانشجو در یک روز می‌تواند انجام دهد.
+                                    </small>
+                                </td>
+                            </tr>
                             <tr>
                                 <td>هدایت دانشجو در بخش طراحی سوال</td>
                                 <td>

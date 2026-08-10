@@ -438,7 +438,7 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
         Route::get('/exercise/{id}', [StudentSkillController::class, 'viewExercise'])->name('student.exercise.view');
 
         // ===== پیشرفت درسی =====
-        Route::get('/progress/{course_id}', [StudentSkillController::class, 'progress'])->name('student.progress');
+        Route::get('/progress/{course_id}', [StudentSiteController::class, 'progress'])->name('student.progress');
     });
 
 

@@ -4,35 +4,34 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
             $table->integer('course_id');
             $table->integer('jalasat')->default(16);
-            
+
             // فیلدهای جدید برای بارم‌بندی
             $table->integer('hozor_ghayab_nomre')->default(0); // حضور و غیاب
             $table->string('hozor_ghayab_desc', 191)->nullable()->default('نمره حضور و غیاب');
-            
+
             $table->integer('miyan_term_nomre')->default(0); // میان ترم
             $table->string('miyan_term_desc', 191)->nullable()->default('نمره میان ترم');
-            
+
             $table->integer('kar_amali_nomre')->default(0); // کار عملی (بازدید|آزمایشگاه|کارگاه)
             $table->string('kar_amali_desc', 191)->nullable()->default('نمره کار عملی');
-            
+
             $table->integer('payan_term_nomre')->default(6); // پایان ترم با نمره پیش‌فرض 6
             $table->string('payan_term_desc', 191)->nullable()->default('نمره پایان ترم');
-            
+
             // فیلدهای قدیمی با متن‌های جدید
             $table->integer('tarahi_soal_nomre')->nullable()->default(10);
             $table->string('tarahi_soal_desc', 191)->nullable()->default('یک سؤال خلاقانه طراحی کنید که به یادگیری دوستانتان کمک کند و به نام خودتان منتشر شود. قبل از ارسال، حتماً سؤالاتی که دیگران طرح کرده اند را مرور کنید تا از تکراری نبودن سوال خود مطمئن شوید.');
-            
+
             $table->integer('ersal_gozaresh_nomre')->nullable()->default(10);
             $table->string('ersal_gozaresh_desc', 191)->nullable()->default('موضوع اصلی این جلسه چه بود و چه هدفی داشت؟ لطفاً یک نکتهٔ آموزنده از مطالب ارائه شده را با بیانی دیگر (به زبان خودتان) بازنویسی کنید.');
-            
+
             $table->integer('taklif_seminar_nomre')->nullable()->default(0);
             $table->string('taklif_seminar_desc', 191)->nullable();
             $table->tinyInteger('taklif_seminar_type')->nullable()->default(1)->comment('1.taklif 2.seminar');
@@ -73,6 +72,7 @@ return new class extends Migration
             $table->integer('azmon_nomre')->default(0);
             $table->boolean('time_limit_khod')->default(0);
             $table->integer('time_per_question')->default(45);
+            $table->integer('daily_judgment_limit')->default(5);
             $table->integer('total_time_limit')->default(0);
             $table->timestamps();
         });
