@@ -105,7 +105,6 @@
             <span class="badge-label">گزارش‌های سوال در درس:</span>
             <span class="badge-value">{{ $course->name ?? 'عنوان درس' }}</span>
         </div>
-        @include('layout.backbtn')
     </div>
 
     {{-- STATS WITH FILTER --}}

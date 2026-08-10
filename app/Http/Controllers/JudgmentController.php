@@ -12,7 +12,7 @@ use App\Models\ScoreDiscussion;
 use App\Models\ScoreExercise;
 use App\Models\ScoreQuestion;
 use App\Models\Session;
-use App\Models\Setting; // <-- اضافه شده
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

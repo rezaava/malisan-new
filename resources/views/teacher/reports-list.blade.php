@@ -21,7 +21,6 @@
                 <span class="badge-label">لیست گزارش‌ها:</span>
                 <span class="badge-value">{{ $course->name ?? 'عنوان درس' }}</span>
             </div>        </div>
-        @include('layout.backbtn')
     </div>
 
     {{-- STATS --}}

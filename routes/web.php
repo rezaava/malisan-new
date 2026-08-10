@@ -274,7 +274,7 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
 
         // ارزیابی و نمرات
         Route::get('/student-evaluation/{courseId}/{userId}', [SkillController::class, 'studentEvaluation'])->name('skill.studentEvaluation');
-        Route::get('/grades-list/{id}', [SkillController::class, 'gradesList'])->name('skill.gradesList');
+        Route::get('/grades-list/{id}', [CourseController::class, 'gradesList'])->name('skill.gradesList');
         Route::post('/grades-save/{id}', [SkillController::class, 'saveGrades'])->name('skill.grades.save');
 
         // فعالیت‌ها
@@ -286,7 +286,7 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         Route::get('/report/{id}', [SkillController::class, 'getReportDetail'])->name('skill.teacher.report.detail');
 
         // فعالیت‌های دانشجویان
-        Route::get('/student-activities/{course}', [SkillController::class, 'studentActivities'])->name('skill.studentActivities');
+        Route::get('/student-activities/{course}', [CourseController::class, 'studentActivities'])->name('skill.studentActivities');
         Route::get('/student-questions/{id}', [SkillController::class, 'studentQuestions'])->name('skill.studentQuestions');
         Route::get('/student-reports/{id}', [SkillController::class, 'studentReports'])->name('skill.studentReports');
         Route::get('/student-homeworks/{id}', [SkillController::class, 'studentHomeworks'])->name('skill.studentHomeworks');
@@ -430,7 +430,7 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
         Route::post('/events', [StudentEventController::class, 'store']);
 
         // ===== فعالیت‌های من =====
-        Route::get('/my-activities/{course_id}', [StudentSkillController::class, 'myActivities'])->name('student.my.activities.skill');
+        Route::get('/my-activities/{course_id}', [StudentSiteController::class, 'myActivities'])->name('student.my.activities.skill');
 
         // ===== مشاهده جزئیات =====
         Route::get('/question/{id}', [StudentSkillController::class, 'viewQuestion'])->name('student.question.view');
@@ -438,7 +438,7 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
         Route::get('/exercise/{id}', [StudentSkillController::class, 'viewExercise'])->name('student.exercise.view');
 
         // ===== پیشرفت درسی =====
-        Route::get('/progress/{course_id}', [StudentSiteController::class, 'progress'])->name('student.progress');
+        Route::get('/progress/{course_id}', [StudentSiteController::class, 'progress'])->name('student.progress.skill');
     });
 
 
@@ -505,7 +505,7 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
     // مسیرهای داوری - دانشجو
     // ==========================================
     Route::prefix('/judgment')->middleware(['role:student|admin'])->group(function () {
-        Route::get('/', [JudgmentController::class, 'index'])->name('student.judgment.index');
+        Route::get('/', [JudgmentController::class, 'inwdex'])->name('student.judgment.index');
         Route::post('/store', [JudgmentController::class, 'store'])->name('student.judgment.store');
         Route::get('/stats', [JudgmentController::class, 'stats'])->name('student.judgment.stats');
         Route::get('/returned', [JudgmentController::class, 'returnedItems'])->name('student.judgment.returned');

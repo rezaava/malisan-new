@@ -36,7 +36,7 @@
                 <i class="fas fa-database"></i>
                 فعالیت های من 
             </a>
-        @endif
+        @endif  
         
         @if($course->pishraft == 1)
             <a href="{{ route('student.progress', $course->id) }}" class="chip-item">

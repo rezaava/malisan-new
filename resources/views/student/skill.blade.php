@@ -45,14 +45,14 @@
             @endif
 
             @if($course->faaliat == 1)
-                <a href="{{ route('student.my.activities', $course->id) }}" class="chip-item">
+                <a href="{{ route('student.my.activities.skill', $course->id) }}" class="chip-item">
                     <i class="fas fa-database"></i>
                     فعالیت های من
                 </a>
             @endif
 
             @if($course->pishraft == 1)
-                <a href="{{ route('student.progress', $course->id) }}" class="chip-item">
+                <a href="{{ route('student.progress.skill', $course->id) }}" class="chip-item">
                     <i class="fas fa-chart-line"></i>
                     پیشرفت درسی
                 </a>

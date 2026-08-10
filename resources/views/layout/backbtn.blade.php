@@ -1,11 +1,9 @@
- <style>
+<style>
 .back-btn {
     background: linear-gradient(135deg, #1e6f9f, #0b4a6e);
 }
-
-.back-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(30, 111, 159, 0.4);
+.back-skill-btn {
+    background: linear-gradient(135deg, #e67e22, #d35400);
 }
 .back-action-btn {
     width: 40px;
@@ -18,17 +16,21 @@
     color: white;
     text-decoration: none;
 }
+.back-action-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
 </style>
-@if ($course->type = 0)
-<a href="{{ route('view.coure',$course->id) }}" class="back-action-btn back-btn">
+
+@php
+    // تشخیص وجود skill در URL (میتوانید سگمنت یا routeIs را جایگزین کنید)
+    $isSkill = request()->segment(1) == 'skill'; 
+
+    // تنظیم لینک و کلاس بر اساس شرط
+    $route = $isSkill ? route('skill.view', $course->id) : route('view.coure', $course->id);
+    $btnClass = $isSkill ? 'back-skill-btn' : 'back-btn';
+@endphp
+
+<a href="{{ $route }}" class="back-action-btn {{ $btnClass }}">
     <i class="fas fa-arrow-right"></i>
 </a>
-@elseif ($course->type = 1)
-<a href="{{ route('view.skill',$course->id) }}" class="back-action-btn back-btn">
-    <i class="fas fa-arrow-right"></i>
-</a>
-@elseif ($course->type = 2)
-<a href="{{ route('view.skill',$course->id) }}" class="back-action-btn back-btn">
-    <i class="fas fa-arrow-right"></i>
-</a>
-@endif

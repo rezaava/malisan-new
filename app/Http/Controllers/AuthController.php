@@ -69,9 +69,10 @@ class AuthController extends Controller
                 'name' => $request->name,
                 'family' => $request->family,
                 'national' => $request->national,
+                'image' => '/files/users/pro.jpeg',
                 'mobile' => $request->mobile,
                 'password' => Hash::make($request->password),
-                'role' => 3, // پیشفرض: دانشجو
+                'role' => 3,
                 'active' => 1,
                 'email' => null,
             ]);
