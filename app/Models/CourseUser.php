@@ -11,7 +11,7 @@ class CourseUser extends Model
     use HasFactory, SoftDeletes;
 
     protected $table = 'course_user';
-    protected $fillable = ['user_id', 'course_id', 'role_id', 'term', 'paid'];
+    protected $fillable = ['user_id', 'course_id', 'role_id', 'term', 'paid','course_type'];
 
     // روابط
     public function user()

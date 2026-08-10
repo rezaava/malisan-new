@@ -6,21 +6,22 @@
 
 @section('head')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <style>
+
+    /* استایل‌های اختصاصی */
     .status-toggle {
         position: relative;
         display: inline-block;
-        width: 60px;
-        height: 34px;
+        width: 56px;
+        height: 30px;
         cursor: pointer;
     }
-    
     .status-toggle input {
         opacity: 0;
         width: 0;
         height: 0;
     }
-    
     .slider {
         position: absolute;
         cursor: pointer;
@@ -28,225 +29,293 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: #ccc;
-        transition: .4s;
-        border-radius: 34px;
+        background-color: #ced4da;
+        transition: .3s;
+        border-radius: 30px;
     }
-    
     .slider:before {
         position: absolute;
         content: "";
-        height: 26px;
-        width: 26px;
+        height: 22px;
+        width: 22px;
         left: 4px;
         bottom: 4px;
         background-color: white;
-        transition: .4s;
+        transition: .3s;
         border-radius: 50%;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-    
     input:checked + .slider {
-        background-color: #28a745;
+        background-color: #0d6efd;
     }
-    
     input:checked + .slider:before {
         transform: translateX(26px);
     }
     
     .status-badge {
         display: inline-block;
-        padding: 5px 15px;
-        border-radius: 20px;
-        font-size: 14px;
-        font-weight: bold;
+        padding: 6px 18px;
+        border-radius: 50px;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
         transition: all 0.3s ease;
     }
-    
     .status-badge.active {
-        background-color: #28a745;
-        color: white;
+        background-color: #d1e7dd;
+        color: #0a3622;
     }
-    
     .status-badge.inactive {
-        background-color: #dc3545;
-        color: white;
+        background-color: #f8d7da;
+        color: #58151c;
     }
     
-    .survey-stat-card {
+    .stat-card {
         background: white;
-        border-radius: 15px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        transition: transform 0.3s ease;
+        border-radius: 16px;
+        padding: 22px 20px;
+        border: none;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+        transition: all 0.3s ease;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
     }
-    
-    .survey-stat-card:hover {
-        transform: translateY(-5px);
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.10);
     }
+    .stat-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+        margin-bottom: 12px;
+    }
+    .stat-icon.blue { background: linear-gradient(135deg, #4a6cf7, #6a8cff); }
+    .stat-icon.green { background: linear-gradient(135deg, #28a745, #34ce57); }
+    .stat-icon.orange { background: linear-gradient(135deg, #ffc107, #ffca2c); }
     
     .stat-number {
         font-size: 32px;
-        font-weight: bold;
-        color: #4a6cf7;
+        font-weight: 700;
+        color: #1a2332;
+        line-height: 1.2;
     }
-    
     .stat-label {
         color: #6c757d;
         font-size: 14px;
-        margin-top: 5px;
+        font-weight: 500;
+        margin-top: 4px;
     }
     
     .toggle-container {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 15px 20px;
-        background: white;
-        border-radius: 12px;
-        margin-bottom: 15px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        background: #f8f9fa;
+        border-radius: 14px;
+        padding: 16px 22px;
+        margin-bottom: 14px;
         transition: all 0.3s ease;
+        border: 1px solid #e9ecef;
     }
-    
     .toggle-container:hover {
-        box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+        background: white;
+        border-color: #dee2e6;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
     }
-    
-    .toggle-label {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-    
     .toggle-label i {
-        font-size: 24px;
-        color: #4a6cf7;
+        font-size: 22px;
+        color: #0d6efd;
+        width: 40px;
+        text-align: center;
     }
-    
     .toggle-title {
-        font-size: 16px;
+        font-size: 15px;
         font-weight: 600;
-        color: #2c3e50;
+        color: #1a2332;
     }
-    
     .toggle-description {
         font-size: 13px;
         color: #6c757d;
-        margin-top: 2px;
     }
     
     .loading-spinner {
         display: none;
         width: 20px;
         height: 20px;
-        border: 3px solid #f3f3f3;
-        border-top: 3px solid #4a6cf7;
+        border: 3px solid #e9ecef;
+        border-top: 3px solid #0d6efd;
         border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin-left: 10px;
+        animation: spin 0.8s linear infinite;
+        margin-left: 12px;
     }
-    
     @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
     
-    .survey-list {
-        margin-top: 30px;
+    .survey-text {
+        max-width: 280px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: inline-block;
+        vertical-align: middle;
     }
     
-    .survey-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 12px 20px;
-        background: white;
-        border-radius: 10px;
-        margin-bottom: 10px;
-        box-shadow: 0 1px 5px rgba(0,0,0,0.05);
-        transition: all 0.3s ease;
-    }
-    
-    .survey-item:hover {
-        background: #f8f9fa;
-        transform: translateX(5px);
-    }
-    
-    .survey-item .survey-title {
-        font-weight: 500;
-        color: #2c3e50;
-    }
-    
-    .survey-item .survey-status {
+    .badge-type {
         font-size: 12px;
-        padding: 4px 12px;
+        padding: 5px 12px;
+        border-radius: 50px;
+        font-weight: 500;
+    }
+    
+    .action-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        border: none;
+        color: white;
+        background: #0d6efd;
+    }
+    .action-btn:hover {
+        transform: scale(1.05);
+        opacity: 0.9;
+        color: white;
+    }
+    .action-btn.info {
+        background: #0dcaf0;
+    }
+    .action-btn.info:hover {
+        background: #0bb5d8;
+    }
+    
+    .table > :not(caption) > * > * {
+        padding: 12px 12px;
+        vertical-align: middle;
+    }
+    .table thead th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        font-size: 13px;
+        color: #495057;
+        border-bottom: 2px solid #dee2e6;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+    .table tbody tr {
+        transition: background 0.15s;
+    }
+    .table tbody tr:hover {
+        background-color: #f8f9ff;
+    }
+    
+    .card-header {
+        background: transparent;
+        border-bottom: 1px solid #e9ecef;
+        padding: 18px 24px;
+    }
+    .card {
+        border: none;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        border-radius: 16px;
+        overflow: hidden;
+    }
+    .card-body {
+        padding: 24px;
+    }
+    
+    .modal-content {
+        border: none;
         border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    .modal-header {
+        border-bottom: 1px solid #e9ecef;
+        padding: 20px 24px;
+    }
+    .modal-body {
+        padding: 24px;
+    }
+    .modal-footer {
+        border-top: 1px solid #e9ecef;
+        padding: 16px 24px;
     }
     
-    .survey-item .survey-status.active {
-        background: #d4edda;
-        color: #155724;
+    .detail-section {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 16px;
+    }
+    .detail-section h6 {
+        font-weight: 600;
+        color: #1a2332;
+        margin-bottom: 6px;
+        font-size: 14px;
+    }
+    .detail-section p {
+        margin: 0;
+        color: #212529;
     }
     
-    .survey-item .survey-status.inactive {
-        background: #f8d7da;
-        color: #721c24;
+    .empty-state {
+        padding: 40px 20px;
+        text-align: center;
+        color: #6c757d;
+    }
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 12px;
+        opacity: 0.3;
     }
 </style>
 @endsection
 
 @section('mohtava')
 <div class="container-fluid py-4">
+    <!-- عنوان صفحه -->
     <div class="row mb-4">
         <div class="col-12">
-            <h4 class="mb-3">مدیریت نظرسنجی‌ها</h4>
-            <p class="text-muted">در این بخش می‌توانید وضعیت نظرسنجی‌های دانشجویان و اساتید را مدیریت کنید.</p>
-        </div>
-    </div>
-
-    <!-- آمار -->
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="survey-stat-card">
-                <div class="stat-number">{{ $totalSurveys ?? 0 }}</div>
-                <div class="stat-label">تعداد کل نظرسنجی‌ها</div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="survey-stat-card">
-                <div class="stat-number">{{ $answeredSurveys ?? 0 }}</div>
-                <div class="stat-label">نظرسنجی‌های پاسخ داده شده</div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="survey-stat-card">
-                <div class="stat-number">{{ ($totalSurveys ?? 0) - ($answeredSurveys ?? 0) }}</div>
-                <div class="stat-label">نظرسنجی‌های پاسخ داده نشده</div>
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-1 fw-bold">مدیریت نظرسنجی‌ها</h4>
+                    <p class="text-muted mb-0">مدیریت و بررسی نظرسنجی‌های دانشجویان و اساتید</p>
+                </div>
+                <span class="badge bg-primary bg-opacity-10 text-primary px-4 py-2 rounded-pill">
+                    <i class="fas fa-poll me-2"></i> {{ $surveys->count() }} نظرسنجی
+                </span>
             </div>
         </div>
     </div>
 
-    <!-- تنظیمات فعال/غیرفعال کردن نظرسنجی‌ها -->
-    <div class="row">
+    <!-- تنظیمات فعال/غیرفعال -->
+    <div class="row mb-4">
         <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">وضعیت نظرسنجی‌ها</h5>
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0 fw-semibold">
+                        <i class="fas fa-toggle-on me-2 text-primary"></i> وضعیت نظرسنجی‌ها
+                    </h5>
                 </div>
                 <div class="card-body">
                     <!-- نظرسنجی دانشجو -->
-                    <div class="toggle-container">
-                        <div class="toggle-label">
+                    <div class="toggle-container d-flex flex-wrap align-items-center justify-content-between">
+                        <div class="toggle-label d-flex align-items-center gap-3">
                             <i class="fas fa-user-graduate"></i>
                             <div>
                                 <div class="toggle-title">نظرسنجی دانشجویان</div>
-                                <div class="toggle-description">
-                                    فعال/غیرفعال کردن نظرسنجی از دانشجویان در زمان ورود
-                                </div>
+                                <div class="toggle-description">فعال/غیرفعال کردن نظرسنجی از دانشجویان در زمان ورود</div>
                             </div>
                         </div>
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center mt-2 mt-sm-0">
                             <span class="status-badge {{ $settings->enable_student_survey ? 'active' : 'inactive' }} me-3" id="studentStatusBadge">
                                 {{ $settings->enable_student_survey ? 'فعال' : 'غیرفعال' }}
                             </span>
@@ -262,17 +331,15 @@
                     </div>
 
                     <!-- نظرسنجی استاد -->
-                    <div class="toggle-container">
-                        <div class="toggle-label">
+                    <div class="toggle-container d-flex flex-wrap align-items-center justify-content-between">
+                        <div class="toggle-label d-flex align-items-center gap-3">
                             <i class="fas fa-chalkboard-teacher"></i>
                             <div>
                                 <div class="toggle-title">نظرسنجی اساتید</div>
-                                <div class="toggle-description">
-                                    فعال/غیرفعال کردن نظرسنجی از اساتید در زمان ورود
-                                </div>
+                                <div class="toggle-description">فعال/غیرفعال کردن نظرسنجی از اساتید در زمان ورود</div>
                             </div>
                         </div>
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center mt-2 mt-sm-0">
                             <span class="status-badge {{ $settings->enable_teacher_survey ? 'active' : 'inactive' }} me-3" id="teacherStatusBadge">
                                 {{ $settings->enable_teacher_survey ? 'فعال' : 'غیرفعال' }}
                             </span>
@@ -291,137 +358,308 @@
         </div>
     </div>
 
-    <!-- لیست نظرسنجی‌ها -->
-    @if(isset($surveys) && $surveys->count() > 0)
-    <div class="row mt-4">
+    <!-- جدول نظرسنجی‌ها -->
+    <div class="row">
         <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">لیست نظرسنجی‌ها</h5>
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-semibold">
+                        <i class="fas fa-list me-2 text-primary"></i> لیست نظرسنجی‌ها
+                    </h5>
+                    <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2 rounded-pill">
+                        <i class="fas fa-database me-1"></i> {{ $surveys->count() }} مورد
+                    </span>
                 </div>
-                <div class="card-body">
-                    <div class="survey-list">
-                        @foreach($surveys as $survey)
-                        <div class="survey-item">
-                            <div>
-                                <span class="survey-title">{{ $survey->title ?? 'نظرسنجی' }}</span>
-                                <span class="badge bg-secondary ms-2">نوع {{ $survey->type ?? 1 }}</span>
-                            </div>
-                            <span class="survey-status {{ $survey->active ? 'active' : 'inactive' }}">
-                                {{ $survey->active ? 'فعال' : 'غیرفعال' }}
-                            </span>
-                        </div>
-                        @endforeach
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">#</th>
+                                    <th>متن نظرسنجی</th>
+                                    <th style="width: 120px;">نوع</th>
+                                    <th style="width: 120px;">وضعیت</th>
+                                    <th style="width: 140px;">تاریخ ایجاد</th>
+                                    <th style="width: 70px;">عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($surveys as $survey)
+                                <tr>
+                                    <td class="fw-bold text-muted">{{ $survey->id }}</td>
+                                    <td>
+                                        <span class="survey-text" title="{{ $survey->text }}">
+                                            {{ Str::limit($survey->text, 55) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @switch($survey->type)
+                                            @case(1)
+                                                <span class="badge bg-info bg-opacity-15 badge-type">متن باز</span>
+                                                @break
+                                            @case(2)
+                                                <span class="badge bg-primary bg-opacity-15 badge-type">تک‌انتخابی</span>
+                                                @break
+                                            @case(3)
+                                                <span class="badge bg-warning bg-opacity-15 badge-type">چندانتخابی</span>
+                                                @break
+                                            @default
+                                                <span class="badge bg-secondary bg-opacity-15 badge-type">نامشخص</span>
+                                        @endswitch
+                                    </td>
+                                    <td>
+                                        <span class="status-badge {{ $survey->active ? 'active' : 'inactive' }}">
+                                            {{ $survey->active ? 'فعال' : 'غیرفعال' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted" style="font-size: 13px;">
+                                            {{ \Hekmatinasser\Verta\Verta::instance($survey->created_at)->format('Y/m/d') }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="action-btn info" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#surveyDetailModal" 
+                                                data-id="{{ $survey->id }}"
+                                                title="مشاهده جزئیات">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="6">
+                                        <div class="empty-state">
+                                            <i class="fas fa-poll-h"></i>
+                                            <h6 class="fw-normal">هیچ نظرسنجی‌ای یافت نشد</h6>
+                                            <p class="text-muted small">در حال حاضر هیچ نظرسنجی در سیستم ثبت نشده است.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
                     </div>
                 </div>
+                @if(method_exists($surveys, 'links'))
+                <div class="card-footer bg-transparent d-flex justify-content-center">
+                    {{ $surveys->links() }}
+                </div>
+                @endif
             </div>
         </div>
     </div>
-    @endif
+</div>
+
+<!-- مودال جزئیات نظرسنجی -->
+<div class="modal fade" id="surveyDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-semibold">
+                    <i class="fas fa-poll-h me-2 text-primary"></i> جزئیات نظرسنجی
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="surveyDetailBody">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">در حال بارگذاری...</span>
+                    </div>
+                    <p class="mt-3 text-muted">در حال دریافت اطلاعات...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i> بستن
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
 @section('js')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script>
-    // تنظیمات Toastr
-    toastr.options = {
-        "closeButton": true,
-        "progressBar": true,
-        "positionClass": "toast-top-left",
-        "timeOut": "3000",
-        "rtl": true
-    };
+// تنظیمات Toastr
+toastr.options = {
+    "closeButton": true,
+    "progressBar": true,
+    "positionClass": "toast-top-left",
+    "timeOut": "3500",
+    "rtl": true
+};
 
-    /**
-     * تغییر وضعیت نظرسنجی با AJAX
-     */
-    function toggleSurvey(type, element) {
-        // نمایش اسپینر
-        const spinnerId = type === 'student' ? 'studentSpinner' : 'teacherSpinner';
-        const badgeId = type === 'student' ? 'studentStatusBadge' : 'teacherStatusBadge';
-        document.getElementById(spinnerId).style.display = 'inline-block';
-        
-        // غیرفعال کردن چک‌باکس تا پایان درخواست
-        element.disabled = true;
+/**
+ * تغییر وضعیت نظرسنجی با AJAX (فعال/غیرفعال)
+ */
+function toggleSurvey(type, element) {
+    const spinnerId = type === 'student' ? 'studentSpinner' : 'teacherSpinner';
+    const badgeId = type === 'student' ? 'studentStatusBadge' : 'teacherStatusBadge';
+    
+    const spinner = document.getElementById(spinnerId);
+    const badge = document.getElementById(badgeId);
+    
+    spinner.style.display = 'inline-block';
+    element.disabled = true;
 
-        // تعیین URL بر اساس نوع
-        const url = type === 'student' 
-            ? '{{ route("admin.toggle-student-survey") }}' 
-            : '{{ route("admin.toggle-teacher-survey") }}';
+    const url = type === 'student' 
+        ? '{{ route("admin.toggle-student-survey") }}' 
+        : '{{ route("admin.toggle-teacher-survey") }}';
 
-        // ارسال درخواست AJAX
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({})
-        })
-        .then(response => response.json())
-        .then(data => {
-            // مخفی کردن اسپینر
-            document.getElementById(spinnerId).style.display = 'none';
-            element.disabled = false;
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        spinner.style.display = 'none';
+        element.disabled = false;
 
-            if (data.success) {
-                // به‌روزرسانی وضعیت چک‌باکس
-                element.checked = data.status;
-                
-                // به‌روزرسانی وضعیت نمایشی (Badge)
-                const badge = document.getElementById(badgeId);
-                if (data.status) {
-                    badge.className = 'status-badge active';
-                    badge.textContent = 'فعال';
-                } else {
-                    badge.className = 'status-badge inactive';
-                    badge.textContent = 'غیرفعال';
-                }
-
-                // نمایش پیام موفقیت
-                toastr.success(data.message);
+        if (data.success) {
+            element.checked = data.status;
+            if (data.status) {
+                badge.className = 'status-badge active';
+                badge.textContent = 'فعال';
             } else {
-                // برگرداندن وضعیت قبلی چک‌باکس
-                element.checked = !element.checked;
-                toastr.error(data.message || 'خطا در تغییر وضعیت');
+                badge.className = 'status-badge inactive';
+                badge.textContent = 'غیرفعال';
             }
-        })
-        .catch(error => {
-            // مخفی کردن اسپینر
-            document.getElementById(spinnerId).style.display = 'none';
-            element.disabled = false;
-            
-            // برگرداندن وضعیت قبلی
+            toastr.success(data.message);
+        } else {
             element.checked = !element.checked;
-            
-            console.error('Error:', error);
-            toastr.error('خطا در ارتباط با سرور');
-        });
-    }
+            toastr.error(data.message || 'خطا در تغییر وضعیت');
+        }
+    })
+    .catch(error => {
+        spinner.style.display = 'none';
+        element.disabled = false;
+        element.checked = !element.checked;
+        console.error('Error:', error);
+        toastr.error('خطا در ارتباط با سرور');
+    });
+}
 
-    // بارگذاری وضعیت اولیه (اختیاری)
-    document.addEventListener('DOMContentLoaded', function() {
-        // می‌توانید وضعیت اولیه را از سرور دریافت کنید
-        fetch('{{ route("admin.get-settings") }}', {
+/**
+ * بارگذاری اطلاعات نظرسنجی در مودال هنگام باز شدن (بدون jQuery)
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    var modal = document.getElementById('surveyDetailModal');
+    if (!modal) return;
+
+    modal.addEventListener('show.bs.modal', function(event) {
+        var button = event.relatedTarget;
+        var surveyId = button.getAttribute('data-id');
+        var body = document.getElementById('surveyDetailBody');
+
+        // نمایش اسپینر
+        body.innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">در حال بارگذاری...</span>
+                </div>
+                <p class="mt-3 text-muted">در حال دریافت اطلاعات...</p>
+            </div>
+        `;
+
+        // درخواست AJAX
+        fetch('{{ route("admin.survey.show", "") }}/' + surveyId, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             }
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // به‌روزرسانی وضعیت‌ها در صورت نیاز
-                const studentToggle = document.getElementById('studentSurveyToggle');
-                const teacherToggle = document.getElementById('teacherSurveyToggle');
-                
-                studentToggle.checked = data.data.enable_student_survey;
-                teacherToggle.checked = data.data.enable_teacher_survey;
+                var survey = data.survey;
+                var options = data.options;
+                var totalVotes = data.total_votes;
+
+                var html = `
+                    <div class="detail-section">
+                        <h6><i class="fas fa-quote-right me-2 text-primary"></i> متن نظرسنجی</h6>
+                        <p class="bg-white p-3 rounded border">${survey.text}</p>
+                    </div>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <div class="detail-section">
+                                <h6><i class="fas fa-tag me-2 text-primary"></i> نوع</h6>
+                                <p><span class="badge bg-primary bg-opacity-15 text- px-3 py-2">${survey.type == 1 ? 'متن باز' : (survey.type == 2 ? 'تک‌انتخابی' : 'چندانتخابی')}</span></p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detail-section">
+                                <h6><i class="fas fa-circle me-2 text-primary"></i> وضعیت</h6>
+                                <p><span class="status-badge ${survey.active ? 'active' : 'inactive'}">${survey.active ? 'فعال' : 'غیرفعال'}</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <h6><i class="fas fa-users me-2 text-primary"></i> تعداد کل پاسخ‌ها</h6>
+                        <p><span class="badge bg-primary rounded-pill px-4 py-2 fs-6">${totalVotes}</span></p>
+                    </div>
+                `;
+
+                if (survey.type > 1 && options.length > 0) {
+                    html += `
+                        <div class="detail-section">
+                            <h6><i class="fas fa-list-ul me-2 text-primary"></i> گزینه‌ها و نتایج</h6>
+                            <div class="bg-white rounded border p-2">
+                                <ul class="list-group list-group-flush">
+                    `;
+                    options.forEach(function(opt) {
+                        html += `
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-3 py-2">
+                                <span>${opt.text}</span>
+                                <span class="badge bg-info bg-opacity-15 text-info rounded-pill px-3 py-2">
+                                    ${opt.count} (${opt.percentage}%)
+                                </span>
+                            </li>
+                        `;
+                    });
+                    html += `
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                } else if (survey.type === 1) {
+                    html += `
+                        <div class="detail-section">
+                            <h6><i class="fas fa-info-circle me-2 text-primary"></i> توضیح</h6>
+                            <p class="text-muted">این نظرسنجی از نوع متن باز است و گزینه‌ای ندارد.</p>
+                        </div>
+                    `;
+                }
+
+                body.innerHTML = html;
+            } else {
+                body.innerHTML = `
+                    <div class="alert alert-danger d-flex align-items-center">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        خطا در دریافت اطلاعات
+                    </div>
+                `;
             }
         })
-        .catch(error => console.error('Error loading settings:', error));
+        .catch(function() {
+            body.innerHTML = `
+                <div class="alert alert-danger d-flex align-items-center">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    خطا در ارتباط با سرور
+                </div>
+            `;
+        });
     });
+});
 </script>
 @endsection

@@ -132,7 +132,7 @@ class TeacherSiteController extends Controller
             ->whereIn('type', ['0','2'])
             ->wherePivot('role_id', $teacherRole->id)
             ->withCount(['users as pending_requests_count' => function($query) {
-                $query->where('course_user.status', 2); // Use the pivot table name directly
+                $query->where('course_user.status', 2);
             }])
             ->get();
 

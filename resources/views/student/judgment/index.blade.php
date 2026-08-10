@@ -58,10 +58,6 @@
                         <span class="course-badge">
                             <i class="fas fa-book-open"></i> {{ $item['course_name'] ?? 'نامشخص' }}
                         </span>
-                        <span class="user-info">
-                            <i class="fas fa-user-graduate"></i>
-                            {{ $item['user']->name ?? 'ناشناس' }} {{ $item['user']->family ?? '' }}
-                        </span>
                         <span class="score-badge">
                             <i class="fas fa-star"></i>
                             {{ $item['score_count'] ?? 0 }} از ۳ داوری

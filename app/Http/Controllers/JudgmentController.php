@@ -23,9 +23,6 @@ class JudgmentController extends Controller
     /**
      * صفحه اصلی داوری (برای دانشجویان)
      */
-    /**
-     * صفحه اصلی داوری (برای دانشجویان)
-     */
     public function index()
     {
         $user = Auth::user();
@@ -63,6 +60,12 @@ class JudgmentController extends Controller
         $items = $result['items'];
         $totalPending = $result['total'];
 
+        // اگر کاربر دانشجو است، فقط یک آیتم تصادفی نمایش داده شود
+        if ($user->hasRole('student') && !empty($items)) {
+            $randomIndex = array_rand($items);
+            $items = [$items[$randomIndex]];
+        }
+
         $stats = [
             'total' => $totalPending,
             'pending' => $totalPending,
@@ -78,9 +81,8 @@ class JudgmentController extends Controller
 
         return view('student.judgment.index', compact('items', 'stats'));
     }
-
     /**
-     * دریافت آیتم‌های نیازمند داوری (با محدودیت ۱۰۰ تایی)
+     * دریافت آیتم‌های نیازمند داوری (با محدودیت ۴۰ تایی)
      */
     private function getPendingItems($userId)
     {
@@ -196,9 +198,9 @@ class JudgmentController extends Controller
             return $b['created_at'] <=> $a['created_at'];
         });
 
-        // ذخیره تعداد کل و اعمال محدودیت ۱۰۰ تایی
+        // ذخیره تعداد کل و اعمال محدودیت ۴۰ تایی
         $total = count($items);
-        $maxItems = 100;
+        $maxItems = 40;
         if (count($items) > $maxItems) {
             $items = array_slice($items, 0, $maxItems);
         }

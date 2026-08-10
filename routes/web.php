@@ -66,7 +66,7 @@ Route::prefix('/admin')->middleware(['role:admin'])->group(function () {
 
     Route::prefix('/survey')->group(function () {
         Route::get('/', [AdminSurveyController::class, 'angizesh_index'])->name('admin_survey');
-
+        Route::get('/{id}', [AdminSurveyController::class, 'show'])->name('admin.survey.show');
         Route::post('/toggle-student', [AdminSurveyController::class, 'toggleStudentSurvey'])->name('admin.toggle-student-survey');
         Route::post('/toggle-teacher', [AdminSurveyController::class, 'toggleTeacherSurvey'])->name('admin.toggle-teacher-survey');
         Route::get('/settings', [AdminSurveyController::class, 'getSettings'])->name('admin.get-settings');
@@ -505,7 +505,7 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
     // مسیرهای داوری - دانشجو
     // ==========================================
     Route::prefix('/judgment')->middleware(['role:student|admin'])->group(function () {
-        Route::get('/', [JudgmentController::class, 'inwdex'])->name('student.judgment.index');
+        Route::get('/', [JudgmentController::class, 'index'])->name('student.judgment.index');
         Route::post('/store', [JudgmentController::class, 'store'])->name('student.judgment.store');
         Route::get('/stats', [JudgmentController::class, 'stats'])->name('student.judgment.stats');
         Route::get('/returned', [JudgmentController::class, 'returnedItems'])->name('student.judgment.returned');

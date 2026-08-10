@@ -17,20 +17,24 @@ use Auth;
 use Carbon\Carbon;
 use DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Validator;
 
 class StudentCourseController extends Controller
 {
     public function view($id)
     {
-        $course = Course::with(['sessions' => function ($query) {
-            $query->orderBy('number', 'desc');
-        }, 'settings'])->findOrFail($id);
+        $course = Course::with([
+            'sessions' => function ($query) {
+                $query->orderBy('number', 'desc');
+            },
+            'settings'
+        ])->findOrFail($id);
 
         $user = Auth::user();
         $studentRole = Role::where('name', 'student')->first();
         $teacherRole = Role::where('name', 'teacher')->first();
-        
+
         // بررسی اینکه آیا کاربر نقش دانشجو دارد یا خیر
         $isStudent = $user->hasRole('student');
         $setting = $course->settings;
@@ -38,7 +42,7 @@ class StudentCourseController extends Controller
         $courseUser = CourseUser::where('course_id', $course->id)
             ->where('user_id', $user->id)
             ->first();
-        
+
         $member = ($courseUser) ? 1 : 0;
         $paid = ($course->price == 0 || ($courseUser && $courseUser->paid == 1)) ? 1 : 0;
 
@@ -56,7 +60,7 @@ class StudentCourseController extends Controller
             if ($course->active == 1) {
                 // فقط جلسات فعال رو بگیر
                 $sessions = $course->sessions->where('active', 1);
-                
+
                 if ($sessions->isEmpty()) {
                     $sessions = collect();
                 } else {
@@ -89,7 +93,7 @@ class StudentCourseController extends Controller
                         $sessions = $sessions->filter(function ($session) {
                             return $session->number == 1;
                         });
-                    } 
+                    }
                     // فیلتر برای کاربری که پرداخت نکرده
                     elseif ($paid == 0) {
                         $sessions = $sessions->filter(function ($session) {
@@ -104,17 +108,17 @@ class StudentCourseController extends Controller
         } else {
             // برای استاد همه جلسات رو نشون بده (حتی غیرفعال)
             $sessions = $course->sessions;
-            
+
             if ($sessions->isEmpty()) {
                 $sessions = collect();
             }
         }
 
         $khodazmaii = 0;
-        
+
         if (!$sessions->isEmpty() && $setting) {
             $sessionIds = $sessions->pluck('id');
-            
+
             $statusFilter = match ($setting->sath_khod) {
                 1 => [1],
                 2 => [1, 2],
@@ -126,7 +130,7 @@ class StudentCourseController extends Controller
                 $questionCount = Question::whereIn('session_id', $sessionIds)
                     ->whereIn('status', $statusFilter)
                     ->count();
-                
+
                 $khodazmaii = ($questionCount >= $setting->q_num) ? 1 : 0;
             }
         }
@@ -137,25 +141,25 @@ class StudentCourseController extends Controller
             $lastSession = Session::where('course_id', $course->id)
                 ->orderBy('id', 'desc')
                 ->first();
-            
+
             // دریافت تمام exerciseها برای این دوره
             $exerciseIds = Exercise::whereIn('session_id', $sessions->pluck('id'))
                 ->pluck('session_id')
                 ->toArray();
-            
+
             foreach ($sessions as $index => $session) {
                 $session['ex_count'] = Exercise::where('session_id', $session->id)->count();
-                
+
                 // تنظیم وضعیت‌های پیش‌فرض
                 $session['taklif_last'] = 1;
                 $session['gozaresh_last'] = 1;
                 $session['soal_last'] = 1;
-                
+
                 // تنظیم وضعیت‌های دسترسی برای دکمه‌ها - پیش‌فرض همه فعال
                 $session['can_question'] = true;
                 $session['can_homework'] = true;
                 $session['can_report'] = true;
-                
+
                 // *** تغییر جدید: بررسی وجود تکلیف برای جلسه ***
                 // اگر استاد برای این جلسه تکلیفی تعریف نکرده باشد، دکمه ارسال تکلیف نمایش داده نشود
                 $hasExercise = in_array($session->id, $exerciseIds);
@@ -172,7 +176,7 @@ class StudentCourseController extends Controller
                             $session['soal_last'] = 0;
                         }
                     }
-                    
+
                     // محدودیت ارسال تکلیف به آخرین جلسه
                     // فقط اگر تکلیف وجود داشته باشد و محدودیت فعال باشد
                     if ($setting->taklif_last == 1 && $hasExercise) {
@@ -181,7 +185,7 @@ class StudentCourseController extends Controller
                             $session['taklif_last'] = 0;
                         }
                     }
-                    
+
                     // محدودیت ارسال گزارش به آخرین جلسه
                     if ($setting->gozaresh_last == 1) {
                         if (!$lastSession || $session->id != $lastSession->id) {
@@ -194,8 +198,8 @@ class StudentCourseController extends Controller
         }
 
         $course['sessions'] = $course->sessions()->count();
-        $course['count'] = ($studentRole) 
-            ? $course->users()->where('role_id', $studentRole->id)->count() 
+        $course['count'] = ($studentRole)
+            ? $course->users()->where('role_id', $studentRole->id)->count()
             : 0;
 
         if ($teacherRole) {
@@ -216,16 +220,16 @@ class StudentCourseController extends Controller
             'member',
             'paid'
         ))->with([
-            'student' => (int) $isStudent,
-        ]);
+                    'student' => (int) $isStudent,
+                ]);
     }
-    
+
     public function join(Request $request)
     {
         // اعتبارسنجی
         $validator = Validator::make($request->all(), [
             'code' => 'required|string|max:10',
-            'type' => 'nullable|in:lesson,skill' // اضافه شده برای تشخیص نوع درخواست
+            'type' => 'nullable|in:lesson,skill'
         ], [
             'code.required' => 'لطفاً کد را وارد کنید',
             'code.max' => 'کد نباید بیشتر از ۱۰ کاراکتر باشد',
@@ -254,15 +258,15 @@ class StudentCourseController extends Controller
             }
 
             // بررسی نوع دوره بر اساس پارامتر type
-            $requestType = $request->type ?? 'lesson'; // پیش‌فرض درس
-            
+            $requestType = $request->type ?? 'lesson';
+
             if ($requestType === 'skill' && !$course->isSkill()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'این کد مربوط به مهارت نیست'
                 ], 404);
             }
-            
+
             if ($requestType === 'lesson' && !$course->isLesson()) {
                 return response()->json([
                     'success' => false,
@@ -270,7 +274,6 @@ class StudentCourseController extends Controller
                 ], 404);
             }
 
-            // تشخیص نوع دوره برای پیام مناسب
             $courseTypeName = $course->isSkill() ? 'مهارت' : 'درس';
 
             // بررسی آرشیو بودن دوره
@@ -296,17 +299,51 @@ class StudentCourseController extends Controller
                 ], 409);
             }
 
-            // بررسی خصوصی بودن دوره
-            if ($course->private == 1) {
-                $status = 2; // pending request
-                
-                $course->users()->attach($user, [
-                    'role_id' => $studentRole->id,
-                    'status' => $status
+            // تعیین وضعیت بر اساس خصوصی بودن دوره
+            $status = ($course->private == 1) ? 2 : 1; // 2 = pending, 1 = approved
+
+            $courseUser = new CourseUser();
+            $courseUser->course_id = $course->id;
+            $courseUser->user_id = $user->id;
+            $courseUser->role_id = $studentRole->id;
+            $courseUser->course_type = $course->type; 
+            $courseUser->status = $status;
+            $courseUser->save();
+
+            // اگر دوره عمومی است، Scoring و Setting نیز ایجاد می‌شود
+            if ($status == 1) {
+                // ایجاد Scoring برای دانشجو
+                Scoring::create([
+                    'course_id' => $course->id,
+                    'user_id' => $user->id,
+                    'q_1' => 0,
+                    'q_2' => 0,
+                    'q_3' => 0,
+                    'q_4' => 0,
+                    'd_1' => 0,
+                    'd_2' => 0,
+                    'd_3' => 0,
+                    'd_4' => 0,
+                    'e_1' => 0,
+                    'e_2' => 0,
+                    'e_3' => 0,
+                    'e_4' => 0,
+                    's_1' => 0,
+                    's_2' => 0,
+                    's_3' => 0,
+                    's_4' => 0,
                 ]);
 
-                DB::commit();
-                
+                Setting::firstOrCreate(
+                    ['course_id' => $course->id],
+                    ['course_id' => $course->id]
+                );
+            }
+
+            DB::commit();
+
+            // پاسخ بر اساس وضعیت
+            if ($status == 2) {
                 return response()->json([
                     'success' => true,
                     'message' => "درخواست شما برای {$courseTypeName} به استاد ارسال شد. لطفاً تا زمان تأیید ایشان صبر کنید.",
@@ -316,48 +353,11 @@ class StudentCourseController extends Controller
                 ]);
             }
 
-            // برای دوره‌های عمومی
-            $status = 1; // approved
-
-            $course->users()->attach($user, [
-                'role_id' => $studentRole->id,
-                'status' => $status
-            ]);
-
-            // ایجاد Scoring برای دانشجو
-            $scoring = Scoring::create([
-                'course_id' => $course->id,
-                'user_id' => $user->id,
-                'q_1' => 0,
-                'q_2' => 0,
-                'q_3' => 0,
-                'q_4' => 0,
-                'd_1' => 0,
-                'd_2' => 0,
-                'd_3' => 0,
-                'd_4' => 0,
-                'e_1' => 0,
-                'e_2' => 0,
-                'e_3' => 0,
-                'e_4' => 0,
-                's_1' => 0,
-                's_2' => 0,
-                's_3' => 0,
-                's_4' => 0,
-            ]);
-
-            Setting::firstOrCreate(
-                ['course_id' => $course->id],
-                ['course_id' => $course->id]
-            );
-
-            DB::commit();
-            
-            // مسیر بر اساس نوع دوره
-            $redirectRoute = $course->isSkill() 
-                ? route('view.skill.St', $course->id) 
+            // برای وضعیت approved
+            $redirectRoute = $course->isSkill()
+                ? route('view.skill.St', $course->id)
                 : route('view.coure.St', $course->id);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => "عضویت در {$courseTypeName} با موفقیت انجام شد",
@@ -366,7 +366,7 @@ class StudentCourseController extends Controller
                 'status' => 'approved',
                 'redirect' => $redirectRoute
             ]);
-            
+
         } catch (\Exception $exception) {
             DB::rollBack();
             \Log::error('Join course failed: ' . $exception->getMessage());

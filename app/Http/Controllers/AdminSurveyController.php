@@ -4,18 +4,52 @@ namespace App\Http\Controllers;
 
 use App\Models\Survey;
 use App\Models\SiteSetting;
+use App\Models\Option;
+use App\Models\OptionUser;
 use Illuminate\Http\Request;
 
 class AdminSurveyController extends Controller
 {
+    /**
+     * صفحه اصلی مدیریت نظرسنجی‌ها
+     */
     public function angizesh_index()
     {
-        $surveys = Survey::where('active', 1)->get();
-        $settings = SiteSetting::getSettings();
-        $totalSurveys = $surveys->count();
-        $answeredSurveys = 0; // می‌تونید بر اساس نیاز محاسبه کنید
+        // دریافت تمام نظرسنجی‌ها (به‌صورت صفحه‌بندی شده)
+        $surveys = Survey::with('options')->orderBy('created_at', 'desc')->get();
         
-        return view('admin.survey', compact('surveys', 'settings', 'totalSurveys', 'answeredSurveys'));
+        // تنظیمات سایت
+        $settings = SiteSetting::getSettings();
+        
+        return view('admin.survey', compact('surveys', 'settings'));
+    }
+
+    /**
+     * دریافت جزئیات یک نظرسنجی برای نمایش در مودال (AJAX)
+     */
+    public function show($id)
+    {
+        $survey = Survey::with(['options.optionUsers'])->findOrFail($id);
+        
+        $totalVotes = $survey->optionUsers->count();
+        
+        $optionsData = $survey->options->map(function($option) use ($totalVotes) {
+            $count = $option->optionUsers->count();
+            $percentage = $totalVotes > 0 ? round(($count / $totalVotes) * 100, 1) : 0;
+            return [
+                'id' => $option->id,
+                'text' => $option->text,
+                'count' => $count,
+                'percentage' => $percentage,
+            ];
+        });
+        
+        return response()->json([
+            'success' => true,
+            'survey' => $survey,
+            'options' => $optionsData,
+            'total_votes' => $totalVotes,
+        ]);
     }
 
     /**
