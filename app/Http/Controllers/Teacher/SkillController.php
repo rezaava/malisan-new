@@ -747,6 +747,7 @@ class SkillController extends Controller
             'copy' => 'nullable|exists:courses,id',
             'length' => 'nullable',
             'sessions_length' => 'nullable',
+            'manbe' => 'nullable',
         ]);
 
         if ($validator->fails()) {
@@ -771,6 +772,7 @@ class SkillController extends Controller
             $course->sessions_length = $request->sessions_length;
             $course->max_session = 16;
             $course->code = $code;
+            $course->manbe = $request->manbe;
             $course->header = rand(1, 29);
             $course->save();
 

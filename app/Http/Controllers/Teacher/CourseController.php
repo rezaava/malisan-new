@@ -1382,7 +1382,7 @@ class CourseController extends Controller
         }
         $nomre_har_gozaresh = $setting->ersal_gozaresh_nomre / $setting->jalasat;
         $d_nomre *= $nomre_har_gozaresh;
-        $nomre['d'] = round($d_nomre, 2);
+        $nomre['d'] = $disc_all;
 
         // ==========================================
         // 3. آمار تکالیف
@@ -1419,7 +1419,7 @@ class CourseController extends Controller
         if ($e_nomre > $setting->taklif_seminar_nomre) {
             $e_nomre = $setting->taklif_seminar_nomre;
         }
-        $nomre['e'] = round($e_nomre, 2);
+        $nomre['e'] = $exer_all;
 
         // ==========================================
         // 4. آمار خودآزمایی

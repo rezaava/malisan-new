@@ -6,6 +6,7 @@ use App\Models\Amali;
 use App\Models\Angizesh;
 use App\Models\Azmon;
 use App\Models\Course;
+use App\Models\CourseUser;
 use App\Models\Discussion;
 use App\Models\Exercise;
 use App\Models\ExerciseAnswer;
@@ -525,7 +526,7 @@ class StudentSiteController extends Controller
         $course = Course::findOrFail($courseId);
         
         // بررسی اینکه کاربر در این درس ثبت نام کرده باشد
-        $isEnrolled = \App\Models\CourseUser::where('user_id', $user->id)
+        $isEnrolled = CourseUser::where('user_id', $user->id)
             ->where('course_id', $courseId)
             ->exists();
 
@@ -587,7 +588,7 @@ class StudentSiteController extends Controller
         if ($q_nomre > $setting->tarahi_soal_nomre) {
             $q_nomre = $setting->tarahi_soal_nomre;
         }
-        $nomre['q'] = round($q_nomre, 2);
+        $nomre['q'] = $questions_all;
 
         // ==========================================
         // 2. آمار گزارش‌ها
@@ -633,7 +634,7 @@ class StudentSiteController extends Controller
         }
         $nomre_har_gozaresh = $setting->ersal_gozaresh_nomre / $setting->jalasat;
         $d_nomre *= $nomre_har_gozaresh;
-        $nomre['d'] = round($d_nomre, 2);
+        $nomre['d'] = $disc_all;
 
         // ==========================================
         // 3. آمار تکالیف
@@ -670,7 +671,7 @@ class StudentSiteController extends Controller
         if ($e_nomre > $setting->taklif_seminar_nomre) {
             $e_nomre = $setting->taklif_seminar_nomre;
         }
-        $nomre['e'] = round($e_nomre, 2);
+        $nomre['e'] = $exer_all;
 
         // ==========================================
         // 4. آمار خودآزمایی
@@ -764,6 +765,13 @@ class StudentSiteController extends Controller
             'pish' => $setting->pishraft_nomre,
             'talash' => $setting->talash_nomre,
         ];
+
+// لاگ تمام متغیرهای موجود در تابع
+$allVars = get_defined_vars();
+
+// تبدیل به JSON خوانا
+$logJson = json_encode($allVars, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+Log::info("لاگ کامل متغیرهای تابع progress:\n" . $logJson);
 
         return view('student.progress', compact(
             'course',

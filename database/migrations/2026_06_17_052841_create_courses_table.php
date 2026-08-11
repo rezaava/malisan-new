@@ -19,6 +19,7 @@ return new class extends Migration
             $table->integer('period')->default(3);
             $table->integer('type')->default(0)->comment('0 lesson 1 skill 2 both');
             $table->text('desc')->nullable();
+            $table->text('manbe')->nullable();
             $table->integer('price')->default(0);
             $table->integer('length')->default(0);
             $table->integer('sessions_length')->default(0);

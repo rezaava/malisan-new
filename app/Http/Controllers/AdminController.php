@@ -17,65 +17,69 @@ class AdminController extends Controller
     public function index()
     {
         $user = Auth::user();
-        
+
         // دریافت پیام انگیزشی
         $message = Angizesh::whereIn('level', [7, 8])
             ->inRandomOrder()
             ->first();
-        
-        $massage = Angizesh::whereNotIn('level', [8,7])->count();
+
+        $massage = Angizesh::whereNotIn('level', [8, 7])->count();
 
         // دریافت پیام انگیزشی
         $survey = Survey::count();
 
-        return view('admin.index', compact('user','message','massage','survey'));
+        return view('admin.index', compact('user', 'message', 'massage', 'survey'));
     }
 
-    public function adminShowUsers(Request $request){
+    public function adminShowUsers(Request $request)
+    {
         $users = User::get();
 
         return view('admin.show_users', compact('usres', $users));
     }
-    public function adminShowLimitedUsers(Request $request){
+    public function adminShowLimitedUsers(Request $request)
+    {
         $users = User::where('active', 'false')->get();
-        
+
 
         return view('admin.show_limited_users', compact('usres', $users));
     }
 
     //when admin clicks on reset password for user
-    public function resetPasswordRequest(Request $request, $id){
+    public function resetPasswordRequest(Request $request, $id)
+    {
         $user = User::findOrFail($id);
-        $status = Password::broker()->sendResetLink(['email'=> $user->email]);
+        $status = Password::broker()->sendResetLink(['email' => $user->email]);
 
-        return $status == Password::RESET_LINK_SENT 
-        ? back()->with(['status' => $status])
-        : back()->withErrors(['status'=> $status]);
+        return $status == Password::RESET_LINK_SENT
+            ? back()->with(['status' => $status])
+            : back()->withErrors(['status' => $status]);
 
     }
 
     //this fucntion performs checks on password and token and complete the reset password proccess
-    public function resetPasswordComplete(Request $request){
+    public function resetPasswordComplete(Request $request)
+    {
         Validator::make($request->all(), [
-            'token'=> 'required',
-            'password'=> 'required|string|confirmed',
-            'email'=>   'required|email'
+            'token' => 'required',
+            'password' => 'required|string|confirmed',
+            'email' => 'required|email'
         ]);
 
-        
+
         $resetData = DB::table('password_reset_tokens')->where('email', $request->email)
-        ->first();
+            ->first();
 
         //check if token is invalid
-        if(!$resetData || Hash::check($resetData->token, $request->token)){
-            return back()->withErrors(['error'=> "token is invalid", 'email'=>$request->email]);
+        if (!$resetData || Hash::check($resetData->token, $request->token)) {
+            return back()->withErrors(['error' => "token is invalid", 'email' => $request->email]);
         }
 
         $user = User::where('email', $request->email);
 
         //making new password and storing it
         $user->update([
-            'password'=> Hash::make($request->password),
+            'password' => Hash::make($request->password),
         ]);
 
         $user->save();
@@ -83,18 +87,24 @@ class AdminController extends Controller
         //deleting reset token for this user
         DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 
-        return redirect()->route('login')->with(['status'=>'password changed successfully']);
+        return redirect()->route('login')->with(['status' => 'password changed successfully']);
     }
 
-    public function limitUser(Request $request, $id){
+    public function limitUser(Request $request, $id)
+    {
         $user = User::findOrFail($id);
         $user->active = false;
-        return response()->json(['successfull'=> true]);
+        return response()->json(['successfull' => true]);
     }
 
-    public function unlimitUser(Request $request, $id){
+    public function unlimitUser(Request $request, $id)
+    {
         $user = User::findOrFail($id);
         $user->active = true;
-        return response()->json(['successfull'=> true]);
+        return response()->json(['successfull' => true]);
+    }
+    public function coin()
+    {
+        return view('admin.coin');
     }
 }

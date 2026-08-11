@@ -51,6 +51,10 @@ Route::middleware(['auth'])->group(function () {
 Route::prefix('/admin')->middleware(['role:admin'])->group(function () {
     Route::get('/', [AdminController::class, 'index'])->name('index_admin');
 
+    Route::prefix('/coin')->group(function () {
+        Route::get('/', [AdminController::class, 'coin'])->name('admin.coin');
+    });
+
     Route::prefix('/courses')->group(function () {
         Route::get('/', [AdminCourseController::class, 'courses'])->name('courses.Ad');
         Route::get('/view/{id}', [AdminCourseController::class, 'view'])->name('view.coure.Ad');

@@ -81,6 +81,7 @@
             font-weight: 500;
             transition: color 0.2s;
         }
+
         .more-btn:hover {
             color: #0d47a1;
             text-decoration: underline;
@@ -233,6 +234,7 @@
                 opacity: 0;
                 transform: scale(0.92) translateY(30px);
             }
+
             100% {
                 opacity: 1;
                 transform: scale(1) translateY(0);
@@ -244,16 +246,20 @@
             #descriptionModal .modal-header {
                 padding: 16px 20px;
             }
+
             #descriptionModal .modal-header h3 {
                 font-size: 17px;
             }
+
             #descriptionModal .modal-body {
                 padding: 20px 20px 16px 20px;
                 font-size: 14px;
             }
+
             #descriptionModal .modal-footer {
                 padding: 12px 20px 20px 20px;
             }
+
             #descriptionModal .modal-footer .btn-cancel {
                 padding: 8px 20px;
                 font-size: 13px;
@@ -324,7 +330,6 @@
                         <h3 class="course-title">{{ $cours->name }}</h3>
                         <p class="course-code">کد: {{ $cours->code }}</p>
 
-                        {{-- ===== توضیحات جدید ===== --}}
                         <div class="description-wrapper">
                             @if(!empty($cours->desc))
                                 <div class="description-text" data-full="{{ $cours->desc }}">
@@ -383,6 +388,13 @@
                                     <i class="fas fa-arrow-left me-2"></i>
                                     کلاس مجازی
                                 </a>
+                            </div>
+                        @endif
+                        @if(!empty($cours->manbe))
+                            <div class="description-wrapper">
+                                <div class="description-text"">
+                                    منبع :{{ $cours->manbe }}
+                                </div>
                             </div>
                         @endif
                     </div>
@@ -461,15 +473,20 @@
                         <label for="desc">مختصری درباره مهارت (اختیاری)</label>
                         <input type="text" id="desc" name="desc" class="form-control">
                     </div>
-
-                    <div class="form-group">
-                        <label for="length">طول دوره (روز)</label>
-                        <input type="tel" id="length" name="length" class="form-control">
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label for="length">طول دوره (روز)</label>
+                            <input type="tel" id="length" name="length" class="form-control">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="sessions_length">تعداد جلسات</label>
+                            <input type="tel" id="sessions_length" name="sessions_length" class="form-control">
+                        </div>
                     </div>
-
                     <div class="form-group">
-                        <label for="sessions_length">تعداد جلسات</label>
-                        <input type="tel" id="sessions_length" name="sessions_length" class="form-control">
+                        <label for="manbe">منبع (اختیاری)</label>
+                        <input type="text" id="manbe" name="manbe" class="form-control"
+                            placeholder="منبع محتوای تهیه‌شده (سایت، صفحه، کتاب یا فرد) را ذکر کنید.">
                     </div>
                 </div>
 
@@ -670,11 +687,11 @@
             loadArchivedCount();
 
             // ===== تشخیص سرریز توضیحات و نمایش دکمه بیشتر =====
-            document.querySelectorAll('.description-wrapper').forEach(function(wrapper) {
+            document.querySelectorAll('.description-wrapper').forEach(function (wrapper) {
                 const desc = wrapper.querySelector('.description-text');
                 const moreBtn = wrapper.querySelector('.more-btn');
                 if (desc && moreBtn && !desc.classList.contains('empty')) {
-                    requestAnimationFrame(function() {
+                    requestAnimationFrame(function () {
                         if (desc.scrollHeight > desc.clientHeight) {
                             moreBtn.style.display = 'inline-block';
                         }
@@ -718,47 +735,47 @@
                 .then(function (data) {
                     if (!data.success) {
                         container.innerHTML = `
-                            <div class="empty-archived">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                <p>${data.message || 'خطا در بارگذاری اطلاعات'}</p>
-                            </div>
-                        `;
+                                        <div class="empty-archived">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            <p>${data.message || 'خطا در بارگذاری اطلاعات'}</p>
+                                        </div>
+                                    `;
                         return;
                     }
 
                     if (!data.data || data.data.length === 0) {
                         container.innerHTML = `
-                            <div class="empty-archived">
-                                <i class="fas fa-box-open"></i>
-                                <p>هیچ دوره‌ای آرشیو نشده است</p>
-                            </div>
-                        `;
+                                        <div class="empty-archived">
+                                            <i class="fas fa-box-open"></i>
+                                            <p>هیچ دوره‌ای آرشیو نشده است</p>
+                                        </div>
+                                    `;
                         return;
                     }
 
                     var html = `
-                        <div style="margin-bottom:16px;padding:12px 16px;background:#f8f9fa;border-radius:10px;border-right:3px solid #6c757d;">
-                            <span style="font-weight:700;color:#495057;">تعداد دوره‌های آرشیو شده: ${data.data.length}</span>
-                        </div>
-                    `;
+                                    <div style="margin-bottom:16px;padding:12px 16px;background:#f8f9fa;border-radius:10px;border-right:3px solid #6c757d;">
+                                        <span style="font-weight:700;color:#495057;">تعداد دوره‌های آرشیو شده: ${data.data.length}</span>
+                                    </div>
+                                `;
 
                     data.data.forEach(function (course, index) {
                         var date = new Date(course.updated_at);
                         var persianDate = date.toLocaleDateString('fa-IR');
 
                         html += `
-                            <div class="archived-list-item">
-                                <div class="course-info">
-                                    <span class="course-name">${index + 1}. ${course.name}</span>
-                                    <span class="course-code">کد: ${course.code}</span>
-                                    <span class="archived-date">آرشیو شده در: ${persianDate}</span>
-                                </div>
-                                <button class="restore-btn" onclick="restoreCourse(${course.id})">
-                                    <i class="fas fa-undo"></i>
-                                    بازگرداندن
-                                </button>
-                            </div>
-                        `;
+                                        <div class="archived-list-item">
+                                            <div class="course-info">
+                                                <span class="course-name">${index + 1}. ${course.name}</span>
+                                                <span class="course-code">کد: ${course.code}</span>
+                                                <span class="archived-date">آرشیو شده در: ${persianDate}</span>
+                                            </div>
+                                            <button class="restore-btn" onclick="restoreCourse(${course.id})">
+                                                <i class="fas fa-undo"></i>
+                                                بازگرداندن
+                                            </button>
+                                        </div>
+                                    `;
                     });
 
                     container.innerHTML = html;
@@ -772,11 +789,11 @@
                 .catch(function (error) {
                     console.error('Error:', error);
                     container.innerHTML = `
-                        <div class="empty-archived">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <p>خطا در ارتباط با سرور</p>
-                        </div>
-                    `;
+                                    <div class="empty-archived">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <p>خطا در ارتباط با سرور</p>
+                                    </div>
+                                `;
                 });
         }
 
@@ -1002,14 +1019,14 @@
                     const newContainer = document.createElement('div');
                     newContainer.className = 'text-center mt-4 virtual-class-container';
                     newContainer.innerHTML = `
-                        <a href="https://${cleanUrl}" 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        class="btn btn-primary btn-sm virtual-class-link">
-                            <i class="fas fa-arrow-left me-2"></i>
-                            کلاس مجازی
-                        </a>
-                    `;
+                                    <a href="https://${cleanUrl}" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    class="btn btn-primary btn-sm virtual-class-link">
+                                        <i class="fas fa-arrow-left me-2"></i>
+                                        کلاس مجازی
+                                    </a>
+                                `;
                     card.querySelector('.course-info').appendChild(newContainer);
                 }
             } else {
@@ -1050,9 +1067,9 @@
             const doreBtn = card.querySelector('.action-item[data-action="دوره‌ای"]');
             if (doreBtn) {
                 doreBtn.innerHTML = `
-                    <i class="fas ${isDore ? 'fa-calendar-check' : 'fa-calendar-times'}"></i>
-                    <span class="action-tooltip">${isDore ? 'غیردوره‌ای' : 'دوره‌ای'}</span>
-                `;
+                                <i class="fas ${isDore ? 'fa-calendar-check' : 'fa-calendar-times'}"></i>
+                                <span class="action-tooltip">${isDore ? 'غیردوره‌ای' : 'دوره‌ای'}</span>
+                            `;
             }
 
             let doreBadge = card.querySelector('.dore-badge');
@@ -1142,9 +1159,9 @@
                         const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
                         const isPrivate = card?.dataset?.isPrivate === '1';
                         targetBtn.innerHTML = `
-                        <i class="fas ${isPrivate ? 'fa-lock' : 'fa-globe-asia'}"></i>
-                        <span class="action-tooltip">${isPrivate ? 'عمومی کردن' : 'خصوصی کردن'}</span>
-                    `;
+                                    <i class="fas ${isPrivate ? 'fa-lock' : 'fa-globe-asia'}"></i>
+                                    <span class="action-tooltip">${isPrivate ? 'عمومی کردن' : 'خصوصی کردن'}</span>
+                                `;
                         targetBtn.style.pointerEvents = 'auto';
                     }
                 });
@@ -1159,9 +1176,9 @@
             const privateBtn = card.querySelector('.action-item[data-action="عمومی/خصوصی"]');
             if (privateBtn) {
                 privateBtn.innerHTML = `
-                    <i class="fas ${isPrivate ? 'fa-lock' : 'fa-globe-asia'}"></i>
-                    <span class="action-tooltip">${isPrivate ? 'عمومی کردن' : 'خصوصی کردن'}</span>
-                `;
+                                <i class="fas ${isPrivate ? 'fa-lock' : 'fa-globe-asia'}"></i>
+                                <span class="action-tooltip">${isPrivate ? 'عمومی کردن' : 'خصوصی کردن'}</span>
+                            `;
             }
 
             let privateBadge = card.querySelector('.private-badge');
@@ -1239,9 +1256,9 @@
                         const card = document.querySelector(`.course-card[data-course-id="${courseId}"]`);
                         const isEnded = card?.dataset?.isEnded === '1';
                         targetBtn.innerHTML = `
-                        <i class="fas ${isEnded ? 'fa-play' : 'fa-stop'}"></i>
-                        <span class="action-tooltip">${isEnded ? 'فعال کردن' : 'خاتمه دادن'}</span>
-                    `;
+                                    <i class="fas ${isEnded ? 'fa-play' : 'fa-stop'}"></i>
+                                    <span class="action-tooltip">${isEnded ? 'فعال کردن' : 'خاتمه دادن'}</span>
+                                `;
                         targetBtn.style.pointerEvents = 'auto';
                     }
                 });
@@ -1264,9 +1281,9 @@
             const endedBtn = card.querySelector('.action-item[data-action="خاتمه/فعال"]');
             if (endedBtn) {
                 endedBtn.innerHTML = `
-                    <i class="fas ${isEnded ? 'fa-play' : 'fa-stop'}"></i>
-                    <span class="action-tooltip">${isEnded ? 'فعال کردن' : 'خاتمه دادن'}</span>
-                `;
+                                <i class="fas ${isEnded ? 'fa-play' : 'fa-stop'}"></i>
+                                <span class="action-tooltip">${isEnded ? 'فعال کردن' : 'خاتمه دادن'}</span>
+                            `;
             }
 
             // به‌روزرسانی badge روی تصویر
@@ -1407,25 +1424,25 @@
                 Swal.fire({
                     title: 'اشتراک گذاری مهارت',
                     html: `
-                        <div style="text-align: right; direction: rtl;">
-                            <p style="color: #6c757d; font-size: 14px; margin-bottom: 16px;">
-                                برای دعوت دانشجویان خود به کلاس می‌توانید آن را از طریق شبکه‌های اجتماعی یا پیامک برایشان ارسال کنید.
-                            </p>
-                            <div style="background: #f8f9fa; padding: 16px; border-radius: 10px; border-right: 4px solid #6f42c1; text-align: right;">
-                                <p style="margin: 0; font-size: 14px; line-height: 2; color: #212529;">
-                                    ${message}
-                                </p>
-                            </div>
-                            <div style="margin-top: 16px; display: flex; gap: 12px; justify-content: center;">
-                                <button onclick="copyText('${message.replace(/'/g, "\\'")}')" class="swal2-confirm swal2-styled" style="background: #6f42c1;">
-                                    <i class="fas fa-copy"></i> کپی پیام
-                                </button>
-                                <button onclick="copyText('https://www.malisan.ir/join/${courseCode}')" class="swal2-confirm swal2-styled" style="background: #0d6efd;">
-                                    <i class="fas fa-link"></i> کپی لینک
-                                </button>
-                            </div>
-                        </div>
-                    `,
+                                    <div style="text-align: right; direction: rtl;">
+                                        <p style="color: #6c757d; font-size: 14px; margin-bottom: 16px;">
+                                            برای دعوت دانشجویان خود به کلاس می‌توانید آن را از طریق شبکه‌های اجتماعی یا پیامک برایشان ارسال کنید.
+                                        </p>
+                                        <div style="background: #f8f9fa; padding: 16px; border-radius: 10px; border-right: 4px solid #6f42c1; text-align: right;">
+                                            <p style="margin: 0; font-size: 14px; line-height: 2; color: #212529;">
+                                                ${message}
+                                            </p>
+                                        </div>
+                                        <div style="margin-top: 16px; display: flex; gap: 12px; justify-content: center;">
+                                            <button onclick="copyText('${message.replace(/'/g, "\\'")}')" class="swal2-confirm swal2-styled" style="background: #6f42c1;">
+                                                <i class="fas fa-copy"></i> کپی پیام
+                                            </button>
+                                            <button onclick="copyText('https://www.malisan.ir/join/${courseCode}')" class="swal2-confirm swal2-styled" style="background: #0d6efd;">
+                                                <i class="fas fa-link"></i> کپی لینک
+                                            </button>
+                                        </div>
+                                    </div>
+                                `,
                     showConfirmButton: false,
                     showCancelButton: true,
                     cancelButtonText: 'بستن',
@@ -1533,9 +1550,9 @@
                 .finally(() => {
                     if (targetBtn) {
                         targetBtn.innerHTML = `
-                        <i class="fas fa-archive"></i>
-                        <span class="action-tooltip">آرشیو</span>
-                    `;
+                                    <i class="fas fa-archive"></i>
+                                    <span class="action-tooltip">آرشیو</span>
+                                `;
                         targetBtn.style.pointerEvents = 'auto';
                     }
                 });
@@ -1562,23 +1579,23 @@
             };
 
             toast.style.cssText = `
-                position: fixed;
-                bottom: 30px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: ${colors[type] || colors.info};
-                color: white;
-                padding: 14px 28px;
-                border-radius: 12px;
-                font-size: 14px;
-                font-weight: 500;
-                z-index: 100000;
-                box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-                animation: slideUp 0.4s ease;
-                direction: rtl;
-                max-width: 90%;
-                text-align: center;
-            `;
+                            position: fixed;
+                            bottom: 30px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            background: ${colors[type] || colors.info};
+                            color: white;
+                            padding: 14px 28px;
+                            border-radius: 12px;
+                            font-size: 14px;
+                            font-weight: 500;
+                            z-index: 100000;
+                            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+                            animation: slideUp 0.4s ease;
+                            direction: rtl;
+                            max-width: 90%;
+                            text-align: center;
+                        `;
 
             toast.textContent = message;
             document.body.appendChild(toast);
@@ -1649,7 +1666,7 @@
         }
 
         // کلیک روی overlay مودال توضیحات برای بستن
-        document.getElementById('descriptionModal')?.addEventListener('click', function(e) {
+        document.getElementById('descriptionModal')?.addEventListener('click', function (e) {
             if (e.target === this) {
                 closeDescriptionModal();
             }
@@ -1659,7 +1676,7 @@
         // CLICK HANDLER FOR "بیشتر" BUTTONS (Event Delegation)
         // ============================================
 
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             const target = e.target.closest('.more-btn');
             if (target) {
                 e.preventDefault();
