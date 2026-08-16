@@ -97,6 +97,7 @@ class JudgmentController extends Controller
 
         return view('student.judgment.index', compact('items', 'stats'));
     }
+
     /**
      * دریافت آیتم‌های نیازمند داوری (با محدودیت ۴۰ تایی)
      */
@@ -365,19 +366,19 @@ class JudgmentController extends Controller
             return redirect()->back()->with('error', 'شما قبلاً این آیتم را داوری کرده‌اید.');
         }
 
-        // ذخیره داوری
-        $result = $this->saveJudgment($request, $user);
+        // ذخیره داوری و دریافت شماره داور
+        $judgeNumber = $this->saveJudgment($request, $user);
 
-        if (!$result) {
+        if ($judgeNumber === false) {
             return redirect()->back()->with('error', 'خطا در ثبت داوری');
         }
 
         // بروزرسانی وضعیت آیتم بعد از ۳ داوری تایید شده
         $this->updateItemStatus($request->item_id, $request->type);
 
-        // اگر کاربر رد کرده باشد، آیتم را به کاربر برگشت بده
+        // اگر کاربر رد کرده باشد، آیتم را به کاربر برگشت بده (با شماره داور)
         if ($request->action === 'reject') {
-            $this->returnItemToUser($request->item_id, $request->type, $request->comment);
+            $this->returnItemToUser($request->item_id, $request->type, $request->comment, $judgeNumber);
         }
 
         return redirect()->back()->with('success', 'داوری با موفقیت ثبت شد.');
@@ -427,7 +428,9 @@ class JudgmentController extends Controller
     }
 
     /**
-     * ذخیره داوری در جدول مناسب
+     * ذخیره داوری در جدول مناسب و برگرداندن شماره داور
+     *
+     * @return int|false شماره داور (۱، ۲ یا ۳) یا false در صورت خطا
      */
     private function saveJudgment($request, $user)
     {
@@ -452,46 +455,63 @@ class JudgmentController extends Controller
             $data['score'] = $request->score;
         }
 
+        $judgeNumber = 0;
+
         switch ($request->type) {
             case 'question':
                 $data['question_id'] = $request->item_id;
-                return ScoreQuestion::create($data);
+                $existing = ScoreQuestion::where('question_id', $request->item_id)->count();
+                $judgeNumber = $existing + 1;
+                ScoreQuestion::create($data);
+                break;
 
             case 'discussion':
                 $data['discussion_id'] = $request->item_id;
-                return ScoreDiscussion::create($data);
+                $existing = ScoreDiscussion::where('discussion_id', $request->item_id)->count();
+                $judgeNumber = $existing + 1;
+                ScoreDiscussion::create($data);
+                break;
 
             case 'exercise':
                 $data['exercise_answer_id'] = $request->item_id;
-                return ScoreExercise::create($data);
+                $existing = ScoreExercise::where('exercise_answer_id', $request->item_id)->count();
+                $judgeNumber = $existing + 1;
+                ScoreExercise::create($data);
+                break;
 
             default:
                 return false;
         }
+
+        return $judgeNumber; // شماره داور (۱، ۲ یا ۳)
     }
 
     /**
-     * برگشت آیتم به کاربر (برای اصلاح)
+     * برگشت آیتم به کاربر (برای اصلاح) - فقط در صورت رد شدن
+     * کامنت در فیلد comment1, comment2 یا comment3 بر اساس شماره داور ذخیره می‌شود
      */
-    private function returnItemToUser($itemId, $type, $comment)
+    private function returnItemToUser($itemId, $type, $comment, $judgeNumber)
     {
+        // تعیین نام فیلد کامنت بر اساس شماره داور
+        $field = 'comment' . $judgeNumber; // comment1, comment2, comment3
+
         switch ($type) {
             case 'question':
                 Question::where('id', $itemId)->update([
                     'status' => 0,
-                    'comment' => $comment,
+                    $field => $comment,
                 ]);
                 break;
             case 'discussion':
                 Discussion::where('id', $itemId)->update([
                     'status' => 0,
-                    'comment' => $comment,
+                    $field => $comment,
                 ]);
                 break;
             case 'exercise':
                 ExerciseAnswer::where('id', $itemId)->update([
                     'status' => 'returned',
-                    'comment' => $comment,
+                    $field => $comment,
                 ]);
                 break;
         }
