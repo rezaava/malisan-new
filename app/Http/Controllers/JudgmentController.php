@@ -23,40 +23,58 @@ class JudgmentController extends Controller
     /**
      * صفحه اصلی داوری (برای دانشجویان)
      */
-    public function index()
+    public function index($course_id = null)
     {
         $user = Auth::user();
 
-        // ===== بررسی محدودیت روزانه برای همه دروس =====
+        // ===== بررسی محدودیت روزانه =====
         $dailyLimitReached = false;
+        $warningMessage = null;
 
-        // دریافت دروسی که کاربر در آنها ثبت‌نام کرده و davari=1 دارند
-        $courseIds = CourseUser::where('user_id', $user->id)
-            ->pluck('course_id')
-            ->toArray();
+        if ($course_id) {
+            // فقط محدودیت درس مشخص شده را بررسی کن
+            $setting = Setting::where('course_id', $course_id)->first();
+            $dailyLimit = $setting->daily_judgment_limit ?? 5;
 
-        if (!empty($courseIds)) {
-            $courseIds = Course::whereIn('id', $courseIds)
-                ->where('davari', 1)
-                ->pluck('id')
+            if ($dailyLimit > 0) {
+                $todayCount = $this->getTodayJudgmentsCount($user->id, $course_id);
+                if ($todayCount >= $dailyLimit) {
+                    $dailyLimitReached = true;
+                    $course = Course::find($course_id);
+                    $warningMessage = "سقف داوری‌های مجاز امروز شما برای درس {$course->name} به پایان رسید. برای ادامهٔ داوری فعالیت‌های دوستان‌تان، فردا نیز سری بزنید.";
+                }
+            }
+        } else {
+            // محدودیت همه دروس را بررسی کن (همانند قبل)
+            $courseIds = CourseUser::where('user_id', $user->id)
+                ->pluck('course_id')
                 ->toArray();
 
-            foreach ($courseIds as $courseId) {
-                $setting = Setting::where('course_id', $courseId)->first();
-                $dailyLimit = $setting->daily_judgment_limit ?? 5;
+            if (!empty($courseIds)) {
+                $courseIds = Course::whereIn('id', $courseIds)
+                    ->where('davari', 1)
+                    ->pluck('id')
+                    ->toArray();
 
-                if ($dailyLimit > 0) {
-                    $todayCount = $this->getTodayJudgmentsCount($user->id, $courseId);
-                    if ($todayCount >= $dailyLimit) {
-                        $dailyLimitReached = true;
-                        $course = Course::find($courseId);
+                foreach ($courseIds as $cId) {
+                    $setting = Setting::where('course_id', $cId)->first();
+                    $dailyLimit = $setting->daily_judgment_limit ?? 5;
+
+                    if ($dailyLimit > 0) {
+                        $todayCount = $this->getTodayJudgmentsCount($user->id, $cId);
+                        if ($todayCount >= $dailyLimit) {
+                            $dailyLimitReached = true;
+                            $course = Course::find($cId);
+                            $warningMessage = "سقف داوری‌های مجاز امروز شما برای درس {$course->name} به پایان رسید. برای ادامهٔ داوری فعالیت‌های دوستان‌تان، فردا نیز سری بزنید.";
+                            break;
+                        }
                     }
                 }
             }
         }
 
-        // دریافت آیتم‌ها و تعداد کل
-        $result = $this->getPendingItems($user->id);
+        // دریافت آیتم‌ها (با فیلتر course_id در صورت وجود)
+        $result = $this->getPendingItems($user->id, $course_id);
         $items = $result['items'];
         $totalPending = $result['total'];
 
@@ -73,9 +91,7 @@ class JudgmentController extends Controller
             'my_judgments' => $this->getMyJudgmentsCount($user->id),
         ];
 
-        // ارسال پیام هشدار به ویو (در صورت وجود)
         if ($dailyLimitReached) {
-            $warningMessage = 'سقف داوری‌های مجاز امروز شما به پایان رسید. برای ادامهٔ داوری فعالیت‌های دوستان‌تان، فردا نیز سری بزنید.';
             session()->flash('warning', $warningMessage);
         }
 
@@ -84,35 +100,65 @@ class JudgmentController extends Controller
     /**
      * دریافت آیتم‌های نیازمند داوری (با محدودیت ۴۰ تایی)
      */
-    private function getPendingItems($userId)
+    private function getPendingItems($userId, $courseId = null)
     {
         $items = [];
 
-        // دریافت آی‌دی درس‌هایی که کاربر در آنها ثبت نام کرده و davari=1 دارند
-        $courseIds = CourseUser::where('user_id', $userId)
-            ->pluck('course_id')
-            ->toArray();
-        if (empty($courseIds)) {
-            return ['total' => 0, 'items' => []];
-        }
+        if ($courseId) {
+            // بررسی اینکه کاربر در این درس ثبت‌نام کرده و davari=1 است
+            $course = Course::where('id', $courseId)
+                ->where('davari', 1)
+                ->first();
 
-        // فیلتر کردن دوره‌هایی که davari=1 دارند
-        $courseIds = Course::whereIn('id', $courseIds)
-            ->where('davari', 1)
-            ->pluck('id')
-            ->toArray();
+            if (!$course) {
+                return ['total' => 0, 'items' => []];
+            }
 
-        if (empty($courseIds)) {
-            return ['total' => 0, 'items' => []];
-        }
+            // بررسی عضویت کاربر در این درس
+            $isEnrolled = CourseUser::where('user_id', $userId)
+                ->where('course_id', $courseId)
+                ->exists();
 
-        // دریافت آی‌دی جلسات این درس‌ها
-        $sessionIds = Session::whereIn('course_id', $courseIds)
-            ->pluck('id')
-            ->toArray();
+            if (!$isEnrolled) {
+                return ['total' => 0, 'items' => []];
+            }
 
-        if (empty($sessionIds)) {
-            return ['total' => 0, 'items' => []];
+            // دریافت جلسات این درس
+            $sessionIds = Session::where('course_id', $courseId)
+                ->pluck('id')
+                ->toArray();
+
+            if (empty($sessionIds)) {
+                return ['total' => 0, 'items' => []];
+            }
+
+        } else {
+            // دریافت آی‌دی درس‌هایی که کاربر در آنها ثبت نام کرده و davari=1 دارند
+            $courseIds = CourseUser::where('user_id', $userId)
+                ->pluck('course_id')
+                ->toArray();
+
+            if (empty($courseIds)) {
+                return ['total' => 0, 'items' => []];
+            }
+
+            $courseIds = Course::whereIn('id', $courseIds)
+                ->where('davari', 1)
+                ->pluck('id')
+                ->toArray();
+
+            if (empty($courseIds)) {
+                return ['total' => 0, 'items' => []];
+            }
+
+            // دریافت آی‌دی جلسات این درس‌ها
+            $sessionIds = Session::whereIn('course_id', $courseIds)
+                ->pluck('id')
+                ->toArray();
+
+            if (empty($sessionIds)) {
+                return ['total' => 0, 'items' => []];
+            }
         }
 
         // ==========================================

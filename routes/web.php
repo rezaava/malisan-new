@@ -509,7 +509,7 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
     // مسیرهای داوری - دانشجو
     // ==========================================
     Route::prefix('/judgment')->middleware(['role:student|admin'])->group(function () {
-        Route::get('/', [JudgmentController::class, 'index'])->name('student.judgment.index');
+        Route::get('/{course_id?}', [JudgmentController::class, 'index'])->name('student.judgment.index');
         Route::post('/store', [JudgmentController::class, 'store'])->name('student.judgment.store');
         Route::get('/stats', [JudgmentController::class, 'stats'])->name('student.judgment.stats');
         Route::get('/returned', [JudgmentController::class, 'returnedItems'])->name('student.judgment.returned');

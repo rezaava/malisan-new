@@ -117,63 +117,90 @@
                     @endif
                 </div>
 
-                {{-- JUDGMENT FORM --}}
+                {{-- JUDGMENT FORMS --}}
                 @if($item['score_count'] < 3)
-                    <form method="POST" action="{{ route('student.judgment.store') }}" class="judgment-form" onsubmit="return validateForm(this)">
-                        @csrf
-                        <input type="hidden" name="item_id" value="{{ $item['id'] }}">
-                        <input type="hidden" name="type" value="{{ $item['type'] }}">
+                    <div class="judgment-forms-container">
+                        <div class="row g-3">
+                            {{-- فرم رد (سمت چپ) --}}
+                            <div class="col-md-6">
+                                <div class="form-wrapper">
+                                    <form method="POST" action="{{ route('student.judgment.store') }}" class="judgment-form" onsubmit="return validateReject(this)">
+                                        @csrf
+                                        <input type="hidden" name="item_id" value="{{ $item['id'] }}">
+                                        <input type="hidden" name="type" value="{{ $item['type'] }}">
+                                        <input type="hidden" name="action" value="reject">
 
-                        {{-- مشکلات (چک‌باکس‌ها) --}}
-                        <div class="form-row" style="grid-template-columns:1fr;">
-                            <div class="form-group">
-                                <label>مشکلات محتوا <span class="sub">(در صورت وجود تیک بزنید)</span></label>
-                                <div class="checkbox-group">
-                                    <label class="checkbox-item">
-                                        <input type="checkbox" name="negaresh" value="1">
-                                        <span>❌ ایراد نگارشی</span>
-                                    </label>
-                                    <label class="checkbox-item">
-                                        <input type="checkbox" name="gozine" value="1">
-                                        <span>❌ ایراد گزینه‌ها</span>
-                                    </label>
-                                    <label class="checkbox-item">
-                                        <input type="checkbox" name="dark" value="1">
-                                        <span>❌ ایراد گویایی</span>
-                                    </label>
+                                        <div class="reject-form-wrapper">
+                                            <div class="form-title">
+                                                <i class="fas fa-times-circle"></i> رد محتوا
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label>مشکلات محتوا <span class="sub">(در صورت وجود تیک بزنید)</span></label>
+                                                <div class="checkbox-group">
+                                                    <label class="checkbox-item">
+                                                        <input type="checkbox" name="negaresh" value="1">
+                                                        <span>❌ ایراد نگارشی</span>
+                                                    </label>
+                                                    <label class="checkbox-item">
+                                                        <input type="checkbox" name="gozine" value="1">
+                                                        <span>❌ ایراد گزینه‌ها</span>
+                                                    </label>
+                                                    <label class="checkbox-item">
+                                                        <input type="checkbox" name="dark" value="1">
+                                                        <span>❌ ایراد گویایی</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label>توضیحات <span class="sub">(اجباری برای رد)</span></label>
+                                                <textarea name="comment" placeholder="دلیل رد را بنویسید..."></textarea>
+                                            </div>
+
+                                            <button type="submit" class="btn-judge btn-danger">
+                                                <i class="fas fa-times"></i> رد
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            {{-- فرم تایید (سمت راست) --}}
+                            <div class="col-md-6">
+                                <div class="form-wrapper">
+                                    <form method="POST" action="{{ route('student.judgment.store') }}" class="judgment-form" onsubmit="return validateApprove(this)">
+                                        @csrf
+                                        <input type="hidden" name="item_id" value="{{ $item['id'] }}">
+                                        <input type="hidden" name="type" value="{{ $item['type'] }}">
+                                        <input type="hidden" name="action" value="approve">
+
+                                        <div class="approve-form-wrapper">
+                                            <div class="form-title">
+                                                <i class="fas fa-check-circle"></i> تایید محتوا
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label>نمره <span class="sub">(در صورت تایید)</span></label>
+                                                <select name="score">
+                                                    <option value="">انتخاب کنید...</option>
+                                                    <option value="1">🌟 عالی</option>
+                                                    <option value="2">✅ خوب</option>
+                                                    <option value="3">📊 متوسط</option>
+                                                </select>
+                                            </div>
+
+                                            <button type="submit" class="btn-judge btn-success">
+                                                <i class="fas fa-check"></i> تایید
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
                         </div>
-
-                        {{-- نمره و کامنت --}}
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>نمره <span class="sub">(در صورت تایید)</span></label>
-                                <select name="score">
-                                    <option value="">انتخاب کنید...</option>
-                                    <option value="1">🌟 عالی</option>
-                                    <option value="2">✅ خوب</option>
-                                    <option value="3">📊 متوسط</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>توضیحات <span class="sub">(در صورت رد، اجباری)</span></label>
-                                <textarea name="comment" placeholder="نظر خود را وارد کنید..."></textarea>
-                            </div>
-                        </div>
-
-                        {{-- دکمه‌های اقدام --}}
-                        <div class="action-buttons">
-                            <button type="submit" name="action" value="approve" class="btn-judge btn-success">
-                                <i class="fas fa-check"></i> تایید
-                            </button>
-                            <button type="submit" name="action" value="reject" class="btn-judge btn-danger" onclick="return confirmReject()">
-                                <i class="fas fa-times"></i> رد
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 @else
-                    <div style="margin-top:16px;padding:12px 16px;background:#e8f5e9;border-radius:10px;color:#2e7d32;text-align:center;">
+                    <div class="alert alert-success mt-3 text-center" style="margin-top:16px;padding:12px 16px;background:#e8f5e9;border-radius:10px;color:#2e7d32;text-align:center;">
                         <i class="fas fa-check-circle"></i>
                         این آیتم قبلاً توسط ۳ نفر داوری شده و وضعیت آن تعیین شده است.
                     </div>
@@ -191,47 +218,33 @@
     @endif
 </div>
 
+@endsection
+@section('js')
 <script>
-    function validateForm(form) {
-        const action = form.querySelector('button[type="submit"][clicked="true"]');
-        if (!action) return true;
-        
+    function validateReject(form) {
         const comment = form.querySelector('textarea[name="comment"]');
         const issues = form.querySelectorAll('input[name="negaresh"], input[name="gozine"], input[name="dark"]');
         const hasIssue = Array.from(issues).some(cb => cb.checked);
         
-        // اگر رد است و توضیح ندارد
-        if (action.value === 'reject' && !comment.value.trim()) {
+        if (!comment.value.trim()) {
             alert('برای رد کردن، لطفاً توضیح دهید که مشکل چیست.');
             comment.focus();
             return false;
         }
-        
-        // اگر رد است و هیچ ایرادی انتخاب نشده
-        if (action.value === 'reject' && !hasIssue) {
+        if (!hasIssue) {
             alert('برای رد کردن، لطفاً حداقل یک مشکل را انتخاب کنید.');
             return false;
         }
-        
-        // اگر تایید است و نمره انتخاب نشده
-        if (action.value === 'approve' && !form.querySelector('select[name="score"]').value) {
+        return confirm('آیا مطمئن هستید که می‌خواهید این محتوا را رد کنید؟');
+    }
+
+    function validateApprove(form) {
+        const score = form.querySelector('select[name="score"]');
+        if (!score.value) {
             alert('لطفاً نمره را انتخاب کنید.');
             return false;
         }
-        
         return true;
     }
-    
-    function confirmReject() {
-        return confirm('آیا مطمئن هستید که می‌خواهید این محتوا را رد کنید؟');
-    }
-    
-    // تشخیص اینکه کدام دکمه کلیک شده
-    document.querySelectorAll('.btn-judge').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.btn-judge').forEach(b => b.removeAttribute('clicked'));
-            this.setAttribute('clicked', 'true');
-        });
-    });
 </script>
 @endsection
