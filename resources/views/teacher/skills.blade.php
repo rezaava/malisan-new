@@ -347,7 +347,12 @@
 
                         <span class="info-badge">
                             <i class="fas fa-user-graduate"></i>
-                            مدرس : {{ Auth::user()->name }}
+                            @php
+                                $teacherLabels = ['مدرس', 'تهیه‌کننده', 'تولیدکننده محتوا'];
+                                $type = $cours->teacher_type ?? 0;
+                                $label = $teacherLabels[$type] ?? 'مدرس';
+                            @endphp
+                            {{ $label }} : {{ Auth::user()->name }}
                         </span>
                         <span class="info-badge">
                             <i class="fas fa-clock"></i>
@@ -473,6 +478,7 @@
                         <label for="desc">مختصری درباره مهارت (اختیاری)</label>
                         <input type="text" id="desc" name="desc" class="form-control">
                     </div>
+
                     <div class="row">
                         <div class="form-group col-md-6">
                             <label for="length">طول دوره (روز)</label>
@@ -483,10 +489,21 @@
                             <input type="tel" id="sessions_length" name="sessions_length" class="form-control">
                         </div>
                     </div>
+
                     <div class="form-group">
                         <label for="manbe">منبع (اختیاری)</label>
                         <input type="text" id="manbe" name="manbe" class="form-control"
                             placeholder="منبع محتوای تهیه‌شده (سایت، صفحه، کتاب یا فرد) را ذکر کنید.">
+                    </div>
+
+                    {{-- فیلد جدید: نوع مدرس --}}
+                    <div class="form-group">
+                        <label for="teacher_type">نوع مدرس <span class="required">*</span></label>
+                        <select id="teacher_type" name="teacher_type" class="form-control" required>
+                            <option value="0">مدرس</option>
+                            <option value="1">تهیه‌کننده</option>
+                            <option value="2">تولیدکننده محتوا</option>
+                        </select>
                     </div>
                 </div>
 

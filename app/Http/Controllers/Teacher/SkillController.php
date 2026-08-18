@@ -748,6 +748,7 @@ class SkillController extends Controller
             'length' => 'nullable',
             'sessions_length' => 'nullable',
             'manbe' => 'nullable',
+            'teacher_type' => 'required|integer|in:0,1,2', // نوع مدرس
         ]);
 
         if ($validator->fails()) {
@@ -774,6 +775,7 @@ class SkillController extends Controller
             $course->code = $code;
             $course->manbe = $request->manbe;
             $course->header = rand(1, 29);
+            $course->teacher_type = $request->teacher_type;
             $course->save();
 
             $this->createCourseAssociations($course);
