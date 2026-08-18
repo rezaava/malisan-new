@@ -177,7 +177,7 @@ class StudentSiteController extends Controller
     {
         $user = Auth::user();
         
-        $courses = $user->courses()->where('courses.archieve', 0)->whereIn('courses.type', ['0','2'])->get();
+        $courses = $user->courses()->where('courses.archieve', 0)->where('is_ended', 0)->whereIn('courses.type', ['0','2'])->get();
         
         return view('student.courses', compact('courses'));
     }
@@ -765,13 +765,6 @@ class StudentSiteController extends Controller
             'pish' => $setting->pishraft_nomre,
             'talash' => $setting->talash_nomre,
         ];
-
-// لاگ تمام متغیرهای موجود در تابع
-$allVars = get_defined_vars();
-
-// تبدیل به JSON خوانا
-$logJson = json_encode($allVars, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-Log::info("لاگ کامل متغیرهای تابع progress:\n" . $logJson);
 
         return view('student.progress', compact(
             'course',

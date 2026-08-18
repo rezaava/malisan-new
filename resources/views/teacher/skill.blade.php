@@ -440,7 +440,7 @@
                 <div class="form-group">
                     <label>
                         <i class="fas fa-tasks" style="color:#4caf50;"></i>
-                        طرح درس
+                        طرح درس (اختیاری)
                     </label>
                     <textarea class="jodit-editor @error('lesson_plan') is-invalid @enderror" name="lesson_plan"
                         id="modalLessonPlan"

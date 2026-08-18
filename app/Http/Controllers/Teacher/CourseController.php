@@ -15,6 +15,7 @@ use App\Models\Score;
 use App\Models\Scoring;
 use App\Models\Session;
 use App\Models\Setting;
+use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -1085,30 +1086,34 @@ class CourseController extends Controller
         }
     }
 
+
     public function setting($id)
     {
         $course = Course::findOrFail($id);
 
-        $setting = Setting::firstOrCreate(
+        // دریافت یا ایجاد تنظیمات مربوط به این درس
+        $courseSetting = Setting::firstOrCreate(
             ['course_id' => $course->id],
             [
                 'course_id' => $course->id,
-                'daily_judgment_limit' => 5, // مقدار پیش‌فرض
+                'daily_judgment_limit' => 5,
             ]
         );
-
-        // دریافت بارم‌بندی (Scoring)
+        
         $scoring = Scoring::firstOrCreate(
             ['course_id' => $course->id],
             ['course_id' => $course->id]
         );
 
-        return view('teacher.course-setting', compact('course', 'setting', 'scoring'))->with([
+        $siteSetting = SiteSetting::first();
+
+        return view('teacher.course-setting', compact('course', 'courseSetting', 'siteSetting'))->with([
             'pageTitle' => 'صفحه تنظیمات',
             'pageName' => 'تنظیمات',
             'pageDescription' => 'مدرس گرامی ! صفحه تنظیمات در اختیار شماست',
         ]);
     }
+
     /**
      * ذخیره تنظیمات درس
      */
