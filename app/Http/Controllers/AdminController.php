@@ -35,14 +35,14 @@ class AdminController extends Controller
     {
         $users = User::get();
 
-        return view('admin.show_users', compact('usres', $users));
+        return view('admin.show_users', compact('users'));
     }
     public function adminShowLimitedUsers(Request $request)
     {
         $users = User::where('active', 'false')->get();
 
 
-        return view('admin.show_limited_users', compact('usres', $users));
+        return view('admin.show_limited_users', compact('users'));
     }
 
     //when admin clicks on reset password for user
@@ -102,9 +102,5 @@ class AdminController extends Controller
         $user = User::findOrFail($id);
         $user->active = true;
         return response()->json(['successfull' => true]);
-    }
-    public function coin()
-    {
-        return view('admin.coin');
     }
 }

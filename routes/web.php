@@ -13,6 +13,7 @@ use App\Http\Controllers\JudgmentController;
 use App\Http\Controllers\QuestionReportController;
 use App\Http\Controllers\Student\StudentCourseController;
 use App\Http\Controllers\Student\StudentSkillController;
+use App\Http\Controllers\Admin\AdminCoinController;
 use App\Http\Controllers\StudentSiteController;
 use App\Http\Controllers\Teacher\CourseController;
 use App\Http\Controllers\Teacher\SkillController;
@@ -52,7 +53,9 @@ Route::prefix('/admin')->middleware(['role:admin'])->group(function () {
     Route::get('/', [AdminController::class, 'index'])->name('index_admin');
 
     Route::prefix('/coin')->group(function () {
-        Route::get('/', [AdminController::class, 'coin'])->name('admin.coin');
+        Route::get('/', [AdminCoinController::class, 'coin'])->name('admin.coin');
+        Route::post('/store', [AdminCoinController::class, 'store'])->name('admin.coin.store');
+        Route::post('/{id}', [AdminCoinController::class, 'destroy'])->name('admin.coin.destroy'); 
     });
 
     Route::prefix('/courses')->group(function () {
@@ -69,11 +72,33 @@ Route::prefix('/admin')->middleware(['role:admin'])->group(function () {
     });
 
     Route::prefix('/survey')->group(function () {
-        Route::get('/', [AdminSurveyController::class, 'index'])->name('admin_survey');
-        Route::get('/{id}', [AdminSurveyController::class, 'show'])->name('admin.survey.show');
-        Route::post('/toggle-student', [AdminSurveyController::class, 'toggleStudentSurvey'])->name('admin.toggle-student-survey');
-        Route::post('/toggle-teacher', [AdminSurveyController::class, 'toggleTeacherSurvey'])->name('admin.toggle-teacher-survey');
-        Route::get('/settings', [AdminSurveyController::class, 'getSettings'])->name('admin.get-settings');
+
+        // صفحه دسته بندی ها
+        Route::get('/', [AdminSurveyController::class, 'index'])
+            ->name('admin_survey');
+
+        // صفحه سوالات یک دسته
+        Route::get('/category/{id}', [AdminSurveyController::class, 'category'])
+            ->name('admin.survey.category');
+
+        // جزئیات سوال
+        Route::get('/question/{id}', [AdminSurveyController::class, 'show'])
+            ->name('admin.survey.show');
+
+        // افزودن دسته بندی
+        Route::post('/category/store', [AdminSurveyController::class, 'storeCategory'])
+            ->name('admin.survey.category.store');
+
+        // تنظیمات نظرسنجی دانشجو
+        Route::post('/toggle-student', [AdminSurveyController::class, 'toggleStudentSurvey'])
+            ->name('admin.toggle-student-survey');
+
+        // تنظیمات نظرسنجی استاد
+        Route::post('/toggle-teacher', [AdminSurveyController::class, 'toggleTeacherSurvey'])
+            ->name('admin.toggle-teacher-survey');
+
+        Route::get('/settings', [AdminSurveyController::class, 'getSettings'])
+            ->name('admin.get-settings');
     });
 
     Route::middleware(['auth'])->group(function () {
@@ -401,7 +426,7 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
         Route::get('/', [StudentSiteController::class, 'courses'])->name('courses.st');
         Route::get('/view/{id}', [StudentCourseController::class, 'view'])->name('view.coure.St');
 
-        Route::post('/join-course', [StudentCourseController::class, 'join'])->name('join.course');
+        Route::post('/join-course', [StudentCourseController::class, 'join_course'])->name('join.course');
 
         Route::get('/adjectives/{studentId}', [StudentAdjectiveController::class, 'index']);
         Route::post('/adjectives', [StudentAdjectiveController::class, 'store']);
@@ -425,7 +450,7 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
         Route::get('/', [StudentSkillController::class, 'courses'])->name('skill.st');
         Route::get('/view/{id}', [StudentSkillController::class, 'view'])->name('view.skill.St');
 
-        Route::post('/join-course', [StudentCourseController::class, 'join'])->name('join.skill');
+        Route::post('/join-course', [StudentCourseController::class, 'join_skill'])->name('join.skill');
 
         Route::get('/adjectives/{studentId}', [StudentAdjectiveController::class, 'index']);
         Route::post('/adjectives', [StudentAdjectiveController::class, 'store']);
@@ -508,7 +533,7 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
     // ==========================================
     // مسیرهای داوری - دانشجو
     // ==========================================
-    Route::prefix('/judgment')->middleware(['role:student|admin'])->group(function () {
+    Route::prefix('/judgment')->group(function () {
         Route::get('/{course_id?}', [JudgmentController::class, 'index'])->name('student.judgment.index');
         Route::post('/store', [JudgmentController::class, 'store'])->name('student.judgment.store');
         Route::get('/stats', [JudgmentController::class, 'stats'])->name('student.judgment.stats');

@@ -18,10 +18,7 @@
                 <i class="fas fa-book-open"></i>
             </span>
             <span class="badge-label">نظرسنجی:</span>
-            <span class="badge-value">{{ $course->name ?? 'عنوان درس' }}</span>
-        </div>
-        <div>
-            @include('layout.backbtn')
+            <span class="badge-value">{{ $category->name ?? 'عنوان درس' }}</span>
         </div>
     </div>
 
@@ -56,7 +53,7 @@
 
             <form method="POST" action="{{ route('survey.store') }}" enctype="multipart/form-data">
                 @csrf
-                <input type="hidden" name="cat_id" value="{{ $catId ?? $course->id ?? '' }}">
+                <input type="hidden" name="cat_id" value="{{ $category->id }}">
 
                 <div class="form-group">
                     <label for="question">عنوان سوال <span class="required">*</span></label>

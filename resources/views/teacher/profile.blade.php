@@ -21,12 +21,6 @@
         <div class="profile-header">
             <div class="profile-avatar">
                 <img src="{{ $user->image ? asset($user->image) : asset('files/useravatar.png') }}" alt="پروفایل">
-                <div class="avatar-upload">
-                    <label for="avatar-upload" class="upload-btn">
-                        <i class="fas fa-camera"></i>
-                    </label>
-                    <input type="file" id="avatar-upload" accept="image/*">
-                </div>
             </div>
             <div class="profile-name">
                 <h4>{{ $user->name ?? '' }} {{ $user->family ?? '' }}</h4>
@@ -36,7 +30,7 @@
                     @elseif($user->hasRole('teacher'))
                         مدرس
                     @else
-                        کاربر
+                        ادمین
                     @endif
                 </span>
             </div>
@@ -304,19 +298,6 @@
     document.getElementById('image')?.addEventListener('change', function(e) {
         var fileName = e.target.files[0] ? e.target.files[0].name : 'هیچ فایلی انتخاب نشده است';
         document.getElementById('file-name').textContent = fileName;
-    });
-
-    // نمایش نام فایل آواتار
-    document.getElementById('avatar-upload')?.addEventListener('change', function(e) {
-        var fileName = e.target.files[0] ? e.target.files[0].name : 'هیچ فایلی انتخاب نشده است';
-        document.getElementById('file-name').textContent = fileName;
-        
-        // پیش‌نمایش عکس
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            document.querySelector('.profile-avatar img').src = e.target.result;
-        };
-        reader.readAsDataURL(e.target.files[0]);
     });
 </script>
 @endsection

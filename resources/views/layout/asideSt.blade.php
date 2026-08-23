@@ -11,13 +11,8 @@
         </a>
 
         {{-- درس های من --}}
-        <a href="{{ route('skill.st') }}" class="menu-item {{ request()->routeIs('courses.st') || request()->is('student/courses*') ? 'active-menu' : '' }}">
+        <a href="{{ route('skill.st') }}" class="menu-item {{ request()->routeIs('skill.st') || request()->is('student/skill*') ? 'active-menu' : '' }}">
             <i class="fas fa-book-open"></i> <span>مهارت های من</span>
-        </a>
-
-        {{-- داوری ها --}}
-        <a href="{{ route('student.judgment.index') }}" class="menu-item {{ request()->routeIs('student.judgment.index') || request()->is('student.judgment.stats') || request()->is('student.judgment.returned') ? 'active-menu' : '' }}">
-            <i class="fas fa-pen-alt"></i> <span>داوری</span>
         </a>
 
         <div class="menu-divider"></div>

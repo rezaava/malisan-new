@@ -2572,10 +2572,8 @@ class CourseController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Session update failed: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'خطا در به‌روزرسانی جلسه: ' . $e->getMessage()
-            ], 500);
+            return redirect()->back()->with('success',false,'message','خطا در به‌روزرسانی جلسه: ' . $e->getMessage());
+
         }
     }
 

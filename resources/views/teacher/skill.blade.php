@@ -103,7 +103,9 @@
                 <a href="{{ route('courses.setting', $course->id) }}" class="action-btn settings-btn">
                     <i class="fas fa-cog"></i>
                 </a>
-                @include('layout.backbtn')
+                <a href="{{ route('skill') }}" class="back-action-btn back-skill-btn">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
             </div>
         </div>
 
@@ -165,6 +167,7 @@
                             data-pdf="{{ $session->file ?? '' }}" data-title="{{ addslashes($session->name) }}"
                             data-number="جلسه {{ $session->number }}" data-description="{{ addslashes($session->text ?? '') }}"
                             data-lessonplan="{{ addslashes($session->lesson_plan ?? '') }}"
+                            data-majazi="{{ $session->majazi ?? '' }}"
                             onclick="changeSessionFromData(this)">
                             <span class="session-check"><i class="fas fa-check-circle"></i></span>
                             <span class="session-title">{{ $session->name }}</span>
@@ -220,6 +223,21 @@
                                     @endif
                                 </span>
                             </div>
+                            <a href="#"
+                                id="majaziSessionBtn"
+                                class="info-badge majazi-badge"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style="display: {{ $sessions->isNotEmpty() && !empty($sessions->first()->majazi) ? 'inline-flex' : 'none' }}; text-decoration:none; cursor:pointer;">
+
+                                <span class="badge-icon">
+                                    <i class="fas fa-video"></i>
+                                </span>
+
+                                <span class="badge-value">
+                                    کلاس مجازی
+                                </span>
+                            </a>
                         </div>
                     </div>
                     <div class="session-action-buttons">
@@ -487,7 +505,7 @@
                                 @enderror
                             </div>
                             <div class="form-group">
-                                <label for="modalMajazi">لینک فیلم ضبط شده کلاس (اختیاری)</label>
+                                <label for="modalMajazi">لینک فیلم ضبط شده کلاس مجازی (اختیاری)</label>
                                 <input type="text" class="form-control @error('majazi') is-invalid @enderror" name="majazi"
                                     id="modalMajazi" value="{{ old('majazi') }}" placeholder="https://example.com">
                                 @error('majazi')
@@ -591,6 +609,7 @@
         let currentSessionTitle = '{{ addslashes($sessions->first()->name ?? "") }}';
         let currentSessionNumber = 'جلسه {{ $sessions->first()->number ?? "" }}';
         let currentLessonPlan = '{{ addslashes($sessions->first()->lesson_plan ?? "") }}';
+        let currentMajaziUrl = '{{ $sessions->first()->majazi ?? "" }}';
         let joditEditor = null;
         let joditLessonPlan = null;
         let modalMode = 'create';
@@ -817,7 +836,7 @@
         // ==========================================
         // تابع اصلی برای تغییر جلسه
         // ==========================================
-        function changeSession(element, sessionId, pdfUrl, title, number, description, lessonPlan) {
+        function changeSession(element, sessionId, pdfUrl, title, number, description, lessonPlan, majaziUrl) {
             if (!element) return;
 
             document.querySelectorAll('.session-item').forEach(item => {
@@ -830,6 +849,19 @@
             currentSessionTitle = title;
             currentSessionNumber = number;
             currentLessonPlan = lessonPlan || '';
+            currentMajaziUrl = majaziUrl || '';
+
+            const majaziSessionBtn = document.getElementById('majaziSessionBtn');
+
+            if (majaziSessionBtn) {
+                if (majaziUrl && majaziUrl.trim() !== '') {
+                    majaziSessionBtn.href = majaziUrl;
+                    majaziSessionBtn.style.display = 'inline-flex';
+                } else {
+                    majaziSessionBtn.href = '#';
+                    majaziSessionBtn.style.display = 'none';
+                }
+            }
 
             const sessionNumberDisplay = document.getElementById('sessionNumberDisplay');
             if (sessionNumberDisplay) {
@@ -920,8 +952,18 @@
             const number = element.dataset.number;
             const description = element.dataset.description;
             const lessonPlan = element.dataset.lessonplan || '';
+            const majaziUrl = element.dataset.majazi || '';
 
-            changeSession(element, sessionId, pdfUrl, title, number, description, lessonPlan);
+            changeSession(
+                element,
+                sessionId,
+                pdfUrl,
+                title,
+                number,
+                description,
+                lessonPlan,
+                majaziUrl
+            );
         }
 
         // ==========================================

@@ -224,7 +224,152 @@ class StudentCourseController extends Controller
                 ]);
     }
 
-    public function join(Request $request)
+    public function join_skill(Request $request)
+    {
+        // اعتبارسنجی
+        $validator = Validator::make($request->all(), [
+            'code' => 'required|string|max:10',
+        ], [
+            'code.required' => 'لطفاً کد را وارد کنید',
+            'code.max' => 'کد نباید بیشتر از ۱۰ کاراکتر باشد',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            $user = Auth::user();
+            $studentRole = Role::where('name', 'student')->first();
+
+            // پیدا کردن دوره با کد
+            $course = Course::where('code', $request->code)->first();
+
+            if (!$course) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'کد وارد شده نامعتبر است'
+                ], 404);
+            }
+
+            // بررسی نوع دوره بر اساس پارامتر type
+            $requestType = $request->type ?? 'lesson';
+
+            if (!$course->isSkill()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'این کد مربوط به مهارت نیست'
+                ], 404);
+            }
+
+            $courseTypeName = $course->isSkill() ? 'مهارت' : 'درس';
+
+            // بررسی آرشیو بودن دوره
+            if ($course->archieve == 1) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "این {$courseTypeName} آرشیو شده و امکان عضویت در آن وجود ندارد"
+                ], 403);
+            }
+
+            // بررسی تکراری بودن عضویت
+            $existingMembership = $user->courses()->where('course_id', $course->id)->first();
+            if ($existingMembership) {
+                if ($existingMembership->pivot->status == 2) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "درخواست شما برای {$courseTypeName} قبلاً ثبت شده و در انتظار تأیید است"
+                    ], 409);
+                }
+                return response()->json([
+                    'success' => false,
+                    'message' => "شما قبلاً در این {$courseTypeName} عضو هستید"
+                ], 409);
+            }
+
+            // تعیین وضعیت بر اساس خصوصی بودن دوره
+            $status = ($course->private == 1) ? 2 : 1; // 2 = pending, 1 = approved
+
+            $courseUser = new CourseUser();
+            $courseUser->course_id = $course->id;
+            $courseUser->user_id = $user->id;
+            $courseUser->role_id = $studentRole->id;
+            $courseUser->course_type = $course->type; 
+            $courseUser->status = $status;
+            $courseUser->save();
+
+            // اگر دوره عمومی است، Scoring و Setting نیز ایجاد می‌شود
+            if ($status == 1) {
+                // ایجاد Scoring برای دانشجو
+                Scoring::create([
+                    'course_id' => $course->id,
+                    'user_id' => $user->id,
+                    'q_1' => 0,
+                    'q_2' => 0,
+                    'q_3' => 0,
+                    'q_4' => 0,
+                    'd_1' => 0,
+                    'd_2' => 0,
+                    'd_3' => 0,
+                    'd_4' => 0,
+                    'e_1' => 0,
+                    'e_2' => 0,
+                    'e_3' => 0,
+                    'e_4' => 0,
+                    's_1' => 0,
+                    's_2' => 0,
+                    's_3' => 0,
+                    's_4' => 0,
+                ]);
+
+                Setting::firstOrCreate(
+                    ['course_id' => $course->id],
+                    ['course_id' => $course->id]
+                );
+            }
+
+            DB::commit();
+
+            // پاسخ بر اساس وضعیت
+            if ($status == 2) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "درخواست شما برای {$courseTypeName} به استاد ارسال شد. لطفاً تا زمان تأیید ایشان صبر کنید.",
+                    'course_name' => $course->name,
+                    'course_type' => $courseTypeName,
+                    'status' => 'pending'
+                ]);
+            }
+
+            // برای وضعیت approved
+            $redirectRoute = $course->isSkill()
+                ? route('view.skill.St', $course->id)
+                : route('view.coure.St', $course->id);
+
+            return response()->json([
+                'success' => true,
+                'message' => "عضویت در {$courseTypeName} با موفقیت انجام شد",
+                'course_name' => $course->name,
+                'course_type' => $courseTypeName,
+                'status' => 'approved',
+                'redirect' => $redirectRoute
+            ]);
+
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            \Log::error('Join course failed: ' . $exception->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'خطایی در سرور رخ داده است: ' . $exception->getMessage()
+            ], 500);
+        }
+    }
+
+    public function join_course(Request $request)
     {
         // اعتبارسنجی
         $validator = Validator::make($request->all(), [
@@ -260,14 +405,7 @@ class StudentCourseController extends Controller
             // بررسی نوع دوره بر اساس پارامتر type
             $requestType = $request->type ?? 'lesson';
 
-            if ($requestType === 'skill' && !$course->isSkill()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'این کد مربوط به مهارت نیست'
-                ], 404);
-            }
-
-            if ($requestType === 'lesson' && !$course->isLesson()) {
+            if ($course->isLesson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'این کد مربوط به درس نیست'

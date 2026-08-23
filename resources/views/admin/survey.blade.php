@@ -579,52 +579,103 @@ toastr.options = {
  * تغییر وضعیت نظرسنجی با AJAX (فعال/غیرفعال)
  */
 function toggleSurvey(type, element) {
-    const spinnerId = type === 'student' ? 'studentSpinner' : 'teacherSpinner';
-    const badgeId = type === 'student' ? 'studentStatusBadge' : 'teacherStatusBadge';
-    
+
+    const spinnerId = type === 'student'
+        ? 'studentSpinner'
+        : 'teacherSpinner';
+
+    const badgeId = type === 'student'
+        ? 'studentStatusBadge'
+        : 'teacherStatusBadge';
+
     const spinner = document.getElementById(spinnerId);
     const badge = document.getElementById(badgeId);
-    
+
+    // وضعیت جدیدی که کاربر با کلیک انتخاب کرده
+    const requestedStatus = element.checked;
+
     spinner.style.display = 'inline-block';
     element.disabled = true;
 
-    const url = type === 'student' 
-        ? '{{ route("admin.toggle-student-survey") }}' 
+    const url = type === 'student'
+        ? '{{ route("admin.toggle-student-survey") }}'
         : '{{ route("admin.toggle-teacher-survey") }}';
 
     fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            'X-CSRF-TOKEN': document
+                .querySelector('meta[name="csrf-token"]')
+                .getAttribute('content'),
+            'Accept': 'application/json'
         },
         body: JSON.stringify({})
     })
     .then(response => response.json())
     .then(data => {
+
         spinner.style.display = 'none';
         element.disabled = false;
 
         if (data.success) {
-            element.checked = data.status;
-            if (data.status) {
-                badge.className = 'status-badge active';
+
+            // تبدیل دقیق پاسخ Laravel
+            const newStatus = data.status === true;
+
+            /*
+             * اعمال وضعیت جدید
+             */
+            element.checked = newStatus;
+
+            /*
+             * یک بار دیگر بعد از اتمام event
+             * وضعیت را روی input اعمال می‌کنیم.
+             */
+            setTimeout(function () {
+                element.checked = newStatus;
+            }, 0);
+
+            /*
+             * تغییر متن وضعیت
+             */
+            if (newStatus) {
+
+                badge.classList.remove('inactive');
+                badge.classList.add('active');
                 badge.textContent = 'فعال';
+
             } else {
-                badge.className = 'status-badge inactive';
+
+                badge.classList.remove('active');
+                badge.classList.add('inactive');
                 badge.textContent = 'غیرفعال';
+
             }
+
             toastr.success(data.message);
+
         } else {
-            element.checked = !element.checked;
-            toastr.error(data.message || 'خطا در تغییر وضعیت');
+
+            // اگر Backend خطا داد، برگرد به وضعیت قبل
+            element.checked = !requestedStatus;
+
+            toastr.error(
+                data.message || 'خطا در تغییر وضعیت'
+            );
         }
+
     })
     .catch(error => {
+
         spinner.style.display = 'none';
         element.disabled = false;
-        element.checked = !element.checked;
+
+        // اگر درخواست AJAX شکست خورد
+        element.checked = !requestedStatus;
+
         console.error('Error:', error);
+
         toastr.error('خطا در ارتباط با سرور');
     });
 }

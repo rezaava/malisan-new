@@ -19,48 +19,92 @@ class AdminSurveyController extends Controller
      * اگر دسته‌ای انتخاب شده باشد، نظرسنجی‌های آن دسته را نشان می‌دهد
      * در غیر این صورت، لیست دسته‌بندی‌ها را نمایش می‌دهد
      */
-    public function index(Request $request)
+    public function index()
     {
-        // دریافت تنظیمات سایت
         $settings = SiteSetting::getSettings();
 
-        // دسته‌بندی انتخاب شده
-        $categoryId = $request->input('category');
+        $categories = Category::withCount('surveys')
+            ->orderBy('name')
+            ->get();
 
-        if ($categoryId) {
-            // نمایش نظرسنجی‌های یک دسته خاص
-            $surveys = Survey::with('options')
-                ->where('cat_id', $categoryId)
-                ->orderBy('created_at', 'desc')
-                ->get();
+        $totalSurveys = Survey::count();
 
-            $selectedCategory = Category::find($categoryId);
-            $categories = Category::withCount('surveys')->get(); // برای منوی بازگشت
+        $answeredSurveys = OptionUser::distinct('survey_id')
+            ->count('survey_id');
 
-            // آمار مخصوص این دسته
-            $totalSurveys = $surveys->count();
-            $answeredSurveys = OptionUser::whereIn('survey_id', $surveys->pluck('id'))
-                ->distinct('survey_id')
-                ->count();
+        return view('admin.survey.categories', compact(
+            'categories',
+            'settings',
+            'totalSurveys',
+            'answeredSurveys'
+        ));
+    }
 
-            return view('admin.survey', compact(
-                'surveys', 'settings', 'categories', 'selectedCategory',
-                'totalSurveys', 'answeredSurveys', 'categoryId'
-            ));
-        } else {
-            // نمایش لیست دسته‌بندی‌ها
-            $categories = Category::withCount('surveys')->get();
-            $surveys = collect(); // خالی
+    public function storeCategory(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ], [
+            'name.required' => 'نام دسته‌بندی الزامی است.',
+            'name.string' => 'نام دسته‌بندی باید متنی باشد.',
+            'name.max' => 'نام دسته‌بندی نمی‌تواند بیشتر از 255 کاراکتر باشد.',
+        ]);
 
-            // آمار کلی (همه نظرسنجی‌ها)
-            $totalSurveys = Survey::count();
-            $answeredSurveys = OptionUser::distinct('survey_id')->count();
+        try {
 
-            return view('admin.survey', compact(
-                'categories', 'surveys', 'settings',
-                'totalSurveys', 'answeredSurveys', 'categoryId'
-            ));
+        $category = new Category();
+        $category->name = $request->name;
+        $category->save();
+            return response()->json([
+                'success' => true,
+                'message' => 'دسته‌بندی با موفقیت اضافه شد.',
+                'category' => [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'surveys_count' => 0,
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در ایجاد دسته‌بندی: ' . $e->getMessage(),
+            ], 500);
         }
+    }
+    public function category($id)
+    {
+        $settings = SiteSetting::getSettings();
+
+        $category = Category::findOrFail($id);
+
+        $surveys = Survey::with('options')
+            ->where('cat_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $categories = Category::withCount('surveys')
+            ->orderBy('name')
+            ->get();
+
+        $totalSurveys = $surveys->count();
+
+        $answeredSurveys = OptionUser::whereIn(
+            'survey_id',
+            $surveys->pluck('id')
+        )
+            ->distinct('survey_id')
+            ->count('survey_id');
+
+        return view('admin.survey.questions', compact(
+            'category',
+            'surveys',
+            'categories',
+            'settings',
+            'totalSurveys',
+            'answeredSurveys'
+        ));
     }
     /**
      * دریافت جزئیات یک نظرسنجی برای نمایش در مودال (AJAX)
@@ -68,12 +112,17 @@ class AdminSurveyController extends Controller
     public function show($id)
     {
         $survey = Survey::with(['options.optionUsers'])->findOrFail($id);
-        
+
         $totalVotes = $survey->optionUsers->count();
-        
-        $optionsData = $survey->options->map(function($option) use ($totalVotes) {
+
+        $optionsData = $survey->options->map(function ($option) use ($totalVotes) {
+
             $count = $option->optionUsers->count();
-            $percentage = $totalVotes > 0 ? round(($count / $totalVotes) * 100, 1) : 0;
+
+            $percentage = $totalVotes > 0
+                ? round(($count / $totalVotes) * 100, 1)
+                : 0;
+
             return [
                 'id' => $option->id,
                 'text' => $option->text,
@@ -81,7 +130,7 @@ class AdminSurveyController extends Controller
                 'percentage' => $percentage,
             ];
         });
-        
+
         return response()->json([
             'success' => true,
             'survey' => $survey,

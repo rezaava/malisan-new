@@ -25,6 +25,7 @@ class JudgmentController extends Controller
      */
     public function index($course_id = null)
     {
+        return 'a';
         $user = Auth::user();
 
         // ===== بررسی محدودیت روزانه =====

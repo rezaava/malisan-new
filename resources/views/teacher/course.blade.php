@@ -103,7 +103,9 @@
                 <a href="{{ route('courses.setting', $course->id) }}" class="action-btn settings-btn">
                     <i class="fas fa-cog"></i>
                 </a>
-                @include('layout.backbtn')
+                <a href="{{ route('courses') }}" class="back-action-btn back-btn">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
             </div>
         </div>
 
@@ -165,6 +167,7 @@
                             data-pdf="{{ $session->file ?? '' }}" data-title="{{ addslashes($session->name) }}"
                             data-number="جلسه {{ $session->number }}" data-description="{{ addslashes($session->text ?? '') }}"
                             data-lessonplan="{{ addslashes($session->lesson_plan ?? '') }}"
+                            data-majazi="{{ $session->majazi ?? '' }}"
                             onclick="changeSessionFromData(this)">
                             <span class="session-check"><i class="fas fa-check-circle"></i></span>
                             <span class="session-title">{{ $session->name }}</span>
@@ -220,6 +223,21 @@
                                     @endif
                                 </span>
                             </div>
+                            <a href="#"
+                                id="majaziSessionBtn"
+                                class="info-badge majazi-badge"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style="display: {{ $sessions->isNotEmpty() && !empty($sessions->first()->majazi) ? 'inline-flex' : 'none' }}; text-decoration:none; cursor:pointer;">
+
+                                <span class="badge-icon">
+                                    <i class="fas fa-video"></i>
+                                </span>
+
+                                <span class="badge-value">
+                                    کلاس مجازی
+                                </span>
+                            </a>
                         </div>
                     </div>
                     <div class="session-action-buttons">
@@ -269,17 +287,33 @@
                 </div>
                 <div class="session-pdf-container">
                     <div class="pdf-toolbar">
-                        <a href="#" id="pdfOpenBtn" class="pdf-open-btn" target="_blank">
+                        <a
+                            href="#"
+                            id="pdfOpenBtn"
+                            class="pdf-open-btn"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style="{{ $sessions->isNotEmpty() && $sessions->first()->file ? 'display:inline-flex;' : 'display:none;' }}"
+                        >
                             <i class="fas fa-file-pdf"></i>
                             باز کردن PDF در صفحه جدید
                         </a>
                     </div>
                     <div class="pdf-viewer">
                         @if($sessions->isNotEmpty() && $sessions->first()->file)
-                            <object id="pdfViewer" data="/files/session{{ $sessions->first()->file }}" type="application/pdf"
-                                width="100%" height="550px">
-                                <object width="100%" height="550"
-                                    data="https://docs.google.com/gview?embedded=true&url={{ $sessions->first()->file }}"></object>
+                            <object
+                                id="pdfViewer"
+                                data="/files/session{{ $sessions->first()->file }}"
+                                type="application/pdf"
+                                width="100%"
+                                height="550px">
+
+                                <object
+                                    width="100%"
+                                    height="550"
+                                    data="/files/session{{ $sessions->first()->file }}">
+                                </object>
+
                             </object>
                         @else
                             <div class="text-center p-5">
@@ -487,7 +521,7 @@
                                 @enderror
                             </div>
                             <div class="form-group">
-                                <label for="modalMajazi">لینک فیلم ضبط شده کلاس (اختیاری)</label>
+                                <label for="modalMajazi">لینک فیلم ضبط شده کلاس مجازی (اختیاری)</label>
                                 <input type="text" class="form-control @error('majazi') is-invalid @enderror" name="majazi"
                                     id="modalMajazi" value="{{ old('majazi') }}" placeholder="https://example.com">
                                 @error('majazi')
@@ -590,6 +624,7 @@
         let currentPdfUrl = '{{ $sessions->first()->file ?? "" }}';
         let currentSessionTitle = '{{ addslashes($sessions->first()->name ?? "") }}';
         let currentSessionNumber = 'جلسه {{ $sessions->first()->number ?? "" }}';
+        let currentMajaziUrl = '{{ $sessions->first()->majazi ?? "" }}';
         let currentLessonPlan = '{{ addslashes($sessions->first()->lesson_plan ?? "") }}';
         let joditEditor = null;
         let joditLessonPlan = null;
@@ -817,98 +852,258 @@
         // ==========================================
         // تابع اصلی برای تغییر جلسه
         // ==========================================
-        function changeSession(element, sessionId, pdfUrl, title, number, description, lessonPlan) {
-            if (!element) return;
+    function changeSession(element, sessionId, pdfUrl, title, number, description, lessonPlan, majaziUrl) {
+        if (!element) return;
 
-            document.querySelectorAll('.session-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            element.classList.add('active');
+        // حذف active از همه جلسات
+        document.querySelectorAll('.session-item').forEach(item => {
+            item.classList.remove('active');
+        });
 
-            currentSessionId = sessionId;
-            currentPdfUrl = pdfUrl;
-            currentSessionTitle = title;
-            currentSessionNumber = number;
-            currentLessonPlan = lessonPlan || '';
+        // فعال کردن جلسه انتخاب شده
+        element.classList.add('active');
 
-            const sessionNumberDisplay = document.getElementById('sessionNumberDisplay');
-            if (sessionNumberDisplay) {
-                const numberMatch = number.match(/\d+/);
-                sessionNumberDisplay.textContent = numberMatch ? numberMatch[0] : '-';
+        // ذخیره اطلاعات جلسه فعلی
+        currentSessionId = sessionId;
+        currentPdfUrl = pdfUrl;
+        currentSessionTitle = title;
+        currentSessionNumber = number;
+        currentLessonPlan = lessonPlan || '';
+        currentMajaziUrl = majaziUrl || '';
+
+        const majaziSessionBtn = document.getElementById('majaziSessionBtn');
+
+        if (majaziSessionBtn) {
+            if (majaziUrl && majaziUrl.trim() !== '') {
+                majaziSessionBtn.href = majaziUrl;
+                majaziSessionBtn.style.display = 'inline-flex';
+            } else {
+                majaziSessionBtn.href = '#';
+                majaziSessionBtn.style.display = 'none';
             }
+        }
 
-            // ===== به‌روزرسانی موضوع جلسه =====
-            const sessionNameDisplay = document.getElementById('sessionNameDisplay');
-            if (sessionNameDisplay) {
-                sessionNameDisplay.textContent = title || 'هیچ جلسه‌ای انتخاب نشده است';
-            }
+        // ==========================================
+        // شماره جلسه
+        // ==========================================
+        const sessionNumberDisplay = document.getElementById('sessionNumberDisplay');
 
-            // ===== به‌روزرسانی طرح درس =====
-            const lessonPlanDisplay = document.getElementById('lessonPlanDisplay');
-            const sessionLessonPlan = document.getElementById('sessionLessonPlan');
+        if (sessionNumberDisplay) {
+            const numberMatch = number.match(/\d+/);
+            sessionNumberDisplay.textContent = numberMatch
+                ? numberMatch[0]
+                : '-';
+        }
 
-            if (lessonPlan && lessonPlan.trim() !== '') {
+        // ==========================================
+        // عنوان جلسه
+        // ==========================================
+        const sessionNameDisplay = document.getElementById('sessionNameDisplay');
+
+        if (sessionNameDisplay) {
+            sessionNameDisplay.textContent =
+                title || 'هیچ جلسه‌ای انتخاب نشده است';
+        }
+
+        // ==========================================
+        // طرح درس
+        // ==========================================
+        const lessonPlanDisplay =
+            document.getElementById('lessonPlanDisplay');
+
+        const sessionLessonPlan =
+            document.getElementById('sessionLessonPlan');
+
+        const hasLessonPlan =
+            lessonPlan &&
+            lessonPlan.trim() !== '' &&
+            lessonPlan.trim() !== 'null';
+
+        if (lessonPlanDisplay) {
+            if (hasLessonPlan) {
                 lessonPlanDisplay.style.display = 'block';
+
                 if (sessionLessonPlan) {
                     sessionLessonPlan.innerHTML = lessonPlan;
                 }
             } else {
                 lessonPlanDisplay.style.display = 'none';
-            }
 
-            // ===== به‌روزرسانی محتوای درس =====
-            const sessionDescription = document.getElementById('sessionDescription');
-            if (sessionDescription) {
-                if (description && description.trim() !== '') {
-                    sessionDescription.innerHTML = description;
-                } else {
-                    sessionDescription.innerHTML = '<p class="text-muted">هیچ توضیحی برای این جلسه ثبت نشده است</p>';
+                if (sessionLessonPlan) {
+                    sessionLessonPlan.innerHTML = '';
                 }
-            }
-
-            // ===== به‌روزرسانی PDF =====
-            const pdfViewer = document.getElementById('pdfViewer');
-            if (pdfViewer) {
-                if (pdfUrl) {
-                    const parent = pdfViewer.parentNode;
-                    const newObject = document.createElement('object');
-                    newObject.id = 'pdfViewer';
-                    newObject.setAttribute('data', pdfUrl);
-                    newObject.setAttribute('type', 'application/pdf');
-                    newObject.setAttribute('width', '100%');
-                    newObject.setAttribute('height', '550px');
-                    newObject.innerHTML = `<object width="100%" height="550" data="${pdfUrl}"></object>`;
-                    parent.replaceChild(newObject, pdfViewer);
-                } else {
-                    pdfViewer.innerHTML = `
-                                            <div class="text-center p-5">
-                                                <i class="fas fa-file-pdf fa-3x text-muted mb-3"></i>
-                                                <p class="text-muted">هیچ فایلی برای این جلسه آپلود نشده است</p>
-                                            </div>
-                                        `;
-                }
-            }
-
-            const pdfOpenBtn = document.getElementById('pdfOpenBtn');
-            if (pdfOpenBtn) {
-                if (pdfUrl) {
-                    pdfOpenBtn.setAttribute('href', pdfUrl);
-                    pdfOpenBtn.style.display = 'inline-flex';
-                } else {
-                    pdfOpenBtn.style.display = 'none';
-                }
-            }
-
-            const questionTeacherBtn = document.getElementById('questionTeacherBtn');
-            if (questionTeacherBtn) {
-                questionTeacherBtn.setAttribute('href', `/teacher/questions/create/${sessionId}`);
-            }
-
-            const homeworkTeacherBtn = document.getElementById('homeworkTeacherBtn');
-            if (homeworkTeacherBtn) {
-                homeworkTeacherBtn.setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
             }
         }
+
+        // ==========================================
+        // محتوای درس
+        // ==========================================
+        const sessionDescription =
+            document.getElementById('sessionDescription');
+
+        if (sessionDescription) {
+            const hasDescription =
+                description &&
+                description.trim() !== '' &&
+                description.trim() !== 'null';
+
+            if (hasDescription) {
+                sessionDescription.innerHTML = description;
+            } else {
+                sessionDescription.innerHTML =
+                    '<p class="text-muted">هیچ توضیحی برای این جلسه ثبت نشده است</p>';
+            }
+        }
+
+        // ==========================================
+        // ساخت URL واقعی PDF
+        // ==========================================
+        let fullPdfUrl = '';
+
+        if (pdfUrl) {
+
+            // اگر URL کامل باشد
+            if (
+                pdfUrl.startsWith('http://') ||
+                pdfUrl.startsWith('https://')
+            ) {
+                fullPdfUrl = pdfUrl;
+            }
+
+            // اگر مسیر فایل نسبی باشد
+            else {
+                fullPdfUrl = '/files/session' + pdfUrl;
+            }
+        }
+
+        // ==========================================
+        // تغییر PDF Viewer
+        // ==========================================
+        const pdfViewer =
+            document.getElementById('pdfViewer');
+
+        if (pdfViewer) {
+
+            if (fullPdfUrl) {
+
+                const parent = pdfViewer.parentNode;
+
+                const newObject =
+                    document.createElement('object');
+
+                newObject.id = 'pdfViewer';
+
+                newObject.setAttribute(
+                    'data',
+                    fullPdfUrl
+                );
+
+                newObject.setAttribute(
+                    'type',
+                    'application/pdf'
+                );
+
+                newObject.setAttribute(
+                    'width',
+                    '100%'
+                );
+
+                newObject.setAttribute(
+                    'height',
+                    '550px'
+                );
+
+                // fallback برای مرورگرهایی که PDF را مستقیم نمایش نمی‌دهند
+                newObject.innerHTML = `
+                    <object
+                        width="100%"
+                        height="550"
+                        data="${fullPdfUrl}">
+                    </object>
+                `;
+
+                parent.replaceChild(
+                    newObject,
+                    pdfViewer
+                );
+
+            } else {
+
+                pdfViewer.outerHTML = `
+                    <div
+                        id="pdfViewer"
+                        class="text-center p-5">
+
+                        <i class="fas fa-file-pdf fa-3x text-muted mb-3"></i>
+
+                        <p class="text-muted">
+                            هیچ فایلی برای این جلسه آپلود نشده است
+                        </p>
+
+                    </div>
+                `;
+            }
+        }
+
+        // ==========================================
+        // دکمه باز کردن PDF
+        // ==========================================
+        const pdfOpenBtn =
+            document.getElementById('pdfOpenBtn');
+
+        if (pdfOpenBtn) {
+
+            if (fullPdfUrl) {
+
+                pdfOpenBtn.setAttribute(
+                    'href',
+                    fullPdfUrl
+                );
+
+                pdfOpenBtn.style.display =
+                    'inline-flex';
+
+            } else {
+
+                pdfOpenBtn.removeAttribute('href');
+
+                pdfOpenBtn.style.display =
+                    'none';
+            }
+        }
+
+        // ==========================================
+        // دکمه ثبت سوال
+        // ==========================================
+        const questionTeacherBtn =
+            document.getElementById(
+                'questionTeacherBtn'
+            );
+
+        if (questionTeacherBtn) {
+
+            questionTeacherBtn.setAttribute(
+                'href',
+                `/teacher/questions/create/${sessionId}`
+            );
+        }
+
+        // ==========================================
+        // دکمه مدیریت تکالیف
+        // ==========================================
+        const homeworkTeacherBtn =
+            document.getElementById(
+                'homeworkTeacherBtn'
+            );
+
+        if (homeworkTeacherBtn) {
+
+            homeworkTeacherBtn.setAttribute(
+                'href',
+                `/teacher/courses/exercises/show/${sessionId}`
+            );
+        }
+    }
 
         // ==========================================
         // تابع واسط برای خواندن از data attributes
@@ -920,10 +1115,19 @@
             const number = element.dataset.number;
             const description = element.dataset.description;
             const lessonPlan = element.dataset.lessonplan || '';
+            const majaziUrl = element.dataset.majazi || '';
 
-            changeSession(element, sessionId, pdfUrl, title, number, description, lessonPlan);
+            changeSession(
+                element,
+                sessionId,
+                pdfUrl,
+                title,
+                number,
+                description,
+                lessonPlan,
+                majaziUrl
+            );
         }
-
         // ==========================================
         // توابع مودال لیست تکالیف (ارسال گزارش)
         // ==========================================
@@ -1332,22 +1536,80 @@
                     }
                 });
             }
-
             // ==========================================
-            // تنظیم دکمه‌ها برای جلسه اول
+            // تنظیم دکمه‌ها و PDF برای جلسه اول
             // ==========================================
             const firstSession = document.querySelector('.session-item.active');
-            if (firstSession) {
-                const sessionId = firstSession.dataset.session;
 
-                const questionTeacherBtn = document.getElementById('questionTeacherBtn');
+            if (firstSession) {
+
+                const sessionId = firstSession.dataset.session;
+                const pdfUrl = firstSession.dataset.pdf || '';
+
+                // -----------------------------
+                // دکمه ثبت سوال
+                // -----------------------------
+                const questionTeacherBtn =
+                    document.getElementById('questionTeacherBtn');
+
                 if (questionTeacherBtn) {
-                    questionTeacherBtn.setAttribute('href', `/teacher/questions/create/${sessionId}`);
+                    questionTeacherBtn.setAttribute(
+                        'href',
+                        `/teacher/questions/create/${sessionId}`
+                    );
                 }
 
-                const homeworkTeacherBtn = document.getElementById('homeworkTeacherBtn');
+                // -----------------------------
+                // دکمه مدیریت تکالیف
+                // -----------------------------
+                const homeworkTeacherBtn =
+                    document.getElementById('homeworkTeacherBtn');
+
                 if (homeworkTeacherBtn) {
-                    homeworkTeacherBtn.setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
+                    homeworkTeacherBtn.setAttribute(
+                        'href',
+                        `/teacher/courses/exercises/show/${sessionId}`
+                    );
+                }
+
+                // -----------------------------
+                // دکمه باز کردن PDF
+                // -----------------------------
+                const pdfOpenBtn =
+                    document.getElementById('pdfOpenBtn');
+
+                if (pdfOpenBtn) {
+
+                    let fullPdfUrl = '';
+
+                    if (pdfUrl) {
+
+                        // اگر لینک کامل باشد
+                        if (
+                            pdfUrl.startsWith('http://') ||
+                            pdfUrl.startsWith('https://')
+                        ) {
+                            fullPdfUrl = pdfUrl;
+                        }
+
+                        // اگر مسیر نسبی فایل باشد
+                        else {
+                            fullPdfUrl = '/files/session' + pdfUrl;
+                        }
+                    }
+
+                    if (fullPdfUrl) {
+
+                        pdfOpenBtn.href = fullPdfUrl;
+                        pdfOpenBtn.target = '_blank';
+                        pdfOpenBtn.rel = 'noopener noreferrer';
+                        pdfOpenBtn.style.display = 'inline-flex';
+
+                    } else {
+
+                        pdfOpenBtn.removeAttribute('href');
+                        pdfOpenBtn.style.display = 'none';
+                    }
                 }
             }
 

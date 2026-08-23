@@ -67,3 +67,48 @@
         background: #e8f5e9;
         color: #2e7d32;
     }
+
+
+    .info-badge.majazi-badge {
+    background: #f3e8ff;
+    border-color: #9c27b0;
+    color: #7b1fa2;
+    transition: all 0.2s ease;
+}
+
+.info-badge.majazi-badge .badge-icon i {
+    color: #9c27b0;
+}
+
+.info-badge.majazi-badge:hover {
+    background: #ead7fa;
+    border-color: #7b1fa2;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(156, 39, 176, 0.15);
+}
+
+.info-badge.majazi-badge .badge-value {
+    color: #7b1fa2;
+    font-weight: 600;
+}
+.back-btn {
+    background: linear-gradient(135deg, #1e6f9f, #0b4a6e);
+}
+.back-skill-btn {
+    background: linear-gradient(135deg, #e67e22, #d35400);
+}
+.back-action-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    color: white;
+    text-decoration: none;
+}
+.back-action-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}

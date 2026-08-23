@@ -29,7 +29,6 @@
                     <th>سوال</th>
                     <th>تاریخ</th>
                     <th>وضعیت</th>
-                    <th>عملیات</th>
                 </tr>
             </thead>
             <tbody>
@@ -41,19 +40,14 @@
                         <td data-label="وضعیت">
                             @php
                                 $statusMap = [
-                                    1 => ['class' => 'answered', 'text' => 'پاسخ داده شده'],
-                                    2 => ['class' => 'answered', 'text' => 'پاسخ داده شده'],
-                                    3 => ['class' => 'pending', 'text' => 'در انتظار پاسخ'],
+                                    1 => ['class' => 'answered', 'text' => 'عالی'],
+                                    2 => ['class' => 'answered', 'text' => 'خوب'],
+                                    3 => ['class' => 'pending', 'text' => 'متوسط'],
                                     4 => ['class' => 'rejected', 'text' => 'رد شده'],
                                 ];
                                 $status = $statusMap[$question->status] ?? ['class' => 'pending', 'text' => 'در انتظار پاسخ'];
                             @endphp
                             <span class="status-badge {{ $status['class'] }}">{{ $status['text'] }}</span>
-                        </td>
-                        <td data-label="عملیات">
-                            <a href="{{ route('question.show', $question->id) }}" class="view-btn">
-                                <i class="fas fa-eye"></i>
-                            </a>
                         </td>
                     </tr>
                 @empty
