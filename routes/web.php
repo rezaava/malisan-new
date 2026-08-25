@@ -51,11 +51,12 @@ Route::middleware(['auth'])->group(function () {
 
 Route::prefix('/admin')->middleware(['role:admin'])->group(function () {
     Route::get('/', [AdminController::class, 'index'])->name('index_admin');
-
+    
     Route::prefix('/coin')->group(function () {
-        Route::get('/', [AdminCoinController::class, 'coin'])->name('admin.coin');
+        Route::get('/', [AdminCoinController::class, 'index'])->name('admin.coin');
         Route::post('/store', [AdminCoinController::class, 'store'])->name('admin.coin.store');
-        Route::post('/{id}', [AdminCoinController::class, 'destroy'])->name('admin.coin.destroy'); 
+        Route::post('/{id}', [AdminCoinController::class, 'update'])->name('admin.coin.update');
+        Route::post('/{id}/toggle', [AdminCoinController::class, 'toggleActive'])->name('admin.coin.toggle');
     });
 
     Route::prefix('/courses')->group(function () {

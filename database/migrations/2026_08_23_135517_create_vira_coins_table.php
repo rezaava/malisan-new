@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('vira_coins', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('value'); 
+            $table->string('value');
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

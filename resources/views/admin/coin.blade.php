@@ -1,7 +1,7 @@
 @extends('layout.master')
 
 @section('title')
-ویرا کوین | مدیریت
+ویرا کوین | مدیریت فعالیت‌ها
 @endsection
 
 @section('head')
@@ -16,68 +16,67 @@
         <div class="d-flex justify-content-between align-items-center flex-wrap">
             <div>
                 <h3>
-                    <i class="fas fa-coins me-2"></i>
-                    مدیریت ویرا کوین
+                    <i class="fas fa-tasks me-2"></i>
+                    مدیریت و ثبت فعالیت‌های جایزه‌دار
                 </h3>
-                <small>مدیریت و ثبت تراکنش‌های ویرا کوین</small>
+                <small>مدیریت و ثبت فعالیت‌های جایزه‌دار</small>
             </div>
             <div class="mt-2 mt-md-0">
                 <span class="badge bg-light text-dark px-3 py-2 rounded-pill">
                     <i class="fas fa-database me-1"></i>
-                    کل کوین‌ها: {{ $coins->count() }}
+                    تعداد فعالیت‌ها: {{ $coins->count() }}
                 </span>
             </div>
         </div>
     </div>
 
-
     {{-- فرم اضافه کردن --}}
     <div class="form-card">
         <div class="form-title">
             <i class="fas fa-plus-circle"></i>
-            <span>افزودن ویرا کوین جدید</span>
+            <span>افزودن فعالیت جدید</span>
         </div>
         
         <form action="{{ route('admin.coin.store') }}" method="POST">
             @csrf
             <div class="row g-4">
                 <div class="col-md-5">
-                    <label for="name" class="form-label">
+                    <label for="title" class="form-label">
                         <i class="fas fa-tag me-1"></i>
-                        نام کوین
+                        عنوان فعالیت
                     </label>
-                    <input type="text" name="name" id="name" class="form-control" 
-                           placeholder="مثال: بیت‌کوین" required>
+                    <input type="text" name="title" id="title" class="form-control" 
+                           placeholder="مثال: ارسال ۱۰ نظر" required>
                 </div>
                 
                 <div class="col-md-5">
-                    <label for="value" class="form-label">
-                        <i class="fas fa-dollar-sign me-1"></i>
-                        مقدار
+                    <label for="coin_value" class="form-label">
+                        <i class="fas fa-coins me-1"></i>
+                        مقدار ویراکوین
                     </label>
-                    <input type="number" name="value" id="value" class="form-control" 
-                           placeholder="مثال: 45000" step="any" required>
+                    <input type="number" name="coin_value" id="coin_value" class="form-control" 
+                           placeholder="مثال: ۱۰۰" step="any" required>
                 </div>
                 
                 <div class="col-md-2 d-flex align-items-end">
                     <button type="submit" class="btn-submit">
                         <i class="fas fa-save me-2"></i>
-                        ثبت کوین
+                        ثبت فعالیت
                     </button>
                 </div>
             </div>
         </form>
     </div>
 
-    {{-- جدول نمایش کوین‌ها --}}
+    {{-- جدول نمایش فعالیت‌ها --}}
     <div class="table-card">
         <div class="table-header">
             <h5>
                 <i class="fas fa-list me-2 text-primary"></i>
-                لیست ویرا کوین‌ها
+                لیست فعالیت‌ها
             </h5>
             <span class="badge-count">
-                <i class="fas fa-coins me-1"></i>
+                <i class="fas fa-tasks me-1"></i>
                 {{ $coins->count() }} مورد
             </span>
         </div>
@@ -86,30 +85,30 @@
             <table class="table table-hover align-middle">
                 <thead>
                     <tr>
-                        <th width="8%">#</th>
-                        <th width="28%">نام کوین</th>
-                        <th width="25%">مقدار</th>
-                        <th width="27%">تاریخ ثبت</th>
-                        <th width="12%" class="text-center">عملیات</th>
+                        <th width="8%">ردیف</th>
+                        <th width="30%">عنوان فعالیت</th>
+                        <th width="20%">مقدار ویراکوین</th>
+                        <th width="20%">وضعیت</th>
+                        <th width="22%" class="text-center">عملیات</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($coins as $coin)
+                    @forelse($coins as $index => $coin)
                         <tr>
-                            {{-- ستون ID --}}
+                            {{-- ستون ردیف --}}
                             <td>
-                                <span class="badge-id">#{{ $coin->id }}</span>
+                                <span class="badge-id">{{ $loop->iteration }}</span>
                             </td>
                             
-                            {{-- ستون نام --}}
+                            {{-- ستون عنوان --}}
                             <td>
                                 <div class="d-flex align-items-center gap-2">
-                                    <i class="fas fa-coin text-warning"></i>
+                                    <i class="fas fa-tasks text-primary"></i>
                                     <span class="fw-semibold">{{ $coin->name }}</span>
                                 </div>
                             </td>
                             
-                            {{-- ستون مقدار --}}
+                            {{-- ستون مقدار ویراکوین --}}
                             <td>
                                 <span class="badge-coin">
                                     <i class="fas fa-coins"></i>
@@ -117,43 +116,90 @@
                                 </span>
                             </td>
                             
-                            {{-- ستون تاریخ با VertA --}}
+                            {{-- ستون وضعیت --}}
                             <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <i class="far fa-calendar-alt text-muted"></i>
-                                    <div class="date-verta">
-                                        <span class="date-main">
-                                            {{ verta($coin->timestamp)->format('Y/m/d') }}
-                                        </span>
-                                        <span class="date-time">
-                                            <i class="far fa-clock me-1"></i>
-                                            {{ verta($coin->timestamp)->format('H:i') }}
-                                        </span>
-                                    </div>
-                                </div>
+                                @if($coin->is_active)
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle me-1"></i>
+                                        فعال
+                                    </span>
+                                @else
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-times-circle me-1"></i>
+                                        غیرفعال
+                                    </span>
+                                @endif
                             </td>
                             
                             {{-- ستون عملیات --}}
                             <td class="text-center">
-                                <form action="{{ route('admin.coin.destroy', $coin->id) }}" 
+                                {{-- دکمه ویرایش (فقط مقدار ویراکوین) --}}
+                                <button type="button" class="btn-sm-edit" data-bs-toggle="modal" 
+                                        data-bs-target="#editModal{{ $coin->id }}">
+                                    <i class="fas fa-edit"></i>
+                                    ویرایش
+                                </button>
+
+                                {{-- دکمه فعال/غیرفعال --}}
+                                <form action="{{ route('admin.coin.toggle', $coin->id) }}" 
                                       method="POST" 
-                                      onsubmit="return confirm('آیا از حذف این کوین مطمئن هستید؟')"
                                       class="d-inline">
                                     @csrf
-                                    <button type="submit" class="btn-sm-danger">
-                                        <i class="fas fa-trash-alt"></i>
-                                        حذف
+                                    <button type="submit" class="btn-sm-toggle {{ $coin->is_active ? 'btn-danger' : 'btn-success' }}">
+                                        <i class="fas {{ $coin->is_active ? 'fa-pause' : 'fa-play' }}"></i>
+                                        {{ $coin->is_active ? 'غیرفعال' : 'فعال' }}
                                     </button>
                                 </form>
+
+                                {{-- مودال ویرایش --}}
+                                <div class="modal fade" id="editModal{{ $coin->id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">
+                                                    <i class="fas fa-edit me-2"></i>
+                                                    ویرایش مقدار ویراکوین
+                                                </h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <form action="{{ route('admin.coin.update', $coin->id) }}" method="POST">
+                                                @csrf
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label for="coin_value_{{ $coin->id }}" class="form-label">
+                                                            <i class="fas fa-coins me-1"></i>
+                                                            مقدار ویراکوین
+                                                        </label>
+                                                        <input type="number" name="coin_value" 
+                                                               id="coin_value_{{ $coin->id }}" 
+                                                               class="form-control" 
+                                                               value="{{ $coin->value }}" 
+                                                               step="any" required>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                        <i class="fas fa-times me-1"></i>
+                                                        انصراف
+                                                    </button>
+                                                    <button type="submit" class="btn btn-primary">
+                                                        <i class="fas fa-save me-1"></i>
+                                                        ذخیره تغییرات
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
                             <td colspan="5">
                                 <div class="empty-state">
-                                    <i class="fas fa-coins"></i>
-                                    <p>هیچ کوینی ثبت نشده است!</p>
-                                    <small class="text-muted">با استفاده از فرم بالا اولین کوین را ثبت کنید</small>
+                                    <i class="fas fa-tasks"></i>
+                                    <p>هیچ فعالیتی ثبت نشده است!</p>
+                                    <small class="text-muted">با استفاده از فرم بالا اولین فعالیت را ثبت کنید</small>
                                 </div>
                             </td>
                         </tr>

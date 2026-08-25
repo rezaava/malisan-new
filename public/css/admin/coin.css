@@ -250,6 +250,81 @@
         color: #a0aec0;
         font-weight: 500;
     }
+    .btn-sm-edit {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 6px 15px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    margin-right: 5px;
+}
+
+.btn-sm-edit:hover {
+    background: #5a6fd6;
+    transform: translateY(-2px);
+    color: white;
+}
+
+.btn-sm-toggle {
+    padding: 6px 15px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    border: none;
+    transition: all 0.3s ease;
+    color: white;
+}
+
+.btn-sm-toggle.btn-success {
+    background: #28a745;
+}
+
+.btn-sm-toggle.btn-danger {
+    background: #dc3545;
+}
+
+.btn-sm-toggle:hover {
+    transform: translateY(-2px);
+    color: white;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: #ddd;
+    display: block;
+    margin-bottom: 15px;
+}
+
+.empty-state p {
+    font-size: 1.2rem;
+    color: #666;
+    margin: 0;
+}
+
+/* Modal Styling */
+.modal-content {
+    border-radius: 15px;
+    border: none;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px 15px 0 0;
+}
+
+.modal-header .btn-close {
+    color: white;
+    filter: brightness(0) invert(1);
+}
+
     
     @media (max-width: 768px) {
         .page-header {
