@@ -40,32 +40,37 @@
                     <tr>
                         <td>{{ $key + 1 }}</td>
                         <td>{{ $user->name }} {{ $user->family }}</td>
+
                         <td>
-                            <a href="{{ route('studentQuestions',$user->id) }}" class="action-btn questions-btn" title="سوال‌ها">
+                            <a href="{{ route('studentQuestions', [$user->id, $course->id]) }}" class="action-btn questions-btn" title="سوال‌ها">
                                 <i class="fas fa-question-circle"></i>
                                 <span>{{ $user->questions_count ?? 0 }}</span>
                             </a>
                         </td>
+
                         <td>
-                            <a href="{{ route('studentReports',$user->id) }}" class="action-btn reports-btn" title="گزارش‌ها">
+                            <a href="{{ route('studentReports', [$user->id, $course->id]) }}" class="action-btn reports-btn" title="گزارش‌ها">
                                 <i class="fas fa-file-alt"></i>
                                 <span>{{ $user->reports_count ?? 0 }}</span>
                             </a>
                         </td>
+
                         <td>
-                            <a href="{{ route('studentHomeworks',$user->id) }}" class="action-btn homeworks-btn" title="تکالیف">
+                            <a href="{{ route('studentHomeworks', [$user->id, $course->id]) }}" class="action-btn homeworks-btn" title="تکالیف">
                                 <i class="fas fa-tasks"></i>
                                 <span>{{ $user->homeworks_count ?? 0 }}</span>
                             </a>
                         </td>
+
                         <td>
-                            <a href="{{ route('studentSelfTests',$user->id) }}" class="action-btn self-tests-btn" title="خودآزمایی‌ها">
+                            <a href="{{ route('studentSelfTests', [$user->id, $course->id]) }}" class="action-btn self-tests-btn" title="خودآزمایی‌ها">
                                 <i class="fas fa-brain"></i>
                                 <span>{{ $user->self_tests_count ?? 0 }}</span>
                             </a>
                         </td>
+
                         <td>
-                            <a href="{{ route('studentOfficialExams',$user->id) }}" class="action-btn exams-btn" title="آزمون‌های رسمی">
+                            <a href="{{ route('studentOfficialExams', [$user->id, $course->id]) }}" class="action-btn exams-btn" title="آزمون‌های رسمی">
                                 <i class="fas fa-pencil-alt"></i>
                                 <span>{{ $user->official_exams_count ?? 0 }}</span>
                             </a>

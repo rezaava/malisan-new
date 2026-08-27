@@ -388,36 +388,52 @@ class SkillController extends Controller
     /**
      * سوالات یک دانشجو
      */
-    public function studentQuestions($userId)
+    public function studentQuestions($userId, $courseid)
     {
         $user = User::findOrFail($userId);
+
+        $sessionIds = Session::where('course_id', $courseid)->pluck('id');
+
         $questions = Question::where('user_id', $userId)
+            ->whereIn('session_id', $sessionIds)
             ->orderBy('created_at', 'desc')
             ->get();
 
         return view('teacher.student-questions', compact('user', 'questions'));
     }
 
+
     /**
      * گزارشات یک دانشجو
      */
-    public function studentReports($userId)
+    public function studentReports($userId, $courseid)
     {
         $user = User::findOrFail($userId);
+
+        $sessionIds = Session::where('course_id', $courseid)->pluck('id');
+
         $reports = Discussion::where('user_id', $userId)
+            ->whereIn('session_id', $sessionIds)
             ->orderBy('created_at', 'desc')
             ->get();
 
         return view('teacher.student-reports', compact('user', 'reports'));
     }
 
+
     /**
      * تکالیف یک دانشجو
      */
-    public function studentHomeworks($userId)
+    public function studentHomeworks($userId, $courseid)
     {
         $user = User::findOrFail($userId);
+
+        $sessionIds = Session::where('course_id', $courseid)->pluck('id');
+
         $homeworks = ExerciseAnswer::where('user_id', $userId)
+            ->whereHas('exercise', function ($query) use ($sessionIds) {
+                $query->whereIn('session_id', $sessionIds);
+            })
             ->with('exercise')
             ->orderBy('created_at', 'desc')
             ->get();
@@ -425,13 +441,16 @@ class SkillController extends Controller
         return view('teacher.student-homeworks', compact('user', 'homeworks'));
     }
 
+
     /**
      * خودآزمایی‌های یک دانشجو
      */
-    public function studentSelfTests($userId)
+    public function studentSelfTests($userId, $courseid)
     {
         $user = User::findOrFail($userId);
+
         $selfTests = Quiz::where('user_id', $userId)
+            ->where('course_id', $courseid)
             ->whereNull('azmon_id')
             ->orderBy('created_at', 'desc')
             ->get();
@@ -439,13 +458,16 @@ class SkillController extends Controller
         return view('teacher.student-self-tests', compact('user', 'selfTests'));
     }
 
+
     /**
      * آزمون‌های رسمی یک دانشجو
      */
-    public function studentOfficialExams($userId)
+    public function studentOfficialExams($userId, $courseid)
     {
         $user = User::findOrFail($userId);
+
         $officialExams = Quiz::where('user_id', $userId)
+            ->where('course_id', $courseid)
             ->whereNotNull('azmon_id')
             ->orderBy('created_at', 'desc')
             ->get();

@@ -194,11 +194,11 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
 
         // فعالیت‌های دانشجویان
         Route::get('/student-activities/{course}', [CourseController::class, 'studentActivities'])->name('studentActivities');
-        Route::get('/student-questions/{id}', [CourseController::class, 'studentQuestions'])->name('studentQuestions');
-        Route::get('/student-reports/{id}', [CourseController::class, 'studentReports'])->name('studentReports');
-        Route::get('/student-homeworks/{id}', [CourseController::class, 'studentHomeworks'])->name('studentHomeworks');
-        Route::get('/student-self-tests/{id}', [CourseController::class, 'studentSelfTests'])->name('studentSelfTests');
-        Route::get('/student-official-exams/{id}', [CourseController::class, 'studentOfficialExams'])->name('studentOfficialExams');
+        Route::get('/student-questions/{id}/{courseid}', [CourseController::class, 'studentQuestions'])->name('studentQuestions');
+        Route::get('/student-reports/{id}/{courseid}', [CourseController::class, 'studentReports'])->name('studentReports');
+        Route::get('/student-homeworks/{id}/{courseid}', [CourseController::class, 'studentHomeworks'])->name('studentHomeworks');
+        Route::get('/student-self-tests/{id}/{courseid}', [CourseController::class, 'studentSelfTests'])->name('studentSelfTests');
+        Route::get('/student-official-exams/{id}/{courseid}', [CourseController::class, 'studentOfficialExams'])->name('studentOfficialExams');
 
         // بانک سوالات
         Route::prefix('/bank')->group(function () {
@@ -317,11 +317,11 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
 
         // فعالیت‌های دانشجویان
         Route::get('/student-activities/{course}', [CourseController::class, 'studentActivities'])->name('skill.studentActivities');
-        Route::get('/student-questions/{id}', [SkillController::class, 'studentQuestions'])->name('skill.studentQuestions');
-        Route::get('/student-reports/{id}', [SkillController::class, 'studentReports'])->name('skill.studentReports');
-        Route::get('/student-homeworks/{id}', [SkillController::class, 'studentHomeworks'])->name('skill.studentHomeworks');
-        Route::get('/student-self-tests/{id}', [SkillController::class, 'studentSelfTests'])->name('skill.studentSelfTests');
-        Route::get('/student-official-exams/{id}', [SkillController::class, 'studentOfficialExams'])->name('skill.studentOfficialExams');
+        Route::get('/student-questions/{id}/{courseid}', [SkillController::class, 'studentQuestions'])->name('skill.studentQuestions');
+        Route::get('/student-reports/{id}/{courseid}', [SkillController::class, 'studentReports'])->name('skill.studentReports');
+        Route::get('/student-homeworks/{id}/{courseid}', [SkillController::class, 'studentHomeworks'])->name('skill.studentHomeworks');
+        Route::get('/student-self-tests/{id}/{courseid}', [SkillController::class, 'studentSelfTests'])->name('skill.studentSelfTests');
+        Route::get('/student-official-exams/{id}/{courseid}', [SkillController::class, 'studentOfficialExams'])->name('skill.studentOfficialExams');
 
         // بانک سوالات
         Route::prefix('/bank')->group(function () {

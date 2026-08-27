@@ -9,6 +9,15 @@
     <link rel="stylesheet" href="{{asset('css/badge.css')}}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.css">
     <style>
+        .collapsible-body {
+    display: none;
+}
+.collapsible-body.open {
+    display: block;
+}
+.expand-icon.rotated {
+    transform: rotate(180deg);
+}
         /* استایل‌های اضافی برای طرح درس */
         .lesson-plan-section {
             background: #f0f7ff;
@@ -85,6 +94,94 @@
 
         .info-badge.plan-badge .badge-icon i {
             color: #4caf50;
+        }
+
+        /* استایل جدید برای باکس فعالیت‌های دانشجو */
+        .student-activities-section {
+            background: #f0f7ff;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            border-right: 4px solid #1e6f9f;
+        }
+
+        .student-activities-section .activity-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+            color: #1e6f9f;
+            margin-bottom: 0;
+        }
+
+        .student-activities-section .activity-header .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .student-activities-section .activity-header .header-left i {
+            font-size: 18px;
+        }
+
+        .student-activities-section .activity-icons {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .student-activities-section .activity-icons a {
+            color: #1a2332;
+            font-size: 18px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+        }
+
+        .student-activities-section .activity-icons a:hover {
+            background: #ffffff;
+            color: #1e6f9f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30, 111, 159, 0.15);
+        }
+
+        .student-activities-section .activity-icons a i {
+            font-size: 18px;
+        }
+
+        .student-activities-section .activity-icons a .fa-question-circle {
+            color: #ff9800;
+        }
+
+        .student-activities-section .activity-icons a .fa-file-alt {
+            color: #4caf50;
+        }
+
+        .student-activities-section .activity-icons a .fa-list-ul {
+            color: #2196f3;
+        }
+
+        .student-activities-section .activity-icons a:hover .fa-question-circle {
+            color: #e65100;
+        }
+
+        .student-activities-section .activity-icons a:hover .fa-file-alt {
+            color: #2e7d32;
+        }
+
+        .student-activities-section .activity-icons a:hover .fa-list-ul {
+            color: #0d47a1;
+        }
+
+        /* حذف دکمه‌های قبلی از header */
+        .session-action-buttons {
+            display: none;
         }
     </style>
 @endsection
@@ -223,33 +320,31 @@
                                     @endif
                                 </span>
                             </div>
-                            <a href="#"
-                                id="majaziSessionBtn"
-                                class="info-badge majazi-badge"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style="display: {{ $sessions->isNotEmpty() && !empty($sessions->first()->majazi) ? 'inline-flex' : 'none' }}; text-decoration:none; cursor:pointer;">
-
-                                <span class="badge-icon">
-                                    <i class="fas fa-video"></i>
-                                </span>
-
-                                <span class="badge-value">
-                                    کلاس مجازی
-                                </span>
-                            </a>
                         </div>
                     </div>
+                    {{-- دکمه‌های قدیمی مخفی شدند --}}
                     <div class="session-action-buttons">
-                        <a href="#" id="questionTeacherBtn" class="action-icon-btn" data-tooltip="ثبت سوال">
-                            <i class="fas fa-question-circle"></i>
-                        </a>
-                        <a href="#" id="homeworkTeacherBtn" class="action-icon-btn" data-tooltip="مدیریت تکالیف">
-                            <i class="fas fa-file-alt"></i>
-                        </a>
-                        <button class="action-icon-btn" onclick="openProfExModal()" data-tooltip="مدیریت گزارش">
-                            <i class="fas fa-list-ul"></i>
-                        </button>
+                    </div>
+                </div>
+
+                {{-- باکس جدید: فعالیت‌های دانشجو --}}
+                <div class="student-activities-section">
+                    <div class="activity-header">
+                        <div class="header-left">
+                            <i class="fas fa-users"></i>
+                            <span>فعالیت‌های دانشجو</span>
+                        </div>
+                        <div class="activity-icons">
+                            <a href="#" id="questionTeacherBtn" data-tooltip="ثبت سوال">
+                                <i class="fas fa-question-circle"></i>
+                            </a>
+                            <a href="#" id="homeworkTeacherBtn" data-tooltip="مدیریت تکالیف">
+                                <i class="fas fa-file-alt"></i>
+                            </a>
+                            <a href="#" onclick="openProfExModal()" data-tooltip="مدیریت گزارش">
+                                <i class="fas fa-list-ul"></i>
+                            </a>
+                        </div>
                     </div>
                 </div>
 
@@ -268,12 +363,11 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="session-description">
                     <div class="collapsible-section">
                         <div class="collapsible-header">
                             <i class="fas fa-bell"></i>
-                            محتوای درس
+                            طرح درس
                             <i class="fas fa-chevron-down expand-icon"></i>
                         </div>
                         <div class="collapsible-body" id="sessionDescription">
@@ -285,42 +379,70 @@
                         </div>
                     </div>
                 </div>
+
+                {{-- بخش PDF با قابلیت collapsible --}}
                 <div class="session-pdf-container">
-                    <div class="pdf-toolbar">
-                        <a
-                            href="#"
-                            id="pdfOpenBtn"
-                            class="pdf-open-btn"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style="{{ $sessions->isNotEmpty() && $sessions->first()->file ? 'display:inline-flex;' : 'display:none;' }}"
-                        >
-                            <i class="fas fa-file-pdf"></i>
-                            باز کردن PDF در صفحه جدید
-                        </a>
-                    </div>
-                    <div class="pdf-viewer">
-                        @if($sessions->isNotEmpty() && $sessions->first()->file)
-                            <object
-                                id="pdfViewer"
-                                data="/files/session{{ $sessions->first()->file }}"
-                                type="application/pdf"
-                                width="100%"
-                                height="550px">
-
-                                <object
-                                    width="100%"
-                                    height="550"
-                                    data="/files/session{{ $sessions->first()->file }}">
-                                </object>
-
-                            </object>
-                        @else
-                            <div class="text-center p-5">
-                                <i class="fas fa-file-pdf fa-3x text-muted mb-3"></i>
-                                <p class="text-muted">هیچ فایلی برای این جلسه آپلود نشده است</p>
+                    <div class="collapsible-section">
+                        <div class="collapsible-header p-0 px-2">
+                            <div class="pdf-toolbar d-flex justify-content-between align-items-center w-100">
+                                <div>
+                                    <span class="px-2">
+                                        محتوای درس
+                                    </span>
+                                    <a
+                                        href="#"
+                                        id="pdfOpenBtn"
+                                        class="pdf-open-btn"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style="{{ $sessions->isNotEmpty() && $sessions->first()->file ? 'display:inline-flex;' : 'display:none;' }}"
+                                    >
+                                        <i class="fas fa-file-pdf"></i>
+                                        باز کردن PDF در صفحه جدید
+                                    </a>
+                                </div>
+                                <a href="#"
+                                    id="majaziSessionBtn"
+                                    class="info-badge majazi-badge"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style="display: {{ $sessions->isNotEmpty() && !empty($sessions->first()->majazi) ? 'inline-flex' : 'none' }}; text-decoration:none; cursor:pointer;"
+                                >
+                                    <span class="badge-icon">
+                                        <i class="fas fa-video"></i>
+                                    </span>
+                                    <span class="badge-value">
+                                        کلاس مجازی
+                                    </span>
+                                </a>
                             </div>
-                        @endif
+                            <i class="fas fa-chevron-down expand-icon"></i>
+                        </div>
+                        <div class="collapsible-body">
+                            <div class="pdf-viewer">
+                                @if($sessions->isNotEmpty() && $sessions->first()->file)
+                                    <object
+                                        id="pdfViewer"
+                                        data="/files/session{{ $sessions->first()->file }}"
+                                        type="application/pdf"
+                                        width="100%"
+                                        height="550px">
+
+                                        <object
+                                            width="100%"
+                                            height="550"
+                                            data="/files/session{{ $sessions->first()->file }}">
+                                        </object>
+
+                                    </object>
+                                @else
+                                    <div class="text-center p-5">
+                                        <i class="fas fa-file-pdf fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted">هیچ فایلی برای این جلسه آپلود نشده است</p>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -617,6 +739,18 @@
     <script src="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.js"></script>
 
     <script>
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const headers = document.querySelectorAll('.collapsible-header');
+            headers.forEach(header => {
+                header.addEventListener('click', function() {
+                    const body = this.nextElementSibling;
+                    const icon = this.querySelector('.expand-icon');
+                    body.classList.toggle('open');
+                    icon.classList.toggle('rotated');
+                });
+            });
+        });
         // ==========================================
         // متغیرهای سراسری
         // ==========================================

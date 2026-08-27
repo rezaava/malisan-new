@@ -86,6 +86,36 @@
         .info-badge.plan-badge .badge-icon i {
             color: #4caf50;
         }
+
+        /* استایل برای دکمه کلاس مجازی در toolbar */
+        .pdf-toolbar .majazi-badge {
+            background: #e8f5e9;
+            border: 1px solid #4caf50;
+            border-radius: 8px;
+            padding: 8px 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #2e7d32;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .pdf-toolbar .majazi-badge:hover {
+            background: #c8e6c9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+        }
+
+        .pdf-toolbar .majazi-badge .badge-icon i {
+            color: #4caf50;
+            font-size: 16px;
+        }
+
+        .pdf-toolbar .majazi-badge .badge-value {
+            color: #2e7d32;
+        }
     </style>
 @endsection
 
@@ -223,21 +253,6 @@
                                     @endif
                                 </span>
                             </div>
-                            <a href="#"
-                                id="majaziSessionBtn"
-                                class="info-badge majazi-badge"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style="display: {{ $sessions->isNotEmpty() && !empty($sessions->first()->majazi) ? 'inline-flex' : 'none' }}; text-decoration:none; cursor:pointer;">
-
-                                <span class="badge-icon">
-                                    <i class="fas fa-video"></i>
-                                </span>
-
-                                <span class="badge-value">
-                                    کلاس مجازی
-                                </span>
-                            </a>
                         </div>
                     </div>
                     <div class="session-action-buttons">
@@ -285,19 +300,54 @@
                         </div>
                     </div>
                 </div>
+                
                 <div class="session-pdf-container">
-                    <div class="pdf-toolbar">
-                        <a href="#" id="pdfOpenBtn" class="pdf-open-btn" target="_blank">
+                    <div class="pdf-toolbar d-flex justify-content-between align-items-center w-100">
+                        <!-- دکمه سمت چپ - PDF -->
+                        <a
+                            href="#"
+                            id="pdfOpenBtn"
+                            class="pdf-open-btn"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style="{{ $sessions->isNotEmpty() && $sessions->first()->file ? 'display:inline-flex;' : 'display:none;' }}"
+                        >
                             <i class="fas fa-file-pdf"></i>
                             باز کردن PDF در صفحه جدید
                         </a>
+
+                        <!-- دکمه سمت راست - کلاس مجازی -->
+                        <a href="/"
+                            id="majaziSessionBtn"
+                            class="info-badge majazi-badge"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style="display: {{ $sessions->isNotEmpty() && !empty($sessions->first()->majazi) ? 'inline-flex' : 'none' }}; text-decoration:none; cursor:pointer;"
+                        >
+                            <span class="badge-icon">
+                                <i class="fas fa-video"></i>
+                            </span>
+                            <span class="badge-value">
+                                کلاس مجازی
+                            </span>
+                        </a>
                     </div>
+                    
                     <div class="pdf-viewer">
                         @if($sessions->isNotEmpty() && $sessions->first()->file)
-                            <object id="pdfViewer" data="/files/session{{ $sessions->first()->file }}" type="application/pdf"
-                                width="100%" height="550px">
-                                <object width="100%" height="550"
-                                    data="https://docs.google.com/gview?embedded=true&url={{ $sessions->first()->file }}"></object>
+                            <object
+                                id="pdfViewer"
+                                data="/files/session{{ $sessions->first()->file }}"
+                                type="application/pdf"
+                                width="100%"
+                                height="550px"
+                            >
+                                <object
+                                    width="100%"
+                                    height="550"
+                                    data="/files/session{{ $sessions->first()->file }}"
+                                >
+                                </object>
                             </object>
                         @else
                             <div class="text-center p-5">
@@ -851,8 +901,8 @@
             currentLessonPlan = lessonPlan || '';
             currentMajaziUrl = majaziUrl || '';
 
+            // ===== دکمه کلاس مجازی =====
             const majaziSessionBtn = document.getElementById('majaziSessionBtn');
-
             if (majaziSessionBtn) {
                 if (majaziUrl && majaziUrl.trim() !== '') {
                     majaziSessionBtn.href = majaziUrl;
@@ -863,57 +913,71 @@
                 }
             }
 
+            // ===== شماره جلسه =====
             const sessionNumberDisplay = document.getElementById('sessionNumberDisplay');
             if (sessionNumberDisplay) {
                 const numberMatch = number.match(/\d+/);
                 sessionNumberDisplay.textContent = numberMatch ? numberMatch[0] : '-';
             }
 
-            // ===== به‌روزرسانی موضوع جلسه =====
+            // ===== موضوع جلسه =====
             const sessionNameDisplay = document.getElementById('sessionNameDisplay');
             if (sessionNameDisplay) {
                 sessionNameDisplay.textContent = title || 'هیچ جلسه‌ای انتخاب نشده است';
             }
 
-            // ===== به‌روزرسانی طرح درس =====
+            // ===== طرح درس =====
             const lessonPlanDisplay = document.getElementById('lessonPlanDisplay');
             const sessionLessonPlan = document.getElementById('sessionLessonPlan');
 
-            if (lessonPlan && lessonPlan.trim() !== '') {
+            if (lessonPlan && lessonPlan.trim() !== '' && lessonPlan.trim() !== 'null') {
                 lessonPlanDisplay.style.display = 'block';
                 if (sessionLessonPlan) {
                     sessionLessonPlan.innerHTML = lessonPlan;
                 }
             } else {
                 lessonPlanDisplay.style.display = 'none';
+                if (sessionLessonPlan) {
+                    sessionLessonPlan.innerHTML = '';
+                }
             }
 
-            // ===== به‌روزرسانی محتوای درس =====
+            // ===== محتوای درس =====
             const sessionDescription = document.getElementById('sessionDescription');
             if (sessionDescription) {
-                if (description && description.trim() !== '') {
+                if (description && description.trim() !== '' && description.trim() !== 'null') {
                     sessionDescription.innerHTML = description;
                 } else {
                     sessionDescription.innerHTML = '<p class="text-muted">هیچ توضیحی برای این جلسه ثبت نشده است</p>';
                 }
             }
 
-            // ===== به‌روزرسانی PDF =====
+            // ===== ساخت URL PDF =====
+            let fullPdfUrl = '';
+            if (pdfUrl) {
+                if (pdfUrl.startsWith('http://') || pdfUrl.startsWith('https://')) {
+                    fullPdfUrl = pdfUrl;
+                } else {
+                    fullPdfUrl = '/files/session' + pdfUrl;
+                }
+            }
+
+            // ===== PDF Viewer =====
             const pdfViewer = document.getElementById('pdfViewer');
             if (pdfViewer) {
-                if (pdfUrl) {
+                if (fullPdfUrl) {
                     const parent = pdfViewer.parentNode;
                     const newObject = document.createElement('object');
                     newObject.id = 'pdfViewer';
-                    newObject.setAttribute('data', pdfUrl);
+                    newObject.setAttribute('data', fullPdfUrl);
                     newObject.setAttribute('type', 'application/pdf');
                     newObject.setAttribute('width', '100%');
                     newObject.setAttribute('height', '550px');
-                    newObject.innerHTML = `<object width="100%" height="550" data="${pdfUrl}"></object>`;
+                    newObject.innerHTML = `<object width="100%" height="550" data="${fullPdfUrl}"></object>`;
                     parent.replaceChild(newObject, pdfViewer);
                 } else {
-                    pdfViewer.innerHTML = `
-                        <div class="text-center p-5">
+                    pdfViewer.outerHTML = `
+                        <div id="pdfViewer" class="text-center p-5">
                             <i class="fas fa-file-pdf fa-3x text-muted mb-3"></i>
                             <p class="text-muted">هیچ فایلی برای این جلسه آپلود نشده است</p>
                         </div>
@@ -921,21 +985,25 @@
                 }
             }
 
+            // ===== دکمه باز کردن PDF =====
             const pdfOpenBtn = document.getElementById('pdfOpenBtn');
             if (pdfOpenBtn) {
-                if (pdfUrl) {
-                    pdfOpenBtn.setAttribute('href', pdfUrl);
+                if (fullPdfUrl) {
+                    pdfOpenBtn.setAttribute('href', fullPdfUrl);
                     pdfOpenBtn.style.display = 'inline-flex';
                 } else {
+                    pdfOpenBtn.removeAttribute('href');
                     pdfOpenBtn.style.display = 'none';
                 }
             }
 
+            // ===== دکمه ثبت سوال =====
             const questionTeacherBtn = document.getElementById('questionTeacherBtn');
             if (questionTeacherBtn) {
                 questionTeacherBtn.setAttribute('href', `/teacher/questions/create/${sessionId}`);
             }
 
+            // ===== دکمه مدیریت تکالیف =====
             const homeworkTeacherBtn = document.getElementById('homeworkTeacherBtn');
             if (homeworkTeacherBtn) {
                 homeworkTeacherBtn.setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
@@ -1381,15 +1449,51 @@
             const firstSession = document.querySelector('.session-item.active');
             if (firstSession) {
                 const sessionId = firstSession.dataset.session;
+                const pdfUrl = firstSession.dataset.pdf || '';
 
+                // دکمه ثبت سوال
                 const questionTeacherBtn = document.getElementById('questionTeacherBtn');
                 if (questionTeacherBtn) {
                     questionTeacherBtn.setAttribute('href', `/teacher/questions/create/${sessionId}`);
                 }
 
+                // دکمه مدیریت تکالیف
                 const homeworkTeacherBtn = document.getElementById('homeworkTeacherBtn');
                 if (homeworkTeacherBtn) {
                     homeworkTeacherBtn.setAttribute('href', `/teacher/courses/exercises/show/${sessionId}`);
+                }
+
+                // دکمه باز کردن PDF
+                const pdfOpenBtn = document.getElementById('pdfOpenBtn');
+                if (pdfOpenBtn) {
+                    let fullPdfUrl = '';
+                    if (pdfUrl) {
+                        if (pdfUrl.startsWith('http://') || pdfUrl.startsWith('https://')) {
+                            fullPdfUrl = pdfUrl;
+                        } else {
+                            fullPdfUrl = '/files/session' + pdfUrl;
+                        }
+                    }
+                    if (fullPdfUrl) {
+                        pdfOpenBtn.href = fullPdfUrl;
+                        pdfOpenBtn.style.display = 'inline-flex';
+                    } else {
+                        pdfOpenBtn.removeAttribute('href');
+                        pdfOpenBtn.style.display = 'none';
+                    }
+                }
+
+                // دکمه کلاس مجازی
+                const majaziUrl = firstSession.dataset.majazi || '';
+                const majaziSessionBtn = document.getElementById('majaziSessionBtn');
+                if (majaziSessionBtn) {
+                    if (majaziUrl && majaziUrl.trim() !== '') {
+                        majaziSessionBtn.href = majaziUrl;
+                        majaziSessionBtn.style.display = 'inline-flex';
+                    } else {
+                        majaziSessionBtn.href = '#';
+                        majaziSessionBtn.style.display = 'none';
+                    }
                 }
             }
 
@@ -1409,19 +1513,20 @@
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال ذخیره...';
 
-            const description = reportJoditEditor ? reportJoditEditor.value : document.getElementById('reportDescEditor').value;
+            const description = reportJoditEditor ? reportJoditEditor.value : document.getElementById('reportDescEditor')
+            .value;
 
             fetch('/teacher/courses/settings/update-report-desc', {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    description: description,
-                    course_id: courseId
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        description: description,
+                        course_id: courseId
+                    })
                 })
-            })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
