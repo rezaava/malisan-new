@@ -32,7 +32,6 @@ Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::post('/complete-reset-password', [AdminController::class, 'resetPasswordComplete'])->name('complete-reset-password');
 
-
 Route::post('/loginPost', [AuthController::class, 'loginPost'])->name('loginPost');
 Route::post('/registerPost', [AuthController::class, 'registerPost'])->name('registerPost');
 
@@ -410,6 +409,7 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         Route::get('/chat/messages/{chatId}', [ChatController::class, 'getMessages'])->name('teacher.chat.messages');
     });
 
+    Route::get('/coin', [TeacherSiteController::class, 'coin'])->name('teacher.coin');
     Route::get('/profile', [TeacherSiteController::class, 'profile'])->name('teacher.profile');
     Route::post('/profile/update', [StudentSiteController::class, 'updateStudentProfile'])->name('teacherProfile.update');
 });
@@ -420,6 +420,7 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
 Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(function () {
     Route::get('/', [StudentSiteController::class, 'index'])->name('index_student');
 
+    Route::get('/coin', [StudentSiteController::class, 'coin'])->name('student.coin');
     Route::get('/profile', [StudentSiteController::class, 'profile'])->name('student.profile');
     Route::post('/profile/update', [StudentSiteController::class, 'updateStudentProfile'])->name('studentProfile.updatest');
 

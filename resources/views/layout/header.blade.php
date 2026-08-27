@@ -28,7 +28,12 @@
                 </li>
                 {{-- ویرا کوین --}}
                 <li>
-                    <a class="dropdown-item rounded-3 py-2 px-3 d-flex align-items-center gap-2" href="#">
+                    <a
+                        class="dropdown-item rounded-3 py-2 px-3 d-flex align-items-center gap-2"
+                        href="{{ auth()->user()->hasRole('teacher|admin')
+                            ? route('teacher.coin')
+                            : route('student.coin') }}"
+                    >
                         <i class="fas fa-coins fs-5 text-warning"></i>
                         <span>ویرا کوین</span>
                     </a>

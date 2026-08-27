@@ -38,7 +38,10 @@ class StudentSiteController extends Controller
         $user = auth()->user();
         return view('student.profile', compact('user'));
     }
-    
+    public function coin()
+    {
+        return view('student.coin',);
+    }
     /**
      * به‌روزرسانی پروفایل کاربر
      */

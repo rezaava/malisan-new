@@ -25,6 +25,10 @@ class TeacherSiteController extends Controller
         $user = auth()->user();
         return view('teacher.profile', compact('user'));
     }
+    public function coin()
+    {
+        return view('teacher.coin',);
+    }
     public function index()
     {
         $user = Auth::user();
