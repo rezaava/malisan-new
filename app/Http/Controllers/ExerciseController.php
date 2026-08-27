@@ -349,17 +349,29 @@ class ExerciseController extends Controller
     /**
      * نمایش همه پاسخ‌های یک تمرین (استاد)
      */
-    public function answersList($exerciseId)
+    public function answersList($exerciseId, $userId = null)
     {
         $exercise = Exercise::with('session.course')->findOrFail($exerciseId);
+
         $session = $exercise->session;
         $course = $session->course;
-        
-        $answers = ExerciseAnswer::where('exercise_id', $exerciseId)
-            ->with('user')
+
+        $query = ExerciseAnswer::where('exercise_id', $exerciseId)
+            ->with('user');
+
+        if ($userId !== null) {
+            $query->where('user_id', $userId);
+        }
+
+        $answers = $query
             ->orderBy('created_at', 'desc')
             ->get();
-        
-        return view('teacher.exercise-answers', compact('exercise', 'session', 'course', 'answers'));
+
+        return view('teacher.exercise-answers', compact(
+            'exercise',
+            'session',
+            'course',
+            'answers'
+        ));
     }
 }

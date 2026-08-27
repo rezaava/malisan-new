@@ -238,7 +238,7 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
             Route::get('/edit', [ExerciseController::class, 'edit'])->name('exercise.edit');
             Route::put('/update/{id}', [ExerciseController::class, 'update'])->name('exercise.update');
             Route::get('/delete/{id}', [ExerciseController::class, 'delete'])->name('exercise.delete');
-            Route::get('/answers/{exercise_id}', [ExerciseController::class, 'answersList'])->name('exercise.answers');
+            Route::get('/answers/{exercise_id}/{userId?}', [ExerciseController::class, 'answersList'])->name('exercise.answers');
             Route::post('/score', [ExerciseController::class, 'score'])->name('exercise.score');
             Route::get('/correction/{courseId}', [CourseController::class, 'exerciseCorrection'])->name('exercises.correction');
             Route::get('/answers2/{exerciseId}', [CourseController::class, 'getExerciseAnswers'])->name('exercises.answers');
@@ -361,7 +361,7 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
             Route::get('/edit', [ExerciseController::class, 'edit'])->name('skill.exercise.edit');
             Route::put('/update/{id}', [ExerciseController::class, 'update'])->name('skill.exercise.update');
             Route::get('/delete/{id}', [ExerciseController::class, 'delete'])->name('skill.exercise.delete');
-            Route::get('/answers/{exercise_id}', [ExerciseController::class, 'answersList'])->name('skill.exercise.answers');
+            Route::get('/answers/{exercise_id}/{userId?}', [ExerciseController::class, 'answersList'])->name('skill.exercise.answers');
             Route::post('/score', [ExerciseController::class, 'score'])->name('skill.exercise.score');
             Route::get('/correction/{courseId}', [SkillController::class, 'exerciseCorrection'])->name('skill.exercises.correction');
             Route::get('/answers2/{exerciseId}', [SkillController::class, 'getExerciseAnswers'])->name('skill.exercises.answers');

@@ -50,7 +50,7 @@
                     @endphp
                     <tr>
                         <td data-label="ردیف">{{ $key + 1 }}</td>
-                        <td data-label="عنوان تکلیف">{{ Str::limit($homework->exercise->text ?? 'بدون عنوان', 40) }}</td>
+                        <td data-label="عنوان تکلیف">{!! $homework->exercise->text !!}</td>
                         <td data-label="تاریخ تحویل">{{ \Hekmatinasser\Verta\Verta::instance($homework->created_at)->format('Y/m/d') }}</td>
                         <td data-label="ارزیابی">
                             @if($homework->status == 'rated' || $homework->status == 'scored')
@@ -65,7 +65,7 @@
                             <span class="status-badge {{ $status['class'] }}">{{ $status['text'] }}</span>
                         </td>
                         <td data-label="عملیات">
-                            <a href="{{ route('exercise.answers', $homework->exercise_id) }}" class="view-btn">
+                            <a href="{{ route('exercise.answers', [$homework->exercise_id, $homework->user_id]) }}" class="view-btn">
                                 <i class="fas fa-eye"></i>
                             </a>
                         </td>
