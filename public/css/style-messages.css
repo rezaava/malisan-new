@@ -1,0 +1,308 @@
+.messages-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.messages-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 16px 24px;
+    background: #f8f9fa;
+    border-radius: 12px;
+}
+
+.messages-header h2 {
+    margin: 0;
+    font-size: 22px;
+    color: #2c3e50;
+}
+
+.messages-header h2 i {
+    color: #4a90d9;
+    margin-left: 10px;
+}
+
+.messages-status {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.unread-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: #fee;
+    color: #e74c3c;
+    font-size: 13px;
+}
+
+.unread-badge i {
+    font-size: 10px;
+}
+
+/* ===== جستجو ===== */
+.search-wrapper {
+    margin-bottom: 20px;
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: white;
+    border-radius: 10px;
+    border: 2px solid #e8edf3;
+    transition: all 0.3s;
+}
+
+.search-box:focus-within {
+    border-color: #4a90d9;
+    box-shadow: 0 0 0 4px rgba(74, 144, 217, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    right: 14px;
+    color: #a0b3c9;
+    font-size: 16px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 44px 12px 16px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    background: transparent;
+    direction: rtl;
+}
+
+.search-input:focus {
+    outline: none;
+}
+
+.search-clear {
+    position: absolute;
+    left: 10px;
+    background: none;
+    border: none;
+    color: #a0b3c9;
+    cursor: pointer;
+    padding: 4px 8px;
+    display: none;
+    font-size: 16px;
+}
+
+.search-clear:hover {
+    color: #e74c3c;
+}
+
+/* ===== لیست پیام‌ها ===== */
+.messages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 300px;
+}
+
+.loading-messages {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: #6b7a8f;
+}
+
+.loading-messages i {
+    font-size: 32px;
+    margin-bottom: 12px;
+    color: #4a90d9;
+}
+
+.empty-messages {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: #6b7a8f;
+}
+
+.empty-messages i {
+    font-size: 48px;
+    color: #d0d7e2;
+    margin-bottom: 16px;
+}
+
+.empty-messages p {
+    font-size: 16px;
+}
+
+/* ===== هر پیام ===== */
+.message-item {
+    display: flex;
+    gap: 14px;
+    padding: 16px 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: all 0.2s;
+    border-right: 4px solid transparent;
+}
+
+.message-item:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.message-item.unread {
+    border-right-color: #4a90d9;
+    background: #f0f7ff;
+}
+
+.message-item.sent {
+    border-right-color: #27ae60;
+}
+
+.message-item.received {
+    border-right-color: #4a90d9;
+}
+
+.message-avatar {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: white;
+}
+
+.message-item.sent .message-avatar {
+    background: #27ae60;
+}
+
+.message-item.received .message-avatar {
+    background: #4a90d9;
+}
+
+.message-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.message-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+}
+
+.message-sender {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 15px;
+}
+
+.message-time {
+    font-size: 12px;
+    color: #8a9bb5;
+}
+
+.unread-dot {
+    font-size: 11px;
+    padding: 2px 10px;
+    border-radius: 12px;
+    background: #4a90d9;
+    color: white;
+    font-weight: 500;
+}
+
+.message-body {
+    color: #34495e;
+    line-height: 1.7;
+    font-size: 14px;
+    word-break: break-word;
+}
+
+.message-course {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #8a9bb5;
+}
+
+.message-course i {
+    margin-left: 4px;
+}
+
+/* ===== صفحه‌بندی ===== */
+.pagination-wrapper {
+    margin-top: 24px;
+    display: flex;
+    justify-content: center;
+}
+
+.pagination {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.page-btn {
+    padding: 8px 14px;
+    border: 1px solid #e8edf3;
+    border-radius: 8px;
+    background: white;
+    color: #2c3e50;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+}
+
+.page-btn:hover:not(:disabled) {
+    background: #f0f7ff;
+    border-color: #4a90d9;
+}
+
+.page-btn.active {
+    background: #4a90d9;
+    color: white;
+    border-color: #4a90d9;
+}
+
+.page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ===== ریسپانسیو ===== */
+@media (max-width: 768px) {
+    .messages-header {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+
+    .message-item {
+        padding: 12px 14px;
+    }
+
+    .message-avatar {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
+
+    .message-header {
+        flex-wrap: wrap;
+    }
+}

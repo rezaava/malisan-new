@@ -49,9 +49,10 @@
             </ul>
         </div>
 
-        {{-- دکمه پیام‌ها --}}
-        <a href="/messages" class="top-icon-btn" title="پیام‌ها">
+        {{-- دکمه پیام‌ها با تعداد پیام‌های خوانده نشده --}}
+        <a href="/student/messages" class="top-icon-btn message-btn-wrapper" title="پیام‌ها">
             <i class="far fa-envelope"></i>
+            <span class="message-badge" id="unreadMessageBadge" style="display: none;">0</span>
         </a>
         {{-- دکمه سوالات متداول --}}
         <a href="/faq" class="top-icon-btn" title="سوالات متداول">
@@ -134,11 +135,48 @@
         transition: background 0.2s, color 0.2s;
         font-size: 1.2rem;
         text-decoration: none;
+        position: relative;
     }
 
     .top-icon-btn:hover {
         background: #edf2f7;
         color: #2d3748;
+    }
+
+    /* ===== بج پیام‌های خوانده نشده ===== */
+    .message-btn-wrapper {
+        position: relative;
+    }
+
+    .message-badge {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        background: #e74c3c;
+        color: white;
+        font-size: 10px;
+        font-weight: bold;
+        min-width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 5px;
+        box-shadow: 0 2px 8px rgba(231, 76, 60, 0.4);
+        border: 2px solid white;
+        line-height: 1;
+        font-family: 'Vazir', sans-serif;
+        animation: badgePulse 2s ease-in-out infinite;
+    }
+
+    @keyframes badgePulse {
+        0%, 100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.1);
+        }
     }
 
     /* ریسپانسیو */
@@ -147,5 +185,67 @@
             min-width: 180px;
             right: -10px !important;
         }
+        .message-badge {
+            font-size: 9px;
+            min-width: 16px;
+            height: 16px;
+            top: -3px;
+            right: -3px;
+        }
     }
 </style>
+
+{{-- اسکریپت دریافت تعداد پیام‌های خوانده نشده --}}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var csrfToken = '{{ csrf_token() }}';
+        var badge = document.getElementById('unreadMessageBadge');
+
+        function updateUnreadCount() {
+            fetch('{{ route("api.unread.messages.count") }}', {
+                method: 'GET',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                credentials: 'same-origin'
+            })
+            .then(function(response) {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    var count = data.unread_count || 0;
+                    if (count > 0) {
+                        badge.textContent = count > 99 ? '99+' : count;
+                        badge.style.display = 'flex';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                } else {
+                    badge.style.display = 'none';
+                }
+            })
+            .catch(function(error) {
+                console.error('Error fetching unread count:', error);
+                badge.style.display = 'none';
+            });
+        }
+
+        // بارگذاری اولیه
+        updateUnreadCount();
+
+        // بروزرسانی هر 30 ثانیه
+        setInterval(updateUnreadCount, 30000);
+
+        // بروزرسانی بعد از بازگشت به صفحه (برای مرورگرهای مدرن)
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                updateUnreadCount();
+            }
+        });
+    });
+</script>

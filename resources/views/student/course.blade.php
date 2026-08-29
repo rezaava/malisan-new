@@ -279,8 +279,7 @@
 
                             <i class="fas fa-bell"></i>
 
-                            طرح درس
-
+                           محتوای درس
                             <i class="fas fa-chevron-down expand-icon"></i>
 
                         </div>
@@ -306,7 +305,7 @@
 
                             <i class="fas fa-bell"></i>
 
-                            طرح درس یا محتوای درس
+                            محتوای درس
 
                             <i class="fas fa-chevron-down expand-icon"></i>
 

@@ -9,6 +9,7 @@ use App\Http\Controllers\AzmonController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DiscussionController;
 use App\Http\Controllers\ExerciseController;
+use App\Http\Controllers\StudentMessageController;
 use App\Http\Controllers\JudgmentController;
 use App\Http\Controllers\QuestionReportController;
 use App\Http\Controllers\Student\StudentCourseController;
@@ -412,6 +413,23 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
     Route::get('/coin', [TeacherSiteController::class, 'coin'])->name('teacher.coin');
     Route::get('/profile', [TeacherSiteController::class, 'profile'])->name('teacher.profile');
     Route::post('/profile/update', [StudentSiteController::class, 'updateStudentProfile'])->name('teacherProfile.update');
+
+    // ==========================================
+    // مسیرهای پیام‌رسانی به دانشجو (Student Messages)
+    // ==========================================
+    Route::prefix('/student-messages')->group(function () {
+        // ارسال پیام از طرف استاد
+        Route::post('/send', [StudentMessageController::class, 'send'])->name('teacher.student-messages.send');
+        
+        // دریافت لیست پیام‌های یک دانشجو (برای استاد)
+        Route::get('/{studentId}', [StudentMessageController::class, 'getMessages'])->name('teacher.student-messages.get');
+        
+        // دریافت تعداد پیام‌های خوانده نشده
+        Route::get('/unread/count', [StudentMessageController::class, 'getUnreadCount'])->name('teacher.student-messages.unread');
+        
+        // علامت‌گذاری پیام به عنوان خوانده شده
+        Route::post('/{messageId}/read', [StudentMessageController::class, 'markAsRead'])->name('teacher.student-messages.read');
+    });
 });
 
 // ==========================================
@@ -559,4 +577,26 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
         Route::post('/chat/send', [ChatController::class, 'send'])->name('student.chat.send');
         Route::get('/chat/messages/{chatId}', [ChatController::class, 'getMessages'])->name('student.chat.messages');
     });
+    // ==========================================
+    // مسیرهای پیام‌های دریافتی - دانشجو
+    // ==========================================
+    Route::prefix('/messages')->group(function () {
+        // مشاهده همه پیام‌های دانشجو
+        Route::get('/', [StudentMessageController::class, 'studentIndex'])->name('student.messages.index');
+        
+        // دریافت پیام‌ها به صورت JSON (برای AJAX)
+        Route::get('/get', [StudentMessageController::class, 'studentGetMessages'])->name('student.messages.get');
+        
+        // علامت‌گذاری پیام به عنوان خوانده شده
+        Route::post('/{messageId}/read', [StudentMessageController::class, 'markAsRead'])->name('student.messages.read');
+    });
+});
+
+
+// ==========================================
+// مسیر عمومی برای دریافت تعداد پیام‌های خوانده نشده (برای هدر)
+// ==========================================
+Route::middleware(['auth'])->group(function () {
+    Route::get('/api/unread-messages-count', [StudentMessageController::class, 'getUnreadCount'])
+        ->name('api.unread.messages.count');
 });

@@ -7,6 +7,23 @@
 @section('head')
 <link rel="stylesheet" href="{{asset('css/style-activities.css')}}">
 <link rel="stylesheet" href="{{asset('css/badge.css')}}">
+    <style>
+
+        .online-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .online-dot.green {
+            background: #4CAF50;
+            box-shadow: 0 0 6px rgba(76, 175, 80, 0.5);
+        }
+        .online-dot.gray {
+            background: #b0b0b0;
+        }
+    </style>
 @endsection
 
 @section('mohtava')
@@ -16,7 +33,7 @@
             <span class="badge-icon">
                 <i class="fas fa-book-open"></i>
             </span>
-            <span class="badge-label">فعالیت دانشجویان در درس:</span>
+            <span class="badge-label">پایش دانشجویان در درس:</span>
             <span class="badge-value">{{ $course->name ?? 'عنوان درس' }}</span>
         </div>
         <div class="activity-controls">
@@ -80,8 +97,17 @@
                                 <a href="{{ route('studentEvaluation', ['courseId' => $course->id, 'userId' => $user->id]) }}">
                                     {{ $user->name ?? '' }} {{ $user->family ?? '' }}
                                 </a>
-                                <span class="online-dot {{ $user->online ? 'green' : 'gray' }}" 
-                                      title="{{ $user->online ? 'آنلاین' : 'آفلاین' }}"></span>
+                                        <span class="online-dot {{ $user->isOnline() ? 'green' : 'gray' }}"
+                                            title="{{ $user->isOnline() ? 'آنلاین' : 'آفلاین' }}"></span>
+                                <button class="message-btn" 
+                                        data-user-id="{{ $user->id }}"
+                                        data-user-name="{{ $user->name ?? '' }} {{ $user->family ?? '' }}"
+                                        title="ارسال پیام به دانشجو">
+                                    <i class="far fa-envelope"></i>
+                                    @if(isset($user->unread_messages_count) && $user->unread_messages_count > 0)
+                                        <span class="unread-badge">{{ $user->unread_messages_count }}</span>
+                                    @endif
+                                </button>
                             </div>
                         </td>
                         <td class="old">{{ $user['disc'] ?? 0 }}</td>
@@ -105,6 +131,35 @@
                 @endforelse
             </tbody>
         </table>
+    </div>
+</div>
+
+<!-- ===== مودال ارسال پیام ===== -->
+<div class="message-modal" id="messageModal">
+    <div class="message-modal-content">
+        <div class="message-modal-header">
+            <h3>
+                <i class="fas fa-paper-plane"></i>
+                ارسال پیام به <span id="receiverName"></span>
+            </h3>
+            <button class="message-modal-close" id="closeMessageModal">&times;</button>
+        </div>
+        <div class="message-modal-body">
+            <textarea id="messageText" placeholder="متن پیام خود را وارد کنید..." maxlength="5000"></textarea>
+            <div class="char-counter">
+                <span id="charCount">0</span> / 5000
+            </div>
+            <div class="message-modal-actions">
+                <button class="btn btn-cancel" id="cancelMessageBtn">
+                    <i class="fas fa-times"></i>
+                    انصراف
+                </button>
+                <button class="btn btn-primary" id="sendMessageBtn">
+                    <i class="fas fa-paper-plane"></i>
+                    ارسال پیام
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 @endsection
@@ -286,5 +341,126 @@
             }, 400);
         }, 3500);
     }
+
+    // ============================================
+    // ارسال پیام به دانشجو
+    // ============================================
+    var messageModal = document.getElementById('messageModal');
+    var receiverNameSpan = document.getElementById('receiverName');
+    var messageText = document.getElementById('messageText');
+    var charCount = document.getElementById('charCount');
+    var sendMessageBtn = document.getElementById('sendMessageBtn');
+    var closeMessageModal = document.getElementById('closeMessageModal');
+    var cancelMessageBtn = document.getElementById('cancelMessageBtn');
+    var currentReceiverId = null;
+
+    // شمارش کاراکترها
+    if (messageText) {
+        messageText.addEventListener('input', function() {
+            var length = this.value.length;
+            charCount.textContent = length;
+            var counter = document.querySelector('.char-counter');
+            if (length > 4800) {
+                counter.classList.add('limit');
+            } else {
+                counter.classList.remove('limit');
+            }
+        });
+    }
+
+    // کلیک روی آیکون پاکت نامه
+    document.querySelectorAll('.message-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            currentReceiverId = this.dataset.userId;
+            var userName = this.dataset.userName;
+            receiverNameSpan.textContent = userName;
+            messageText.value = '';
+            charCount.textContent = '0';
+            document.querySelector('.char-counter').classList.remove('limit');
+            messageModal.classList.add('active');
+            setTimeout(function() {
+                messageText.focus();
+            }, 300);
+        });
+    });
+
+    // بستن مودال
+    function closeModal() {
+        messageModal.classList.remove('active');
+        currentReceiverId = null;
+    }
+
+    closeMessageModal.addEventListener('click', closeModal);
+    cancelMessageBtn.addEventListener('click', closeModal);
+
+    // کلیک خارج از مودال
+    messageModal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+
+    // دکمه Esc برای بستن
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && messageModal.classList.contains('active')) {
+            closeModal();
+        }
+    });
+
+    // ارسال پیام
+    sendMessageBtn.addEventListener('click', function() {
+        var text = messageText.value.trim();
+        
+        if (!text) {
+            showToast('لطفاً متن پیام را وارد کنید', 'warning');
+            messageText.focus();
+            return;
+        }
+        
+        if (!currentReceiverId) {
+            showToast('خطا در شناسایی دانشجو', 'error');
+            return;
+        }
+        
+        // غیرفعال کردن دکمه
+        this.disabled = true;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال ارسال...';
+        
+        fetch('{{ route("teacher.student-messages.send") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify({
+                receiver_id: currentReceiverId,
+                text: text,
+                course_id: courseId
+            })
+        })
+        .then(function(response) {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(function(data) {
+            if (data.success) {
+                showToast('پیام با موفقیت ارسال شد', 'success');
+                closeModal();
+            } else {
+                showToast(data.message || 'خطا در ارسال پیام', 'error');
+            }
+        })
+        .catch(function(error) {
+            console.error('Error:', error);
+            showToast('خطا در ارتباط با سرور', 'error');
+        })
+        .finally(function() {
+            sendMessageBtn.disabled = false;
+            sendMessageBtn.innerHTML = '<i class="fas fa-paper-plane"></i> ارسال پیام';
+        });
+    });
 </script>
 @endsection
