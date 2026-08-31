@@ -64,7 +64,7 @@ class TeacherSiteController extends Controller
         }
         
         // تعداد کل دوره‌های کاربر
-        $coursesCount = $user->courses()->where('archieve','0')->where('private','0')->count();
+        $coursesCount = $user->courses()->where('archieve','0')->where('is_ended','0')->whereIn('type',[0,2])->count();
         
         // ==========================================
         // آمار مخصوص معلم
@@ -73,16 +73,8 @@ class TeacherSiteController extends Controller
         $studentRoleId = Role::where('name', 'student')->value('id');
 
         // 1. تعداد دوره‌های فعال و خصوصی معلم
-        $course_count = $user->courses()
-            ->where('active', '1')
-            ->where('private', '1')
-            ->count();
-
-        // 2. تعداد کل دوره‌های فعال در سیستم
-        $total_course_count = Course::where('active', '1')
-            ->where('private', '1')
-            ->count();
-
+        $course_count = $user->courses()->where('archieve','0')->where('is_ended','0')->whereIn('type',[1,2])->count();
+        
         // 3. تعداد دانشجویان (دانشجویانی که در دوره‌های این معلم ثبت‌نام کرده‌اند)
         $student_count = DB::table('course_user')
             ->join('courses', 'courses.id', '=', 'course_user.course_id')
@@ -120,7 +112,6 @@ class TeacherSiteController extends Controller
             'message',
             'coursesCount',
             'course_count',
-            'total_course_count',
             'student_count',
             'lesson_count',
             'massage',

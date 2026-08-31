@@ -22,7 +22,7 @@
                 <a href="{{ route('courses.st') }}" class="card-dash shadow">
                     <div class="card-icon"><i class="fas fa-chalkboard"></i></div>
                     <div class="card-title">درس‌ها</div>
-                    <div class="card-count">{{ Auth::user()->courses()->count() }}</div>
+                    <div class="card-count">{{ Auth::user()->courses()->where('archieve','0')->where('is_ended','0')->whereIn('type',[0,2])->count() }}</div>
                     <div class="card-text-sm">درس فعال</div>
                 </a>
             </div>

@@ -152,13 +152,8 @@ class StudentSiteController extends Controller
         
 
         // آمار کلی
-        $course_count = Course::where('active', '1')
-            ->where('private', '1')
-            ->count();
-        
-        $konkor_count = Konkor::where('active', 1)
-            ->count();
-        
+        $course_count = $user->courses()->where('archieve','0')->where('is_ended','0')->whereIn('type',[1,2])->count();
+
         // تعداد آزمون‌های فعال برای نمایش در کارت
         $active_exam_count = $activeExams->count();
         
@@ -168,7 +163,6 @@ class StudentSiteController extends Controller
             'activeExams',
             'active_exam_count',
             'course_count',
-            'konkor_count'
         ))->with([
             'pageTitle' => 'صفحه دانشجو',
             'pageName' => 'دانشجو',
