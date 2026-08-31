@@ -73,33 +73,31 @@ Route::prefix('/admin')->middleware(['role:admin'])->group(function () {
     });
 
     Route::prefix('/survey')->group(function () {
-
         // صفحه دسته بندی ها
-        Route::get('/', [AdminSurveyController::class, 'index'])
-            ->name('admin_survey');
+        Route::get('/', [AdminSurveyController::class, 'index'])->name('admin_survey');
 
         // صفحه سوالات یک دسته
-        Route::get('/category/{id}', [AdminSurveyController::class, 'category'])
-            ->name('admin.survey.category');
+        Route::get('/category/{id}', [AdminSurveyController::class, 'category'])->name('admin.survey.category');
 
         // جزئیات سوال
-        Route::get('/question/{id}', [AdminSurveyController::class, 'show'])
-            ->name('admin.survey.show');
+        Route::get('/question/{id}', [AdminSurveyController::class, 'show'])->name('admin.survey.show');
 
         // افزودن دسته بندی
-        Route::post('/category/store', [AdminSurveyController::class, 'storeCategory'])
-            ->name('admin.survey.category.store');
+        Route::post('/category/store', [AdminSurveyController::class, 'storeCategory'])->name('admin.survey.category.store');
+
+        // ویرایش دسته بندی 
+        Route::put('/category/{id}', [AdminSurveyController::class, 'updateCategory'])->name('admin.survey.category.update');
+
+        // حذف دسته بندی
+        Route::delete('/category/{id}', [AdminSurveyController::class, 'deleteCategory'])->name('admin.survey.category.delete');
 
         // تنظیمات نظرسنجی دانشجو
-        Route::post('/toggle-student', [AdminSurveyController::class, 'toggleStudentSurvey'])
-            ->name('admin.toggle-student-survey');
+        Route::post('/toggle-student', [AdminSurveyController::class, 'toggleStudentSurvey'])->name('admin.toggle-student-survey');
 
         // تنظیمات نظرسنجی استاد
-        Route::post('/toggle-teacher', [AdminSurveyController::class, 'toggleTeacherSurvey'])
-            ->name('admin.toggle-teacher-survey');
+        Route::post('/toggle-teacher', [AdminSurveyController::class, 'toggleTeacherSurvey'])->name('admin.toggle-teacher-survey');
 
-        Route::get('/settings', [AdminSurveyController::class, 'getSettings'])
-            ->name('admin.get-settings');
+        Route::get('/settings', [AdminSurveyController::class, 'getSettings'])->name('admin.get-settings');
     });
 
     Route::middleware(['auth'])->group(function () {

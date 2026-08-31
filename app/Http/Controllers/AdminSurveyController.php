@@ -203,4 +203,70 @@ class AdminSurveyController extends Controller
             ], 500);
         }
     }
+    public function updateCategory(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ], [
+            'name.required' => 'نام دسته‌بندی الزامی است.',
+            'name.string' => 'نام دسته‌بندی باید متنی باشد.',
+            'name.max' => 'نام دسته‌بندی نمی‌تواند بیشتر از 255 کاراکتر باشد.',
+        ]);
+
+        try {
+            $category = Category::findOrFail($id);
+            $category->name = $request->name;
+            $category->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'دسته‌بندی با موفقیت ویرایش شد.',
+                'category' => [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'surveys_count' => $category->surveys()->count(),
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در ویرایش دسته‌بندی: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * حذف دسته‌بندی
+     */
+    public function deleteCategory($id)
+    {
+        try {
+            $category = Category::findOrFail($id);
+            
+            // بررسی وجود نظرسنجی‌های مرتبط
+            $surveysCount = $category->surveys()->count();
+            
+            if ($surveysCount > 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "این دسته‌بندی دارای {$surveysCount} سوال است. ابتدا سوالات را حذف کنید.",
+                ], 400);
+            }
+
+            $category->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'دسته‌بندی با موفقیت حذف شد.',
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در حذف دسته‌بندی: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
 }

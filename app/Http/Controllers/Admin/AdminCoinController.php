@@ -22,8 +22,8 @@ class AdminCoinController extends Controller
         ]);
 
         $coin = new ViraCoin();
-        $coin->title = $request->title;
-        $coin->coin_value = $request->coin_value;
+        $coin->name = $request->title;
+        $coin->value = $request->coin_value;
         $coin->is_active = true;
         $coin->save();
 
@@ -37,7 +37,7 @@ class AdminCoinController extends Controller
         ]);
 
         $coin = ViraCoin::findOrFail($id);
-        $coin->coin_value = $request->coin_value;
+        $coin->value = $request->coin_value;
         $coin->save();
 
         return redirect()->route('admin.coin')->with('success', 'مقدار ویراکوین با موفقیت به‌روزرسانی شد!');
