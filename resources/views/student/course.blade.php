@@ -1,18 +1,23 @@
+```blade
 @extends('layout.master')
 
 @section('title')
-ملیسان | مدیریت درس
+    ملیسان | مدیریت درس
 @endsection
 
 @section('head')
-<link rel="stylesheet" href="{{asset('css/badge.css')}}">
-<link rel="stylesheet" href="{{asset('css/style-course.css')}}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('css/badge.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/style-course.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 @endsection
 
 @section('mohtava')
+
 <div class="course-detail-container">
 
+    {{-- =========================
+         اطلاعات دوره
+    ========================== --}}
     <div class="course-actions-bar">
         <div class="info-badge course-badge">
             <span class="badge-icon">
@@ -28,6 +33,9 @@
     </div>
 
 
+    {{-- =========================
+         امکانات دوره
+    ========================== --}}
     <div class="course-chips">
 
         @if($course->quiz == 1)
@@ -39,7 +47,7 @@
         @endif
 
         @if($course->faaliat == 1)
-            <a href="{{ route('student.my.activities',$course->id) }}"
+            <a href="{{ route('student.my.activities', $course->id) }}"
                class="chip-item">
                 <i class="fas fa-database"></i>
                 فعالیت های من
@@ -65,8 +73,14 @@
     </div>
 
 
+    {{-- =========================
+         جلسات
+    ========================== --}}
     <div class="sessions-section">
 
+        {{-- =========================
+             لیست جلسات
+        ========================== --}}
         <div class="sessions-sidebar">
 
             <div class="sessions-header">
@@ -77,7 +91,7 @@
 
                 @forelse($sessions as $session)
 
-                    <a href="#"
+                    <a href="javascript:void(0);"
                        class="session-item {{ $loop->first ? 'active' : '' }}"
 
                        data-session="{{ $session->id }}"
@@ -90,23 +104,15 @@
 
                        data-pdf="{{ $session->file ?? '' }}"
 
-                       data-title="{{ addslashes($session->name) }}"
+                       data-title="{{ $session->name ?? '' }}"
 
-                       data-number="جلسه {{ $session->number }}"
+                       data-number="جلسه {{ $session->number ?? '' }}"
 
-                       data-description="{{ addslashes($session->text ?? '') }}"
+                       data-description="{{ $session->text ?? '' }}"
 
                        data-majazi="{{ $session->majazi ?? '' }}"
 
-                       onclick="changeSession(
-                           this,
-                           '{{ $session->id }}',
-                           '{{ $session->file ?? '' }}',
-                           '{{ addslashes($session->name) }}',
-                           'جلسه {{ $session->number }}',
-                           '{{ addslashes($session->text ?? '') }}',
-                           '{{ addslashes($session->majazi ?? '') }}'
-                       )">
+                       onclick="changeSession(this)">
 
                         <span class="session-check">
                             <i class="fas fa-check-circle"></i>
@@ -135,6 +141,9 @@
         </div>
 
 
+        {{-- =========================
+             محتوای جلسه
+        ========================== --}}
         <div class="session-content">
 
             <div class="session-content-header">
@@ -195,9 +204,7 @@
                         </div>
 
 
-                        {{-- =========================
-                             کلاس مجازی
-                        ========================== --}}
+                        {{-- کلاس مجازی --}}
                         <a href="#"
                            id="majaziSessionBtn"
                            class="info-badge majazi-badge"
@@ -219,35 +226,28 @@
                 </div>
 
 
+                {{-- دکمه‌های عملیات --}}
                 <div class="session-action-buttons">
 
                     <a href="#"
                        id="questionBtn"
                        class="action-icon-btn"
                        data-tooltip="ارسال سوال">
-
                         <i class="fas fa-question-circle"></i>
-
                     </a>
-
 
                     <a href="#"
                        id="homeworkBtn"
                        class="action-icon-btn"
                        data-tooltip="ارسال تکلیف">
-
                         <i class="fas fa-file-alt"></i>
-
                     </a>
-
 
                     <a href="#"
                        id="reportBtn"
                        class="action-icon-btn"
                        data-tooltip="ارسال گزارش">
-
                         <i class="fas fa-edit"></i>
-
                     </a>
 
                 </div>
@@ -255,6 +255,9 @@
             </div>
 
 
+            {{-- =========================
+                 توضیحات جلسه
+            ========================== --}}
             <div class="session-description">
 
                 @php
@@ -279,11 +282,11 @@
 
                             <i class="fas fa-bell"></i>
 
-                           محتوای درس
+                            محتوای درس
+
                             <i class="fas fa-chevron-down expand-icon"></i>
 
                         </div>
-
 
                         <div class="collapsible-body"
                              id="sessionDescription">
@@ -311,7 +314,6 @@
 
                         </div>
 
-
                         <div class="collapsible-body"
                              id="sessionDescription">
 
@@ -328,6 +330,9 @@
             </div>
 
 
+            {{-- =========================
+                 PDF
+            ========================== --}}
             <div class="session-pdf-container">
 
                 <div class="pdf-toolbar">
@@ -393,79 +398,82 @@
 
 <script>
 
-    // ==========================================
+    // =========================================================
     // اطلاعات جلسه فعلی
-    // ==========================================
+    // =========================================================
 
-    let currentSessionId =
-        '{{ $sessions->first()->id ?? "" }}';
-
-    let currentPdfUrl =
-        '{{ $sessions->first()->file ?? "" }}';
-
-    let currentSessionTitle =
-        '{{ $sessions->first()->name ?? "" }}';
-
-    let currentSessionNumber =
-        'جلسه {{ $sessions->first()->number ?? "" }}';
-
-    let currentDescription =
-        '{{ addslashes($sessions->first()->text ?? "") }}';
-
-    let currentMajaziUrl =
-        '{{ addslashes($sessions->first()->majazi ?? "") }}';
+    let currentSessionId = '';
+    let currentPdfUrl = '';
+    let currentSessionTitle = '';
+    let currentSessionNumber = '';
+    let currentDescription = '';
+    let currentMajaziUrl = '';
 
 
-    // ==========================================
+    // =========================================================
     // تغییر جلسه
-    // ==========================================
+    // =========================================================
 
-    function changeSession(
-        element,
-        sessionId,
-        pdfUrl,
-        title,
-        number,
-        description,
-        majaziUrl
-    ) {
+    function changeSession(element) {
 
-        if (!element) return;
+        if (!element) {
+            return;
+        }
 
 
-        // ==========================================
-        // فعال کردن جلسه
-        // ==========================================
+        // =====================================================
+        // گرفتن اطلاعات از data attributes
+        // =====================================================
+
+        const sessionId =
+            element.dataset.session || '';
+
+        const pdfUrl =
+            element.dataset.pdf || '';
+
+        const title =
+            element.dataset.title || '';
+
+        const number =
+            element.dataset.number || '';
+
+        const description =
+            element.dataset.description || '';
+
+        const majaziUrl =
+            element.dataset.majazi || '';
+
+
+        // =====================================================
+        // فعال کردن جلسه انتخاب‌شده
+        // =====================================================
 
         document
             .querySelectorAll('.session-item')
             .forEach(item => {
+
                 item.classList.remove('active');
+
             });
 
         element.classList.add('active');
 
 
-        // ==========================================
+        // =====================================================
         // ذخیره اطلاعات جلسه
-        // ==========================================
+        // =====================================================
 
         currentSessionId = sessionId;
-
         currentPdfUrl = pdfUrl;
-
         currentSessionTitle = title;
-
         currentSessionNumber = number;
-
         currentDescription = description;
+        currentMajaziUrl = majaziUrl;
 
-        currentMajaziUrl = majaziUrl || '';
 
-
-        // ==========================================
+        // =====================================================
         // شماره جلسه
-        // ==========================================
+        // =====================================================
 
         const sessionNumberDisplay =
             document.getElementById('sessionNumberDisplay');
@@ -476,13 +484,15 @@
                 number.match(/\d+/);
 
             sessionNumberDisplay.textContent =
-                numberMatch ? numberMatch[0] : '-';
+                numberMatch
+                    ? numberMatch[0]
+                    : '-';
         }
 
 
-        // ==========================================
+        // =====================================================
         // موضوع جلسه
-        // ==========================================
+        // =====================================================
 
         const sessionNameDisplay =
             document.getElementById('sessionNameDisplay');
@@ -494,9 +504,9 @@
         }
 
 
-        // ==========================================
+        // =====================================================
         // کلاس مجازی
-        // ==========================================
+        // =====================================================
 
         const majaziSessionBtn =
             document.getElementById('majaziSessionBtn');
@@ -530,9 +540,9 @@
         }
 
 
-        // ==========================================
+        // =====================================================
         // PDF Viewer
-        // ==========================================
+        // =====================================================
 
         const pdfViewer =
             document.getElementById('pdfViewer');
@@ -541,47 +551,35 @@
 
             if (pdfUrl) {
 
+                let fullPdfUrl;
+
                 if (pdfUrl.startsWith('http')) {
 
-                    pdfViewer.outerHTML = `
-                        <object
-                            id="pdfViewer"
-                            data="${pdfUrl}"
-                            type="application/pdf"
-                            width="100%"
-                            height="550px">
-
-                            <object
-                                width="100%"
-                                height="550"
-                                data="https://docs.google.com/gview?embedded=true&url=${pdfUrl}">
-                            </object>
-
-                        </object>
-                    `;
+                    fullPdfUrl = pdfUrl;
 
                 } else {
 
-                    const fullPdfUrl =
+                    fullPdfUrl =
                         '/files/session' + pdfUrl;
-
-                    pdfViewer.outerHTML = `
-                        <object
-                            id="pdfViewer"
-                            data="${fullPdfUrl}"
-                            type="application/pdf"
-                            width="100%"
-                            height="550px">
-
-                            <object
-                                width="100%"
-                                height="550"
-                                data="https://docs.google.com/gview?embedded=true&url=${fullPdfUrl}">
-                            </object>
-
-                        </object>
-                    `;
                 }
+
+
+                pdfViewer.outerHTML = `
+                    <object
+                        id="pdfViewer"
+                        data="${fullPdfUrl}"
+                        type="application/pdf"
+                        width="100%"
+                        height="550px">
+
+                        <object
+                            width="100%"
+                            height="550"
+                            data="https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(fullPdfUrl)}">
+                        </object>
+
+                    </object>
+                `;
 
             } else {
 
@@ -602,9 +600,9 @@
         }
 
 
-        // ==========================================
+        // =====================================================
         // دکمه باز کردن PDF
-        // ==========================================
+        // =====================================================
 
         const pdfOpenBtn =
             document.getElementById('pdfOpenBtn');
@@ -628,22 +626,23 @@
 
             } else {
 
+                pdfOpenBtn.removeAttribute('href');
+
                 pdfOpenBtn.style.display =
                     'none';
             }
         }
 
 
-        // ==========================================
+        // =====================================================
         // توضیحات جلسه
-        // ==========================================
+        // =====================================================
 
         const sessionDescription =
             document.getElementById('sessionDescription');
 
         const collapsibleSection =
             document.querySelector('.collapsible-section');
-
 
         if (
             sessionDescription &&
@@ -675,9 +674,9 @@
         }
 
 
-        // ==========================================
+        // =====================================================
         // وضعیت دسترسی دکمه‌ها
-        // ==========================================
+        // =====================================================
 
         const canQuestion =
             element.dataset.canQuestion === 'true';
@@ -689,9 +688,9 @@
             element.dataset.canReport === 'true';
 
 
-        // ==========================================
+        // =====================================================
         // دکمه سوال
-        // ==========================================
+        // =====================================================
 
         const questionBtn =
             document.getElementById('questionBtn');
@@ -715,24 +714,24 @@
                     'auto';
 
                 questionBtn.classList.remove('disabled');
-
                 questionBtn.classList.remove('hidden-btn');
 
             } else {
+
+                questionBtn.removeAttribute('href');
 
                 questionBtn.style.display =
                     'none';
 
                 questionBtn.classList.add('disabled');
-
                 questionBtn.classList.add('hidden-btn');
             }
         }
 
 
-        // ==========================================
+        // =====================================================
         // دکمه تکلیف
-        // ==========================================
+        // =====================================================
 
         const homeworkBtn =
             document.getElementById('homeworkBtn');
@@ -756,24 +755,24 @@
                     'auto';
 
                 homeworkBtn.classList.remove('disabled');
-
                 homeworkBtn.classList.remove('hidden-btn');
 
             } else {
+
+                homeworkBtn.removeAttribute('href');
 
                 homeworkBtn.style.display =
                     'none';
 
                 homeworkBtn.classList.add('disabled');
-
                 homeworkBtn.classList.add('hidden-btn');
             }
         }
 
 
-        // ==========================================
+        // =====================================================
         // دکمه گزارش
-        // ==========================================
+        // =====================================================
 
         const reportBtn =
             document.getElementById('reportBtn');
@@ -797,16 +796,16 @@
                     'auto';
 
                 reportBtn.classList.remove('disabled');
-
                 reportBtn.classList.remove('hidden-btn');
 
             } else {
+
+                reportBtn.removeAttribute('href');
 
                 reportBtn.style.display =
                     'none';
 
                 reportBtn.classList.add('disabled');
-
                 reportBtn.classList.add('hidden-btn');
             }
         }
@@ -814,18 +813,18 @@
     }
 
 
-    // ==========================================
+    // =========================================================
     // بعد از لود صفحه
-    // ==========================================
+    // =========================================================
 
     document.addEventListener(
         'DOMContentLoaded',
         function () {
 
 
-            // ==========================================
+            // =====================================================
             // Collapsible
-            // ==========================================
+            // =====================================================
 
             const collapsibleHeader =
                 document.querySelector(
@@ -845,7 +844,6 @@
                             this.querySelector(
                                 '.expand-icon'
                             );
-
 
                         if (body) {
 
@@ -881,207 +879,26 @@
             }
 
 
-            // ==========================================
-            // جلسه اول
-            // ==========================================
+            // =====================================================
+            // انتخاب جلسه اول
+            //
+            // مهم:
+            // جلسه اول هم دقیقاً از همان changeSession استفاده
+            // می‌کند که برای بقیه جلسات استفاده می‌شود.
+            // =====================================================
 
             const firstSession =
-                document.querySelector(
-                    '.session-item.active'
-                );
-
+                document.querySelector('.session-item');
 
             if (firstSession) {
 
-                const sessionId =
-                    firstSession.dataset.session;
+                changeSession(firstSession);
 
-                const canQuestion =
-                    firstSession.dataset.canQuestion === 'true';
-
-                const canHomework =
-                    firstSession.dataset.canHomework === 'true';
-
-                const canReport =
-                    firstSession.dataset.canReport === 'true';
-
-                const majaziUrl =
-                    firstSession.dataset.majazi || '';
-
-
-                // ==========================================
-                // کلاس مجازی جلسه اول
-                // ==========================================
-
-                const majaziSessionBtn =
-                    document.getElementById(
-                        'majaziSessionBtn'
-                    );
-
-                if (majaziSessionBtn) {
-
-                    if (
-                        majaziUrl &&
-                        majaziUrl.trim() !== '' &&
-                        majaziUrl.trim() !== 'null'
-                    ) {
-
-                        majaziSessionBtn.setAttribute(
-                            'href',
-                            majaziUrl
-                        );
-
-                        majaziSessionBtn.style.display =
-                            'inline-flex';
-
-                    } else {
-
-                        majaziSessionBtn.setAttribute(
-                            'href',
-                            '#'
-                        );
-
-                        majaziSessionBtn.style.display =
-                            'none';
-                    }
-                }
-
-
-                // ==========================================
-                // سوال
-                // ==========================================
-
-                const questionBtn =
-                    document.getElementById(
-                        'questionBtn'
-                    );
-
-                if (questionBtn) {
-
-                    if (canQuestion) {
-
-                        questionBtn.setAttribute(
-                            'href',
-                            `/student/questions/create/${sessionId}`
-                        );
-
-                        questionBtn.style.display =
-                            'inline-flex';
-
-                        questionBtn.classList.remove(
-                            'disabled'
-                        );
-
-                        questionBtn.classList.remove(
-                            'hidden-btn'
-                        );
-
-                    } else {
-
-                        questionBtn.style.display =
-                            'none';
-
-                        questionBtn.classList.add(
-                            'disabled'
-                        );
-
-                        questionBtn.classList.add(
-                            'hidden-btn'
-                        );
-                    }
-                }
-
-
-                // ==========================================
-                // تکلیف
-                // ==========================================
-
-                const homeworkBtn =
-                    document.getElementById(
-                        'homeworkBtn'
-                    );
-
-                if (homeworkBtn) {
-
-                    if (canHomework) {
-
-                        homeworkBtn.setAttribute(
-                            'href',
-                            `/student/exercise/show/${sessionId}`
-                        );
-
-                        homeworkBtn.style.display =
-                            'inline-flex';
-
-                        homeworkBtn.classList.remove(
-                            'disabled'
-                        );
-
-                        homeworkBtn.classList.remove(
-                            'hidden-btn'
-                        );
-
-                    } else {
-
-                        homeworkBtn.style.display =
-                            'none';
-
-                        homeworkBtn.classList.add(
-                            'disabled'
-                        );
-
-                        homeworkBtn.classList.add(
-                            'hidden-btn'
-                        );
-                    }
-                }
-
-
-                // ==========================================
-                // گزارش
-                // ==========================================
-
-                const reportBtn =
-                    document.getElementById(
-                        'reportBtn'
-                    );
-
-                if (reportBtn) {
-
-                    if (canReport) {
-
-                        reportBtn.setAttribute(
-                            'href',
-                            `/student/discussion/create/${sessionId}`
-                        );
-
-                        reportBtn.style.display =
-                            'inline-flex';
-
-                        reportBtn.classList.remove(
-                            'disabled'
-                        );
-
-                        reportBtn.classList.remove(
-                            'hidden-btn'
-                        );
-
-                    } else {
-
-                        reportBtn.style.display =
-                            'none';
-
-                        reportBtn.classList.add(
-                            'disabled'
-                        );
-
-                        reportBtn.classList.add(
-                            'hidden-btn'
-                        );
-                    }
-                }
             }
+
         }
     );
+
 </script>
+
 @endsection
