@@ -149,10 +149,10 @@
                         <tbody>
                             @php
                                 $pishRows = [
-                                    ['label' => 'سوال', 'status' => $q_scores, 'score' => $score_pish_soal, 'max' => 12],
-                                    ['label' => 'گزارش', 'status' => $d_scores, 'score' => $score_pish_gozaresh, 'max' => 10],
-                                    ['label' => 'خودآزمایی', 'status' => $qu_scores, 'score' => $score_pish_azmoon, 'max' => 24],
-                                    ['label' => 'کیفیت فعالیت‌ها', 'status' => ($q_scores + $d_scores + $qu_scores + 5) / 4, 'score' => $score_keifiat, 'max' => 14],
+                                    ['label' => 'کیفیت سوال', 'status' => $q_scores, 'score' => $score_pish_soal, 'max' => 12],
+                                    ['label' => 'کیفیت گزارش', 'status' => $d_scores, 'score' => $score_pish_gozaresh, 'max' => 10],
+                                    ['label' => 'کیفیت خودآزمایی', 'status' => $qu_scores, 'score' => $score_pish_azmoon, 'max' => 24],
+                                    ['label' => 'کیفیت داوری ها', 'status' => ($q_scores + $d_scores + $qu_scores + 5) / 4, 'score' => $score_keifiat, 'max' => 14],
                                 ];
                             @endphp
                             @foreach($pishRows as $row)

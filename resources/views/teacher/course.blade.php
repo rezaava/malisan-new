@@ -327,7 +327,7 @@
                             data-number="جلسه {{ $session->number }}"
                             data-description="{{ addslashes($session->text ?? '') }}"
                             data-lessonplan="{{ addslashes($session->lesson_plan ?? '') }}"
-                            data-majazi="{{ $session->majazi ?? '' }}"
+                            data-majazi="{{ e($session->majazi ?? '') }}"
                             onclick="changeSessionFromData(this)"
                         >
 
@@ -647,7 +647,7 @@
 
 
                                 <a
-                                    href="#"
+                                    href="javascript:void(0);"
                                     id="majaziSessionBtn"
                                     class="info-badge majazi-badge"
                                     target="_blank"
@@ -1448,12 +1448,14 @@
 
     let currentPdfUrl = '{{ $sessions->first()->file ?? "" }}';
 
-    let currentSessionTitle = '{{ addslashes($sessions->first()->name ?? "") }}';
+    let currentSessionTitle =
+        @json($sessions->first()->name ?? '');
 
     let currentSessionNumber = 'جلسه {{ $sessions->first()->number ?? "" }}';
 
-    let currentMajaziUrl = '{{ $sessions->first()->majazi ?? "" }}';
-
+    let currentMajaziUrl =
+        @json($sessions->first()->majazi ?? '');
+        
     let currentLessonPlan = '';
 
     let joditEditor = null;
@@ -2060,34 +2062,61 @@
         // ==========================================
 
         const majaziSessionBtn =
-            document.getElementById(
-                'majaziSessionBtn'
-            );
-
+            document.getElementById('majaziSessionBtn');
 
         if (majaziSessionBtn) {
 
-            if (
-                majaziUrl &&
-                majaziUrl.trim() !== ''
-            ) {
+            const rawMajaziUrl =
+                typeof majaziUrl === 'string'
+                    ? majaziUrl.trim()
+                    : '';
 
-                majaziSessionBtn.href =
-                    majaziUrl;
+            if (rawMajaziUrl !== '') {
 
-                majaziSessionBtn.style.display =
-                    'inline-flex';
+                let finalMajaziUrl = rawMajaziUrl;
+
+                try {
+
+                    // اگر URL پروتکل نداشت، HTTPS اضافه می‌کنیم
+                    if (
+                        !finalMajaziUrl.startsWith('http://') &&
+                        !finalMajaziUrl.startsWith('https://')
+                    ) {
+                        finalMajaziUrl =
+                            'https://' + finalMajaziUrl;
+                    }
+
+                    // URL را به صورت Absolute URL می‌سازیم
+                    const absoluteUrl =
+                        new URL(finalMajaziUrl);
+
+                    majaziSessionBtn.href =
+                        absoluteUrl.href;
+
+                    majaziSessionBtn.style.display =
+                        'inline-flex';
+
+                } catch (error) {
+
+                    console.error(
+                        'Invalid virtual class URL:',
+                        rawMajaziUrl,
+                        error
+                    );
+
+                    majaziSessionBtn.removeAttribute('href');
+
+                    majaziSessionBtn.style.display =
+                        'none';
+                }
 
             } else {
 
-                majaziSessionBtn.href =
-                    '#';
+                majaziSessionBtn.removeAttribute('href');
 
                 majaziSessionBtn.style.display =
                     'none';
-
             }
-
         }
 
 

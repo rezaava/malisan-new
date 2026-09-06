@@ -18,8 +18,17 @@ class AdminSurveyController extends Controller
         $settings = SiteSetting::getSettings();
 
         $categories = Category::withCount('surveys')
+            ->withCount([
+                'surveys as active_surveys_count' => function ($query) {
+                    $query->where('active', 1);
+                }
+            ])
             ->orderBy('name')
             ->get();
+
+        foreach ($categories as $category) {
+            $category->is_active = $category->active_surveys_count > 0 ? 1 : 0;
+        }
 
         $totalSurveys = Survey::count();
 
@@ -36,7 +45,6 @@ class AdminSurveyController extends Controller
             )
         );
     }
-
 
     /**
      * افزودن دسته‌بندی

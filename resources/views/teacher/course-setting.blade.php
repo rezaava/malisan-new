@@ -1148,7 +1148,7 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>تعداد تکلیف/سمینار</td>
+                                    <td>تعداد تکلیف/سمینار (در طول ترم)</td>
                                     <td>
                                         <input type="number" name="max_taklif" value="{{ $courseSetting->max_taklif }}"
                                             class="form-input" min="0">
