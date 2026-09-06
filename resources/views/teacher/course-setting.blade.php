@@ -1162,6 +1162,27 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                <tr>
+                                    <td>
+                                        حداکثر تعداد گزارش در هر جلسه
+                                    </td>
+
+                                    <td>
+                                        <input
+                                            type="number"
+                                            name="max_gozaresh"
+                                            value="{{ old('max_gozaresh', $courseSetting->max_gozaresh ?? 1) }}"
+                                            class="form-input"
+                                            min="1"
+                                            style="max-width: 150px;"
+                                        >
+
+                                        <small style="display:block; font-size:12px; color:#6b7280; margin-top:6px;">
+                                            منظور از گزارش، خلاصهٔ درس یا تحقیق درسی (بسته به نظر استاد) است که دانشجو در هر جلسه انجام می‌دهد.
+                                        </small>
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td>
                                         سقف تعداد داوری‌های دانشجو در هر روز
                                         <span class="min-score-badge" style="background: #e0f2fe; color: #0369a1;">پیش‌فرض:
@@ -1655,6 +1676,7 @@
             document.querySelector('input[name="jalasat"]').value = siteSettings.jalasat || 16;
             document.querySelector('input[name="max_taklif"]').value = siteSettings.max_taklif || 3;
             document.querySelector('input[name="max_soal"]').value = siteSettings.max_soal || 3;
+            document.querySelector('input[name="max_gozaresh"]').value = siteSettings.max_gozaresh || 1;
             document.querySelector('input[name="daily_judgment_limit"]').value = siteSettings.daily_judgment_limit || 5;
 
             // توضیحات متنی

@@ -564,13 +564,8 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
     // مسیرهای پیام‌های دریافتی - دانشجو
     // ==========================================
     Route::prefix('/messages')->group(function () {
-        // مشاهده همه پیام‌های دانشجو
         Route::get('/', [StudentMessageController::class, 'studentIndex'])->name('student.messages.index');
-        
-        // دریافت پیام‌ها به صورت JSON (برای AJAX)
-        Route::get('/get', [StudentMessageController::class, 'studentGetMessages'])->name('student.messages.get');
-        
-        // علامت‌گذاری پیام به عنوان خوانده شده
+        Route::get('/get', [StudentMessageController::class, 'studentGetMessages'])->name('student.messages.get');        
         Route::post('/{messageId}/read', [StudentMessageController::class, 'markAsRead'])->name('student.messages.read');
     });
 });

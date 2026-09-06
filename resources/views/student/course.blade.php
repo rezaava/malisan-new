@@ -1,4 +1,3 @@
-```blade
 @extends('layout.master')
 
 @section('title')

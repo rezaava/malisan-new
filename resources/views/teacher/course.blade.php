@@ -573,17 +573,39 @@
 
                     <div class="collapsible-section">
 
-                        <div class="collapsible-header">
+<div class="collapsible-header">
 
-                            <i class="fas fa-book"></i>
+    <i class="fas fa-book"></i>
 
-                            محتوای درس
+    محتوای درس
 
-                            <i class="fas fa-chevron-down expand-icon"></i>
+    <div style="margin-right: auto;">
 
-                        </div>
+        <a
+            href="javascript:void(0);"
+            id="majaziSessionBtn"
+            class="info-badge majazi-badge text-start"
+            target="_blank"
+            rel="noopener noreferrer"
+            style="display: {{ $sessions->isNotEmpty() && !empty($sessions->first()->majazi) ? 'inline-flex' : 'none' }}; text-decoration:none; cursor:pointer;"
+        >
 
+            <span class="badge-icon">
+                <i class="fas fa-video"></i>
+            </span>
 
+            <span class="badge-value">
+                کلاس مجازی
+            </span>
+
+        </a>
+
+        <i class="fas fa-chevron-down expand-icon">
+        </i>
+
+    </div>
+
+</div>
                         <div
                             class="collapsible-body"
                             id="sessionText">
@@ -619,53 +641,29 @@
 
                         <div class="collapsible-header p-0 px-2">
 
+
                             <div
                                 class="pdf-toolbar d-flex justify-content-between align-items-center w-100">
 
-                                <div>
+                                <div class="w-100">
 
                                     <span class="px-2">
-                                        محتوای فایل درس
+                                        پیوست (جزوه، کتاب، پاورپوینت و...)
                                     </span>
-
-                                    <a
-                                        href="#"
-                                        id="pdfOpenBtn"
-                                        class="pdf-open-btn"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        style="{{ $sessions->isNotEmpty() && $sessions->first()->file ? 'display:inline-flex;' : 'display:none;' }}"
-                                    >
-
-                                        <i class="fas fa-file-pdf"></i>
-
-                                        باز کردن PDF در صفحه جدید
-
-                                    </a>
+<a
+    href="#"
+    id="pdfOpenBtn"
+    class="pdf-open-btn"
+    title="باز کردن سند پیوست شده در صفحه جدید"
+    target="_blank"
+    rel="noopener noreferrer"
+    style="float: left; {{ $sessions->isNotEmpty() && $sessions->first()->file ? 'display:inline-flex;' : 'display:none;' }}"
+>
+    <i class="fas fa-file-pdf" style="color: black"></i>
+</a>
 
                                 </div>
 
-
-                                <a
-                                    href="javascript:void(0);"
-                                    id="majaziSessionBtn"
-                                    class="info-badge majazi-badge"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style="display: {{ $sessions->isNotEmpty() && !empty($sessions->first()->majazi) ? 'inline-flex' : 'none' }}; text-decoration:none; cursor:pointer;"
-                                >
-
-                                    <span class="badge-icon">
-
-                                        <i class="fas fa-video"></i>
-
-                                    </span>
-
-                                    <span class="badge-value">
-                                        کلاس مجازی
-                                    </span>
-
-                                </a>
 
                             </div>
 

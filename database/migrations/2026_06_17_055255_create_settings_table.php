@@ -59,7 +59,7 @@ return new class extends Migration {
             $table->integer('min_davari')->default(14);
             $table->integer('max_taklif')->default(3);
             $table->integer('max_seminar')->nullable()->default(4);
-            $table->integer('max_gozaresh')->nullable()->default(4);
+            $table->integer('max_gozaresh')->nullable()->default(1);
             $table->integer('max_gheibat')->nullable()->default(3);
             $table->integer('min_w_khod')->nullable()->default(14);
             $table->integer('q_num')->nullable()->default(10);
