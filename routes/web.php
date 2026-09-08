@@ -20,6 +20,7 @@ use App\Http\Controllers\Teacher\CourseController;
 use App\Http\Controllers\Teacher\SkillController;
 use App\Http\Controllers\Teacher\StudentAdjectiveController;
 use App\Http\Controllers\Teacher\StudentEventController;
+use App\Http\Controllers\AdminEvaluationActivityLimitController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\TeacherSiteController;
 use App\Http\Controllers\ExamController;
@@ -51,7 +52,14 @@ Route::middleware(['auth'])->group(function () {
 
 Route::prefix('/admin')->middleware(['role:admin'])->group(function () {
     Route::get('/', [AdminController::class, 'index'])->name('index_admin');
-    
+
+    Route::prefix('/evaluation-activity-limits')->group(function () {
+        Route::get('/', [AdminEvaluationActivityLimitController::class, 'index'])->name('admin.evaluation-activity-limits');
+
+        Route::post('/store', [AdminEvaluationActivityLimitController::class, 'store'])->name('admin.evaluation-activity-limits.store');
+
+        Route::put('/update/{id}', [AdminEvaluationActivityLimitController::class, 'update'])->name('admin.evaluation-activity-limits.update');
+    });
     Route::prefix('/coin')->group(function () {
         Route::get('/', [AdminCoinController::class, 'index'])->name('admin.coin');
         Route::post('/store', [AdminCoinController::class, 'store'])->name('admin.coin.store');

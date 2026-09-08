@@ -54,6 +54,15 @@
                     <div class="card-text-sm">ویرا کوین</div>
                 </a>
             </div>
+            <div class="col-md-3 col-sm-6">
+                <a href="{{ route('admin.evaluation-activity-limits') }}" class="card-dash shadow">
+                    <div class="card-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="card-title">سقف فعالیت‌های ارزشیابی</div>
+                    <div class="card-text-sm">مدیریت سقف امتیاز فعالیت‌ها</div>
+                </a>
+            </div>
         </div>
     </div>
 @endsection
