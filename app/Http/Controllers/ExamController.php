@@ -55,86 +55,112 @@ class ExamController extends Controller
      */
     public function studentStore(Request $request, $session_id)
     {
-        $validator = Validator::make($request->all(), [
+        $type = (int) $request->type;
+
+        $rules = [
             'question' => 'required|string|min:5',
-            'options' => 'required|array|min:4|max:4',
-            'options.*' => 'required|string|min:1',
-            'correct_answer' => 'required|integer|min:0|max:3',
-        ]);
+            'type' => 'required|in:0,1',
+        ];
+
+        if ($type === 0) {
+            $rules['options'] = 'required|array|size:4';
+            $rules['options.*'] = 'required|string|min:1';
+            $rules['correct_answer'] = 'required|integer|min:0|max:3';
+        } else {
+            $rules['options'] = 'required|array|min:1';
+            $rules['options.0'] = 'required|string|min:1';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        $session = Session::findOrFail($request->session_id);
+        if ($type === 1) {
+            $shortAnswer = trim($request->options[0]);
+
+            $wordCount = count(preg_split('/\s+/u', $shortAnswer, -1, PREG_SPLIT_NO_EMPTY));
+
+            if ($wordCount > 3) {
+                return redirect()->back()
+                    ->with('error', 'پاسخ کوتاه باید حداکثر سه کلمه باشد.')
+                    ->withInput();
+            }
+        }
+
+        $session = Session::findOrFail($session_id);
         $setting = Setting::where('course_id', $session->course_id)->first();
-        
-        // بررسی مجدد شرط soal_last در زمان ذخیره‌سازی
+
         if ($setting && $setting->soal_last == 1) {
             $lastSession = Session::where('course_id', $session->course_id)
                 ->orderBy('id', 'desc')
                 ->first();
-                
+
             if (!$lastSession || $session->id != $lastSession->id) {
-                return redirect()->back()->with('error', 'شما فقط می‌توانید برای آخرین جلسه این درس سوال طراحی کنید.');
+                return redirect()->back()
+                    ->with('error', 'شما فقط می‌توانید برای آخرین جلسه این درس سوال طراحی کنید.')
+                    ->withInput();
             }
         }
 
         try {
-            $options = $request->options;
-            $correctIndex = (int) $request->correct_answer + 1;
-
-            if (!isset($options[$correctIndex])) {
-                return redirect()->back()->with('error', 'گزینه صحیح نامعتبر است')->withInput();
-            }
-
             $user = Auth::user();
-            $session = Session::findOrFail($session_id);
-            $setting = Setting::where('course_id', $session->course_id)->first();
 
-            // بررسی محدودیت تعداد سوالات (فقط برای دانشجویان)
-            if ($setting && $setting->max_soal) {
-                // اگر کاربر معلم نیست، محدودیت تعداد سوال را اعمال کن
-                if (!$user->hasRole('teacher')) {
-                    $questionCount = Question::where('session_id', $session_id)
-                        ->where('user_id', $user->id)
-                        ->count();
+            if ($setting && $setting->max_soal && !$user->hasRole('teacher')) {
+                $questionCount = Question::where('session_id', $session_id)
+                    ->where('user_id', $user->id)
+                    ->count();
 
-                    if ($questionCount >= $setting->max_soal) {
-                        return redirect()->back()->with('error', 'شما به حداکثر تعداد مجاز سوال برای این جلسه رسیده‌اید.');
-                    }
+                if ($questionCount >= $setting->max_soal) {
+                    return redirect()->back()
+                        ->with('error', 'شما به حداکثر تعداد مجاز سوال برای این جلسه رسیده‌اید.')
+                        ->withInput();
                 }
             }
 
             $isTeacher = $user->hasRole('teacher||admin');
-            $status = $isTeacher ? 5 : null; 
+            $status = $isTeacher ? 5 : null;
 
-            $question = Question::create([
-                'question' => $request->question,
-                'answer1' => $options[0] ?? '',
-                'answer2' => $options[1] ?? '',
-                'answer3' => $options[2] ?? '',
-                'answer4' => $options[3] ?? '',
-                'answer' => $correctIndex,
-                'user_id' => $user->id,
-                'session_id' => $session_id,
-                'status' => $status,
-                'star' => 0,
-                'counter' => 0,
-                'is_edit' => 0,
-                'score' => 0,
-                'comment' => null,
-            ]);
+            $question = new Question();
 
-            // پیام مناسب بر اساس نقش کاربر
-            $message = $isTeacher 
-                ? 'سوال شما با موفقیت ثبت و تایید شد.' 
+            $question->question = $request->question;
+            $question->type = $type;
+            $question->user_id = $user->id;
+            $question->session_id = $session_id;
+            $question->status = $status;
+            $question->star = 0;
+            $question->counter = 0;
+            $question->is_edit = 0;
+            $question->score = 0;
+            $question->comment = null;
+            $question->level = '1';
+
+            if ($type === 0) {
+                $question->answer1 = trim($request->options[0]);
+                $question->answer2 = trim($request->options[1]);
+                $question->answer3 = trim($request->options[2]);
+                $question->answer4 = trim($request->options[3]);
+                $question->answer = (int) $request->correct_answer + 1;
+            } else {
+                $question->answer1 = null;
+                $question->answer2 = null;
+                $question->answer3 = null;
+                $question->answer4 = null;
+                $question->answer = trim($request->options[0]);
+            }
+
+            $question->save();
+
+            $message = $isTeacher
+                ? 'سوال شما با موفقیت ثبت و تایید شد.'
                 : 'سوال شما با موفقیت ثبت شد و در انتظار تایید است.';
 
-            return back()->with('success', $message);
-
+            return redirect()->back()->with('success', $message);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'خطا در ثبت سوال: ' . $e->getMessage())->withInput();
+            return redirect()->back()
+                ->with('error', 'خطا در ثبت سوال: ' . $e->getMessage())
+                ->withInput();
         }
     }
 
@@ -895,6 +921,8 @@ class ExamController extends Controller
                     'answer3' => $q->answer3,
                     'answer4' => $q->answer4,
                     'answer' => $q->answer,
+                    'user_id' => $q->user_id,
+                    'type' => $q->type,
                     'status' => $q->status,
                     'user_name' => $q->user ? $q->user->name . ' ' . $q->user->family : 'نامشخص',
                     'date' => $date,

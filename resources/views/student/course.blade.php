@@ -8,6 +8,111 @@
     <link rel="stylesheet" href="{{ asset('css/badge.css') }}">
     <link rel="stylesheet" href="{{ asset('css/style-course.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    {{-- =========================================
+         استایل‌های بخش فعالیت‌های دانشجو
+         (فقط استایل‌های جدید)
+    ========================================== --}}
+    <style>
+        .student-activities-section {
+            background: #f0f7ff;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            border-right: 4px solid #1e6f9f;
+        }
+
+        .student-activities-section .activity-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+            color: #1e6f9f;
+            margin-bottom: 0;
+        }
+
+        .student-activities-section .activity-header .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .student-activities-section .activity-header .header-left i {
+            font-size: 18px;
+        }
+
+        .student-activities-section .activity-icons {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .student-activities-section .activity-icons a {
+            color: #1a2332;
+            font-size: 18px;
+            transition: all .2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: rgba(255,255,255,.6);
+            text-decoration: none;
+        }
+
+        .student-activities-section .activity-icons a:hover {
+            background: #fff;
+            color: #1e6f9f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30,111,159,.15);
+        }
+
+        .student-activities-section .activity-icons a i {
+            font-size: 18px;
+        }
+
+        .student-activities-section .activity-icons a .fa-question-circle {
+            color: #ff9800;
+        }
+
+        .student-activities-section .activity-icons a .fa-file-alt {
+            color: #4caf50;
+        }
+
+        .student-activities-section .activity-icons a .fa-list-ul {
+            color: #2196f3;
+        }
+
+        .student-activities-section .activity-icons a:hover .fa-question-circle {
+            color: #e65100;
+        }
+
+        .student-activities-section .activity-icons a:hover .fa-file-alt {
+            color: #2e7d32;
+        }
+
+        .student-activities-section .activity-icons a:hover .fa-list-ul {
+            color: #0d47a1;
+        }
+
+        .student-activities-section .activity-icons a.disabled,
+        .student-activities-section .activity-icons a.hidden-btn {
+            display: none !important;
+        }
+
+        /* استایل ریسپانسیو برای موبایل */
+        @media (max-width: 768px) {
+            .student-activities-section .activity-header {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .student-activities-section .activity-icons {
+                justify-content: center;
+            }
+        }
+    </style>
 @endsection
 
 @section('mohtava')
@@ -227,27 +332,66 @@
 
                 {{-- دکمه‌های عملیات --}}
                 <div class="session-action-buttons">
+                </div>
 
-                    <a href="#"
-                       id="questionBtn"
-                       class="action-icon-btn"
-                       data-tooltip="ارسال سوال">
-                        <i class="fas fa-question-circle"></i>
-                    </a>
+            </div>
 
-                    <a href="#"
-                       id="homeworkBtn"
-                       class="action-icon-btn"
-                       data-tooltip="ارسال تکلیف">
-                        <i class="fas fa-file-alt"></i>
-                    </a>
 
-                    <a href="#"
-                       id="reportBtn"
-                       class="action-icon-btn"
-                       data-tooltip="ارسال گزارش">
-                        <i class="fas fa-edit"></i>
-                    </a>
+            {{-- =========================
+                 ⭐ بخش فعالیت‌های دانشجو (اضافه شده)
+            ========================== --}}
+            <div class="student-activities-section">
+
+                <div class="activity-header">
+
+                    <div class="header-left">
+
+                        <i class="fas fa-users"></i>
+
+                        <span>
+                            فعالیت‌های دانشجو در
+                            <span id="activitySessionLabel">
+                                @if($sessions->isNotEmpty())
+                                    جلسه {{ $sessions->first()->number }}
+                                @else
+                                    جلسه جاری
+                                @endif
+                            </span>
+                        </span>
+
+                    </div>
+
+
+                    <div class="activity-icons">
+
+                        <a
+                            href="#"
+                            id="questionStudentBtn"
+                            data-tooltip="ثبت سوال">
+
+                            <i class="fas fa-question-circle"></i>
+
+                        </a>
+
+                        <a
+                            href="#"
+                            id="homeworkStudentBtn"
+                            data-tooltip="ارسال تکلیف">
+
+                            <i class="fas fa-file-alt"></i>
+
+                        </a>
+
+                        <a
+                            href="#"
+                            id="reportStudentBtn"
+                            data-tooltip="ارسال گزارش">
+
+                            <i class="fas fa-list-ul"></i>
+
+                        </a>
+
+                    </div>
 
                 </div>
 
@@ -490,6 +634,31 @@
 
 
         // =====================================================
+        // ⭐ به‌روزرسانی برچسب فعالیت‌های دانشجو
+        // =====================================================
+
+        const activitySessionLabel =
+            document.getElementById('activitySessionLabel');
+
+        if (activitySessionLabel) {
+
+            const numberMatch =
+                number.match(/\d+/);
+
+            if (numberMatch) {
+
+                activitySessionLabel.textContent =
+                    'جلسه ' + numberMatch[0];
+
+            } else {
+
+                activitySessionLabel.textContent =
+                    'جلسه جاری';
+            }
+        }
+
+
+        // =====================================================
         // موضوع جلسه
         // =====================================================
 
@@ -688,7 +857,130 @@
 
 
         // =====================================================
-        // دکمه سوال
+        // دکمه سوال (در بخش فعالیت‌های دانشجو)
+        // =====================================================
+
+        const questionStudentBtn =
+            document.getElementById('questionStudentBtn');
+
+        if (questionStudentBtn) {
+
+            if (canQuestion) {
+
+                questionStudentBtn.setAttribute(
+                    'href',
+                    `/student/questions/create/${sessionId}`
+                );
+
+                questionStudentBtn.style.display =
+                    'inline-flex';
+
+                questionStudentBtn.style.opacity =
+                    '1';
+
+                questionStudentBtn.style.pointerEvents =
+                    'auto';
+
+                questionStudentBtn.classList.remove('disabled');
+                questionStudentBtn.classList.remove('hidden-btn');
+
+            } else {
+
+                questionStudentBtn.removeAttribute('href');
+
+                questionStudentBtn.style.display =
+                    'none';
+
+                questionStudentBtn.classList.add('disabled');
+                questionStudentBtn.classList.add('hidden-btn');
+            }
+        }
+
+
+        // =====================================================
+        // دکمه تکلیف (در بخش فعالیت‌های دانشجو)
+        // =====================================================
+
+        const homeworkStudentBtn =
+            document.getElementById('homeworkStudentBtn');
+
+        if (homeworkStudentBtn) {
+
+            if (canHomework) {
+
+                homeworkStudentBtn.setAttribute(
+                    'href',
+                    `/student/exercise/show/${sessionId}`
+                );
+
+                homeworkStudentBtn.style.display =
+                    'inline-flex';
+
+                homeworkStudentBtn.style.opacity =
+                    '1';
+
+                homeworkStudentBtn.style.pointerEvents =
+                    'auto';
+
+                homeworkStudentBtn.classList.remove('disabled');
+                homeworkStudentBtn.classList.remove('hidden-btn');
+
+            } else {
+
+                homeworkStudentBtn.removeAttribute('href');
+
+                homeworkStudentBtn.style.display =
+                    'none';
+
+                homeworkStudentBtn.classList.add('disabled');
+                homeworkStudentBtn.classList.add('hidden-btn');
+            }
+        }
+
+
+        // =====================================================
+        // دکمه گزارش (در بخش فعالیت‌های دانشجو)
+        // =====================================================
+
+        const reportStudentBtn =
+            document.getElementById('reportStudentBtn');
+
+        if (reportStudentBtn) {
+
+            if (canReport) {
+
+                reportStudentBtn.setAttribute(
+                    'href',
+                    `/student/discussion/create/${sessionId}`
+                );
+
+                reportStudentBtn.style.display =
+                    'inline-flex';
+
+                reportStudentBtn.style.opacity =
+                    '1';
+
+                reportStudentBtn.style.pointerEvents =
+                    'auto';
+
+                reportStudentBtn.classList.remove('disabled');
+                reportStudentBtn.classList.remove('hidden-btn');
+
+            } else {
+
+                reportStudentBtn.removeAttribute('href');
+
+                reportStudentBtn.style.display =
+                    'none';
+
+                reportStudentBtn.classList.add('disabled');
+                reportStudentBtn.classList.add('hidden-btn');
+            }
+        }
+
+
+        // =====================================================
+        // دکمه‌های بالا (همان session-action-buttons)
         // =====================================================
 
         const questionBtn =
@@ -728,10 +1020,6 @@
         }
 
 
-        // =====================================================
-        // دکمه تکلیف
-        // =====================================================
-
         const homeworkBtn =
             document.getElementById('homeworkBtn');
 
@@ -768,10 +1056,6 @@
             }
         }
 
-
-        // =====================================================
-        // دکمه گزارش
-        // =====================================================
 
         const reportBtn =
             document.getElementById('reportBtn');
@@ -880,10 +1164,6 @@
 
             // =====================================================
             // انتخاب جلسه اول
-            //
-            // مهم:
-            // جلسه اول هم دقیقاً از همان changeSession استفاده
-            // می‌کند که برای بقیه جلسات استفاده می‌شود.
             // =====================================================
 
             const firstSession =

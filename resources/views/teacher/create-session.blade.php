@@ -110,7 +110,7 @@
                         <input class="form-input" id="aparat" name="aparat" type="text" 
                                placeholder="کد اسکریپت آپارات را وارد کنید" value="{{ old('aparat') }}">
                     </div>
-                    <small style="color: #6b7a8f; font-size: 12px;">کد اسکریپت آپارات را به همراه iframe یا embed کپی کنید</small>
+                    <small style="color: #6b7a8f; font-size: 12px;">کد اسکریپت آپارات را به همراه iframe کپی کنید</small>
                     @error('aparat')
                         <span class="error-text"><i class="fas fa-times-circle"></i> {{ $message }}</span>
                     @enderror

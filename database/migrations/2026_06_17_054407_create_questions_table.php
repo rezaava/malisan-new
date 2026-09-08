@@ -11,11 +11,12 @@ return new class extends Migration
         Schema::create('questions', function (Blueprint $table) {
             $table->id();
             $table->text('question');
-            $table->text('answer1');
-            $table->text('answer2');
-            $table->text('answer3');
-            $table->text('answer4');
-            $table->text('answer');
+            $table->text('answer1')->nullable();
+            $table->text('answer2')->nullable();
+            $table->text('answer3')->nullable();
+            $table->text('answer4')->nullable();
+            $table->text('answer')->nullable();
+            $table->tinyInteger('type')->default(0)->comment('0: چهارگزینه‌ای، 1: کوتاه‌پاسخ');
             $table->tinyInteger('teacher_change')->default(0);
             $table->bigInteger('user_id');
             $table->bigInteger('session_id');

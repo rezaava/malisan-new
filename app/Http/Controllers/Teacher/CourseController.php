@@ -665,8 +665,24 @@ class CourseController extends Controller
 
             $session->majazi = $this->cleanUrl($request->majazi);
             $session->link = $this->cleanUrl($request->link);
-            $session->aparat = $request->aparat;
+            $aparatSrc = null;
 
+            if (!empty($request->aparat)) {
+
+                preg_match('/<iframe[^>]+src=["\']([^"\']+)["\']/i', $request->aparat, $matches);
+
+                if (!empty($matches[1])) {
+                    $aparatSrc = $matches[1];
+                } else {
+                    return back()
+                        ->withErrors([
+                            'aparat' => 'کد iframe آپارات معتبر نیست. لطفاً کد Embed آپارات را وارد کنید.'
+                        ])
+                        ->withInput();
+                }
+            }
+
+            $session->aparat = $aparatSrc;
             // آپلود فایل
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
@@ -2027,15 +2043,12 @@ class CourseController extends Controller
         $course = Course::with('sessions')->findOrFail($courseId);
         $sessions = $course->sessions()->pluck('id');
 
-        // دریافت تمام سوالات
         $questions = Question::whereIn('session_id', $sessions)
             ->with('user')
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // اضافه کردن اطلاعات طراح و سطح
         foreach ($questions as $question) {
-            // اطلاعات طراح
             if ($question->user) {
                 $question->designer_name = $question->user->hasRole('teacher')
                     ? 'استاد'
@@ -2044,7 +2057,6 @@ class CourseController extends Controller
                 $question->designer_name = 'نامشخص';
             }
 
-            // سطح سوال
             $question->level_text = match ($question->status) {
                 1 => 'عالی',
                 2 => 'خوب',
@@ -2055,7 +2067,12 @@ class CourseController extends Controller
                 default => 'نامشخص',
             };
 
-            // نظرات (داوری‌ها)
+            $question->type_text = match ((int) $question->type) {
+                0 => 'تستی',
+                1 => 'پاسخ کوتاه',
+                default => 'نامشخص',
+            };
+
             $nazars = Score::where('sub_id', $question->id)
                 ->where('type', 1)
                 ->orderBy('id', 'desc')
@@ -2067,8 +2084,10 @@ class CourseController extends Controller
                     $nazar->user_name = $nazar->user->name . ' ' . $nazar->user->family;
                 }
             }
+
             $question->nazars = $nazars;
         }
+
         $teacherQuestionsCount = $questions->where('status', 5)->count();
 
         $stats = [
@@ -2080,6 +2099,8 @@ class CourseController extends Controller
             'pending' => $questions->whereNull('status')->count(),
             'starred' => $questions->where('star', 1)->count(),
             'teacher_questions' => $teacherQuestionsCount,
+            'test_questions' => $questions->where('type', 0)->count(),
+            'short_questions' => $questions->where('type', 1)->count(),
         ];
 
         return view('teacher.question-bank', compact('course', 'questions', 'stats'));
