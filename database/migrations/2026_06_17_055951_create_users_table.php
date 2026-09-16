@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('name', 191)->nullable();
             $table->string('family', 191)->nullable();
             $table->tinyInteger('gender')->nullable()->comment('0 female 1 male');
+            $table->tinyInteger('limited')->nullable();
             $table->string('email', 191)->nullable();
             $table->string('national', 191)->nullable();
             $table->string('shenasname', 191)->nullable();

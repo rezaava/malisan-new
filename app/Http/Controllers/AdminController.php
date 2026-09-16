@@ -39,8 +39,7 @@ class AdminController extends Controller
     }
     public function adminShowLimitedUsers(Request $request)
     {
-        $users = User::where('active', 'false')->get();
-
+        $users = User::orderBy('id','desc')->get();
 
         return view('admin.show_limited_users', compact('users'));
     }
@@ -89,18 +88,19 @@ class AdminController extends Controller
 
         return redirect()->route('login')->with(['status' => 'password changed successfully']);
     }
-
-    public function limitUser(Request $request, $id)
+    public function toggleLimitUser(Request $request, $id)
     {
         $user = User::findOrFail($id);
-        $user->active = false;
-        return response()->json(['successfull' => true]);
-    }
 
-    public function unlimitUser(Request $request, $id)
-    {
-        $user = User::findOrFail($id);
-        $user->active = true;
-        return response()->json(['successfull' => true]);
+        $user->limited = !$user->limited;
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'limited' => (bool) $user->limited,
+            'message' => $user->limited
+                ? 'کاربر با موفقیت محدود شد.'
+                : 'محدودیت کاربر با موفقیت برداشته شد.'
+        ]);
     }
 }

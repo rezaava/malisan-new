@@ -103,8 +103,7 @@ Route::prefix('/admin')->middleware(['role:admin'])->group(function () {
     Route::prefix('users')->group(function () {
         Route::get('/', [AdminController::class, 'adminShowUsers'])->name('show-users-admin');
         Route::get('/limited', [AdminController::class, 'adminShowLimitedUsers'])->name('show-limited-users-admin');
-        Route::get('/limit-user/{id}', [AdminController::class, 'limitUser'])->name('limit-user');
-        Route::get('/unlimit-user/{id}', [AdminController::class, 'unlimitUser'])->name('unlimit-user');
+        Route::post('/toggle-limit-user/{id}', [AdminController::class, 'toggleLimitUser'])->name('toggle-limit-user');
     });
 });
 

@@ -174,11 +174,12 @@
                     <i class="fas fa-users"></i>
                     سوالات دوستان
                 </button>
-
+                
                 <button type="button" class="header-btn header-btn-primary" onclick="openMyQuestionsModal()">
                     <i class="fas fa-user"></i>
                     سوالات من
                 </button>
+                <button type="button" class="header-btn header-btn-danger" onclick="window.history.back()" title="بستن"> <i class="fas fa-times"></i>  </button>
             </div>
         </div>
 
