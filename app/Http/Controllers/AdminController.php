@@ -27,19 +27,22 @@ class AdminController extends Controller
 
         // دریافت پیام انگیزشی
         $survey = Survey::count();
+        
+        $users = User::count();
+        $limitedUser = User::where('limited',1)->count();
 
-        return view('admin.index', compact('user', 'message', 'massage', 'survey'));
+        return view('admin.index', compact('users','limitedUser','user', 'message', 'massage', 'survey'));
     }
 
     public function adminShowUsers(Request $request)
     {
-        $users = User::get();
+        $users = User::orderBy('id','desc')->get();
 
         return view('admin.show_users', compact('users'));
     }
     public function adminShowLimitedUsers(Request $request)
     {
-        $users = User::orderBy('id','desc')->get();
+        $users = User::orderBy('id','desc')->where('limited',1)->get();
 
         return view('admin.show_limited_users', compact('users'));
     }

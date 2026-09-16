@@ -261,7 +261,7 @@
         <div class="limited-users-header">
 
             <h2 class="limited-users-title">
-                مدیریت کاربران
+             مدیریت کاربران محدود 
             </h2>
 
             <div class="limited-users-count" id="usersCount">
