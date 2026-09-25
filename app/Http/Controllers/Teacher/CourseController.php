@@ -17,17 +17,17 @@ use App\Models\Session;
 use App\Models\Setting;
 use App\Models\SiteSetting;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\log;
 use App\Models\CourseUser;
 use App\Models\Discussion;
 use App\Models\Exercise;
 use App\Models\Question;
 use App\Models\User;
 use Carbon\Carbon;
-use Log;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class CourseController extends Controller
 {
@@ -706,7 +706,7 @@ class CourseController extends Controller
 
         } catch (\Exception $exception) {
             DB::rollBack();
-            \Log::error('Session creation failed: ' . $exception->getMessage());
+            log::error('Session creation failed: ' . $exception->getMessage());
             return back()->with('error', 'خطایی در سرور رخ داده است: ' . $exception->getMessage());
         }
     }
@@ -795,7 +795,7 @@ class CourseController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Course creation failed: ' . $e->getMessage());
+            log::error('Course creation failed: ' . $e->getMessage());
             return back()->with('error', 'خطایی در سرور رخ داده است: ' . $e->getMessage());
         }
     }
@@ -916,7 +916,7 @@ class CourseController extends Controller
             return redirect()->back()->with('success', 'پروفایل با موفقیت به‌روزرسانی شد');
 
         } catch (\Exception $e) {
-            \Log::error('Update profile failed: ' . $e->getMessage());
+            log::error('Update profile failed: ' . $e->getMessage());
             return redirect()->back()->with('error', 'خطا در به‌روزرسانی پروفایل');
         }
     }
@@ -948,7 +948,7 @@ class CourseController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Remove student failed: ' . $e->getMessage());
+            log::error('Remove student failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'خطا در اخراج دانشجو: ' . $e->getMessage()
@@ -979,7 +979,7 @@ class CourseController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Toggle course status failed: ' . $e->getMessage());
+            log::error('Toggle course status failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'خطا در تغییر وضعیت دوره: ' . $e->getMessage()
@@ -1009,7 +1009,7 @@ class CourseController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Toggle archive failed: ' . $e->getMessage());
+            log::error('Toggle archive failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'خطا در آرشیو دوره: ' . $e->getMessage()
@@ -1038,7 +1038,7 @@ class CourseController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Get archived courses failed: ' . $e->getMessage());
+            log::error('Get archived courses failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'خطا در دریافت دوره‌های آرشیو شده'
@@ -1098,7 +1098,7 @@ class CourseController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Restore student failed: ' . $e->getMessage());
+            log::error('Restore student failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'خطا در بازگرداندن دانشجو: ' . $e->getMessage()
@@ -1125,14 +1125,13 @@ class CourseController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Get removed students failed: ' . $e->getMessage());
+            Log::error('Get removed students failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'خطا در دریافت لیست دانشجویان اخراج شده'
             ], 500);
         }
     }
-
 
     public function setting($id)
     {
@@ -1869,7 +1868,7 @@ class CourseController extends Controller
             return redirect()->back()->with('success', 'نمرات با موفقیت ذخیره شد');
 
         } catch (\Exception $e) {
-            \Log::error('Save grades failed: ' . $e->getMessage());
+            log::error('Save grades failed: ' . $e->getMessage());
             return redirect()->back()->with('error', 'خطا در ذخیره نمرات: ' . $e->getMessage());
         }
     }
@@ -2239,7 +2238,7 @@ class CourseController extends Controller
             return redirect()->route('courses')->with('success', 'درس با موفقیت ویرایش شد');
 
         } catch (\Exception $e) {
-            \Log::error('Update course failed: ' . $e->getMessage());
+            log::error('Update course failed: ' . $e->getMessage());
 
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
@@ -2287,7 +2286,7 @@ class CourseController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Get edit data failed: ' . $e->getMessage());
+            log::error('Get edit data failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'خطا در دریافت اطلاعات درس: ' . $e->getMessage()
@@ -2334,7 +2333,7 @@ class CourseController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Delete course failed: ' . $e->getMessage());
+            log::error('Delete course failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'خطا در حذف درس: ' . $e->getMessage()
@@ -2418,7 +2417,7 @@ class CourseController extends Controller
                 'total' => $questions->count()
             ]);
         } catch (\Exception $e) {
-            \Log::error('Get session questions failed: ' . $e->getMessage());
+            log::error('Get session questions failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'خطا در دریافت سوالات: ' . $e->getMessage()
@@ -2442,7 +2441,7 @@ class CourseController extends Controller
                 'total' => $discussions->count()
             ]);
         } catch (\Exception $e) {
-            \Log::error('Get session discussions failed: ' . $e->getMessage());
+            log::error('Get session discussions failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'خطا در دریافت گزارش‌ها: ' . $e->getMessage()
@@ -2625,7 +2624,7 @@ class CourseController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Session update failed: ' . $e->getMessage());
+            log::error('Session update failed: ' . $e->getMessage());
             return redirect()->back()->with('success',false,'message','خطا در به‌روزرسانی جلسه: ' . $e->getMessage());
 
         }
@@ -2825,7 +2824,7 @@ class CourseController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Update all settings failed: ' . $e->getMessage());
+            log::error('Update all settings failed: ' . $e->getMessage());
             return redirect()->back()->with('error', 'خطا در به‌روزرسانی تنظیمات: ' . $e->getMessage());
         }
     }

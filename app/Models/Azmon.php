@@ -11,9 +11,10 @@ class Azmon extends Model
 
     protected $table = 'azmons';
     protected $fillable = [
-        'course_id', 'code', 'title', 'zarib', 'description', 'num', 'sath',
-        'sessions', 'show_nomre', 'time', 'start', 'end', 'show_ans',
-        'show_state', 'changeable', 'show_remain', 'type'
+        'course_id','code','title','zarib','description','num','sath','sessions',
+        'show_nomre','time','time_limit_khod','time_type','time_per_question',
+        'total_time_limit','start','end','show_ans','show_state','changeable',
+        'show_remain','type'
     ];
 
     public function course()

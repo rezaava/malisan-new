@@ -20,6 +20,10 @@ return new class extends Migration
             $table->string('sessions', 191);
             $table->integer('show_nomre')->default(0);
             $table->integer('time')->nullable();
+            $table->integer('time_limit_khod')->default(0);
+            $table->enum('time_type',['per_question','total'])->nullable();
+            $table->integer('time_per_question')->default(0);
+            $table->integer('total_time_limit')->default(0);
             $table->timestamp('start')->nullable();
             $table->timestamp('end')->nullable();
             $table->integer('show_ans')->default(0);
