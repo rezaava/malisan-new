@@ -230,9 +230,9 @@
                     <i class="fas fa-share-alt"></i>
                     <span class="action-tooltip">اشتراک گذاری</span>
                 </div>
-                <div class="action-item" data-action="کپی" onclick="copyCourse({{ $cours->id }})">
+                <div class="action-item" data-action="ایجاد نسخه جدید از درس" onclick="copyCourse({{ $cours->id }})">
                     <i class="fas fa-copy"></i>
-                    <span class="action-tooltip">کپی</span>
+                    <span class="action-tooltip">ایجاد نسخه جدید از درس</span>
                 </div>
                 <div class="action-item" data-action="آرشیو" onclick="event.preventDefault(); event.stopPropagation(); archiveCourse({{ $cours->id }})">
                     <i class="fas fa-archive"></i>
@@ -1255,7 +1255,7 @@
                             <button onclick="copyText('${message.replace(/'/g, "\\'")}')" class="swal2-confirm swal2-styled" style="background: #6f42c1;">
                                 <i class="fas fa-copy"></i> کپی پیام
                             </button>
-                            <button onclick="copyText('https://www.malisan.ir/join/${courseCode}')" class="swal2-confirm swal2-styled" style="background: #0d6efd;">
+                            <button onclick="copyText('https://malisan.ir/student/courses/join-course/${courseCode}')" class="swal2-confirm swal2-styled" style="background: #0d6efd;">
                                 <i class="fas fa-link"></i> کپی لینک
                             </button>
                         </div>

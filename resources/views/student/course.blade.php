@@ -26,11 +26,12 @@
         .student-activities-section .activity-icons a:hover .fa-file-alt{color:#2e7d32;}
         .student-activities-section .activity-icons a:hover .fa-list-ul{color:#0d47a1;}
         .student-activities-section .activity-icons a.disabled,
-        .student-activities-section .activity-icons a.hidden-btn{display:none !important;}
+        .student-activities-section .activity-icons a.hidden-btn{display:none!important;}
         .session-aparat-container{margin-bottom:16px;}
         .aparat-video-wrapper{position:relative;width:100%;padding-top:56.25%;overflow:hidden;border-radius:10px;background:#000;}
         .aparat-video-wrapper iframe{position:absolute;top:0;right:0;width:100%;height:100%;border:0;}
         .session-action-buttons{display:none;}
+        .session-section-hidden{display:none!important;}
         @media(max-width:768px){
             .student-activities-section .activity-header{flex-direction:column;gap:12px;}
             .student-activities-section .activity-icons{justify-content:center;}
@@ -147,7 +148,7 @@
                 </div>
                 <div class="session-action-buttons"></div>
             </div>
-            <div class="student-activities-section">
+            <div class="student-activities-section" id="studentActivitiesSection">
                 <div class="activity-header">
                     <div class="header-left">
                         <i class="fas fa-users"></i>
@@ -175,7 +176,7 @@
                     </div>
                 </div>
             </div>
-            <div class="session-description">
+            <div class="session-description session-section" id="lessonPlanSection">
                 <div class="collapsible-section">
                     <div class="collapsible-header">
                         <i class="fas fa-tasks"></i>
@@ -183,15 +184,13 @@
                         <i class="fas fa-chevron-down expand-icon"></i>
                     </div>
                     <div class="collapsible-body" id="sessionLessonPlan">
-                        @if($sessions->isNotEmpty() && $sessions->first()->lesson_plan)
+                        @if($sessions->isNotEmpty() && trim(strip_tags($sessions->first()->lesson_plan ?? '')) !== '')
                             {!! $sessions->first()->lesson_plan !!}
-                        @else
-                            <p class="text-muted">هیچ طرح درسی برای این جلسه ثبت نشده است</p>
                         @endif
                     </div>
                 </div>
             </div>
-            <div class="session-text-section">
+            <div class="session-text-section session-section" id="lessonTextSection">
                 <div class="collapsible-section">
                     <div class="collapsible-header">
                         <i class="fas fa-book"></i>
@@ -201,15 +200,13 @@
                         </div>
                     </div>
                     <div class="collapsible-body" id="sessionText">
-                        @if($sessions->isNotEmpty() && $sessions->first()->text)
+                        @if($sessions->isNotEmpty() && trim(strip_tags($sessions->first()->text ?? '')) !== '')
                             {!! $sessions->first()->text !!}
-                        @else
-                            <p class="text-muted">هیچ محتوایی برای این جلسه ثبت نشده است</p>
                         @endif
                     </div>
                 </div>
             </div>
-            <div class="session-aparat-container">
+            <div class="session-aparat-container session-section" id="aparatSection">
                 <div class="collapsible-section">
                     <div class="collapsible-header">
                         <i class="fas fa-play-circle" style="color:#e53935;"></i>
@@ -228,13 +225,11 @@
                                         scrolling="no"
                                         allow="encrypted-media *;"></iframe>
                             </div>
-                        @else
-                            <p class="text-muted">هیچ فیلم آپاراتی برای این جلسه ثبت نشده است</p>
                         @endif
                     </div>
                 </div>
             </div>
-            <div class="session-pdf-container">
+            <div class="session-pdf-container session-section" id="attachmentSection">
                 <div class="collapsible-section">
                     <div class="collapsible-header p-0 px-2">
                         <div class="pdf-toolbar d-flex justify-content-between align-items-center w-100">
@@ -284,11 +279,6 @@
                                         باز کردن محتوای جلسه
                                     </a>
                                 </div>
-                            @else
-                                <div class="text-center p-5">
-                                    <i class="fas fa-paperclip fa-3x text-muted mb-3"></i>
-                                    <p class="text-muted">هیچ فایل یا لینکی برای این جلسه ثبت نشده است</p>
-                                </div>
                             @endif
                         </div>
                     </div>
@@ -309,6 +299,51 @@ let currentMajaziUrl=@json($sessions->first()->majazi ?? '');
 let currentAparatUrl=@json($sessions->first()->aparat ?? '');
 let currentLessonPlan=@json($sessions->first()->lesson_plan ?? '');
 let currentLinkUrl=@json($sessions->first()->link ?? '');
+function hasContent(value){
+    if(value===null||value===undefined)return false;
+    const text=String(value).trim();
+    if(!text||text==='null'||text==='undefined')return false;
+    const temp=document.createElement('div');
+    temp.innerHTML=text;
+    return temp.textContent.trim()!==''||temp.querySelector('img,video,iframe,object,embed,table,ul,ol')!==null;
+}
+function normalizeUrl(value){
+    let url=(value||'').trim();
+    if(!url||url==='null'||url==='undefined')return '';
+    if(!url.startsWith('http://')&&!url.startsWith('https://'))url='https://'+url;
+    try{
+        return new URL(url).href;
+    }catch(error){
+        return '';
+    }
+}
+function getAparatUrl(value){
+    let url=(value||'').trim();
+    if(!url||url==='null'||url==='undefined')return '';
+    const iframeMatch=url.match(/<iframe[^>]+src=["']([^"']+)["']/i);
+    if(iframeMatch)url=iframeMatch[1];
+    return normalizeUrl(url);
+}
+function setSectionVisibility(sectionId,visible){
+    const section=document.getElementById(sectionId);
+    if(section)section.classList.toggle('session-section-hidden',!visible);
+}
+function openSection(sectionId){
+    const section=document.getElementById(sectionId);
+    if(!section)return;
+    const body=section.querySelector('.collapsible-body');
+    const icon=section.querySelector('.expand-icon');
+    if(body)body.classList.add('open');
+    if(icon)icon.classList.add('rotated');
+}
+function resetSection(sectionId){
+    const section=document.getElementById(sectionId);
+    if(!section)return;
+    const body=section.querySelector('.collapsible-body');
+    const icon=section.querySelector('.expand-icon');
+    if(body)body.classList.remove('open');
+    if(icon)icon.classList.remove('rotated');
+}
 function changeSession(element){
     if(!element)return;
     const sessionId=element.dataset.session||'';
@@ -345,56 +380,50 @@ function changeSession(element){
     if(nameDisplay)nameDisplay.textContent=title||'هیچ جلسه‌ای انتخاب نشده است';
     const majaziBtn=document.getElementById('majaziSessionBtn');
     if(majaziBtn){
-        const rawMajaziUrl=(majaziUrl||'').trim();
-        if(rawMajaziUrl&&rawMajaziUrl!=='null'){
-            let finalMajaziUrl=rawMajaziUrl;
-            try{
-                if(!finalMajaziUrl.startsWith('http://')&&!finalMajaziUrl.startsWith('https://'))finalMajaziUrl='https://'+finalMajaziUrl;
-                majaziBtn.href=new URL(finalMajaziUrl).href;
-                majaziBtn.style.display='inline-flex';
-            }catch(error){
-                majaziBtn.removeAttribute('href');
-                majaziBtn.style.display='none';
-            }
+        const finalMajaziUrl=normalizeUrl(majaziUrl);
+        if(finalMajaziUrl){
+            majaziBtn.href=finalMajaziUrl;
+            majaziBtn.style.display='inline-flex';
         }else{
             majaziBtn.removeAttribute('href');
             majaziBtn.style.display='none';
         }
     }
     const sessionLessonPlan=document.getElementById('sessionLessonPlan');
+    const lessonPlanExists=hasContent(lessonPlan);
     if(sessionLessonPlan){
-        if(lessonPlan&&lessonPlan.trim()&&lessonPlan.trim()!=='null'){
-            sessionLessonPlan.innerHTML=lessonPlan;
-        }else{
-            sessionLessonPlan.innerHTML='<p class="text-muted">هیچ طرح درسی برای این جلسه ثبت نشده است</p>';
-        }
+        sessionLessonPlan.innerHTML=lessonPlanExists?lessonPlan:'';
     }
+    setSectionVisibility('lessonPlanSection',lessonPlanExists);
+    resetSection('lessonPlanSection');
+    if(lessonPlanExists)openSection('lessonPlanSection');
     const sessionText=document.getElementById('sessionText');
+    const descriptionExists=hasContent(description);
     if(sessionText){
-        if(description&&description.trim()&&description.trim()!=='null'){
-            sessionText.innerHTML=description;
-        }else{
-            sessionText.innerHTML='<p class="text-muted">هیچ محتوایی برای این جلسه ثبت نشده است</p>';
-        }
+        sessionText.innerHTML=descriptionExists?description:'';
     }
+    setSectionVisibility('lessonTextSection',descriptionExists);
+    resetSection('lessonTextSection');
+    if(descriptionExists)openSection('lessonTextSection');
     const sessionAparat=document.getElementById('sessionAparat');
+    const finalAparatUrl=getAparatUrl(aparatUrl);
+    const aparatExists=!!finalAparatUrl;
     if(sessionAparat){
-        let rawAparatUrl=(aparatUrl||'').trim();
-        if(rawAparatUrl&&rawAparatUrl!=='null'){
-            const iframeMatch=rawAparatUrl.match(/<iframe[^>]+src=["']([^"']+)["']/i);
-            if(iframeMatch)rawAparatUrl=iframeMatch[1];
-            if(!rawAparatUrl.startsWith('http://')&&!rawAparatUrl.startsWith('https://'))rawAparatUrl='https://'+rawAparatUrl;
-            sessionAparat.innerHTML='<div class="aparat-video-wrapper"><iframe id="aparatIframe" src="'+rawAparatUrl+'" frameborder="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" scrolling="no" allow="encrypted-media *;"></iframe></div>';
+        if(aparatExists){
+            sessionAparat.innerHTML='<div class="aparat-video-wrapper"><iframe id="aparatIframe" src="'+finalAparatUrl+'" frameborder="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" scrolling="no" allow="encrypted-media *;"></iframe></div>';
         }else{
-            sessionAparat.innerHTML='<p class="text-muted">هیچ فیلم آپاراتی برای این جلسه ثبت نشده است</p>';
+            sessionAparat.innerHTML='';
         }
     }
+    setSectionVisibility('aparatSection',aparatExists);
+    resetSection('aparatSection');
+    if(aparatExists)openSection('aparatSection');
     let fullPdfUrl='';
     if(pdfUrl){
         fullPdfUrl=pdfUrl.startsWith('http://')||pdfUrl.startsWith('https://')?pdfUrl:'/files/session'+pdfUrl;
     }
-    let fullLinkUrl=(linkUrl||'').trim();
-    if(fullLinkUrl&&!fullLinkUrl.startsWith('http://')&&!fullLinkUrl.startsWith('https://'))fullLinkUrl='https://'+fullLinkUrl;
+    let fullLinkUrl=normalizeUrl(linkUrl);
+    const attachmentExists=!!fullPdfUrl||!!fullLinkUrl;
     const attachmentViewer=document.getElementById('attachmentViewer');
     const pdfOpenBtn=document.getElementById('pdfOpenBtn');
     const linkOpenBtn=document.getElementById('linkOpenBtn');
@@ -420,9 +449,12 @@ function changeSession(element){
                 linkOpenBtn.style.display='inline-flex';
             }
         }else{
-            attachmentViewer.innerHTML='<div class="text-center p-5"><i class="fas fa-paperclip fa-3x text-muted mb-3"></i><p class="text-muted">هیچ فایل یا لینکی برای این جلسه ثبت نشده است</p></div>';
+            attachmentViewer.innerHTML='';
         }
     }
+    setSectionVisibility('attachmentSection',attachmentExists);
+    resetSection('attachmentSection');
+    if(attachmentExists)openSection('attachmentSection');
     const canQuestion=element.dataset.canQuestion==='true';
     const canHomework=element.dataset.canHomework==='true';
     const canReport=element.dataset.canReport==='true';
@@ -468,10 +500,15 @@ function changeSession(element){
             reportStudentBtn.classList.add('disabled','hidden-btn');
         }
     }
+    const studentActivitiesSection=document.getElementById('studentActivitiesSection');
+    if(studentActivitiesSection){
+        studentActivitiesSection.classList.toggle('session-section-hidden',!canQuestion&&!canHomework&&!canReport);
+    }
 }
 document.addEventListener('DOMContentLoaded',function(){
     document.querySelectorAll('.collapsible-header').forEach(function(header){
         header.addEventListener('click',function(){
+            const section=this.closest('.session-section');
             const body=this.nextElementSibling;
             const icon=this.querySelector('.expand-icon');
             if(!body)return;
