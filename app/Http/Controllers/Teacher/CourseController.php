@@ -1521,22 +1521,21 @@ class CourseController extends Controller
         // ==========================================
         // 6.1. فعالیت کلاسی
         // ==========================================
-
-        // طرح سوال
         $score_soal = 0;
 
-        if ($max_session > 0 && $setting->max_soal > 0) {
+        if ($setting->jalasat > 1 && $setting->max_soal > 0) {
             $score_soal =
                 $evaluationLimits->question_creation *
-                ($questions_all / ($max_session * $setting->max_soal * 5 / 6));
+                (
+                    $questions_all /
+                    (($setting->jalasat - 1) * $setting->max_soal)
+                );
         }
 
         $score_soal = min(
             $evaluationLimits->question_creation,
             $score_soal
         );
-
-
         // ارسال گزارش
         // فرمول:
         // S = N × [ n / ((a - 1) × b) ]
