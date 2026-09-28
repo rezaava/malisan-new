@@ -8,6 +8,7 @@ use App\Models\Azmon;
 use App\Models\Course;
 use App\Models\CourseUser;
 use App\Models\Discussion;
+use App\Models\EvaluationActivityLimit;
 use App\Models\Exercise;
 use App\Models\ExerciseAnswer;
 use App\Models\Konkor;
@@ -537,7 +538,7 @@ class StudentSiteController extends Controller
         if (!$setting || !$scorring) {
             return redirect()->back()->with('error', 'تنظیمات این درس کامل نیست.');
         }
-
+        $evaluationLimits = EvaluationActivityLimit::first();
         $sessions = Session::where('course_id', $course->id)->pluck('id');
         $max_session = $sessions->count();
 
@@ -713,21 +714,83 @@ class StudentSiteController extends Controller
         // ==========================================
         
         // فعالیت کلاسی
-        $score_soal = min(8, ($questions_all * 8) / ($max_session * $setting->max_soal * 5 / 6));
-        $score_gozaresh = min(5, $disc_all * 5 / $max_session);
-        $score_davari = min(8, (($davarii['q'] + $davarii['gozaresh']) * 8) / ($max_session * (1 + $setting->max_soal) * 3));
-        $score_azmoon = min(9, $count_azmoon * 9 / ($setting->min_w_khod * $max_session));
-        
-        $kelasi = min(30, $score_soal + $score_gozaresh + $score_azmoon + $score_davari);
+        $score_soal = min(
+            $evaluationLimits->question_creation,
+            ($questions_all * $evaluationLimits->question_creation) /
+            ($max_session * $setting->max_soal * 5 / 6)
+        );
 
+        $score_gozaresh = min(
+            $evaluationLimits->report_submission,
+            $disc_all * $evaluationLimits->report_submission / $max_session
+        );
+
+        $score_davari = min(
+            $evaluationLimits->judging_completion,
+            (($davarii['q'] + $davarii['gozaresh']) * $evaluationLimits->judging_completion) /
+            ($max_session * (1 + $setting->max_soal) * 3)
+        );
+
+        $score_azmoon = min(
+            $evaluationLimits->self_test_participation,
+            $count_azmoon * $evaluationLimits->self_test_participation /
+            ($setting->min_w_khod * $max_session)
+        );
+
+        $kelasiMax =
+            $evaluationLimits->question_creation +
+            $evaluationLimits->report_submission +
+            $evaluationLimits->judging_completion +
+            $evaluationLimits->self_test_participation;
+
+        $kelasi = min(
+            $kelasiMax,
+            $score_soal +
+            $score_gozaresh +
+            $score_azmoon +
+            $score_davari
+        );
         // پیشرفت درسی
-        $score_pish_soal = ($score_soal > 0) ? min(12, $q_scores * 12 / $score_soal) : 0;
-        $score_pish_gozaresh = ($score_gozaresh > 0) ? min(10, $d_scores * 10 / $score_gozaresh) : 0;
-        $score_pish_azmoon = ($score_azmoon > 0) ? min(24, ($qu_scores / 24) * $score_azmoon) : 0;
-        $score_keifiat = min(14, ((($q_scores + $d_scores + $qu_scores + 5) / 4) * 14));
-        
-        $pishraft = min(70, $score_pish_soal + $score_pish_gozaresh + $score_pish_azmoon + 5 + $score_keifiat);
+        $score_pish_soal = ($score_soal > 0)
+            ? min(
+                $evaluationLimits->question_quality,
+                $q_scores * $evaluationLimits->question_quality / $score_soal
+            )
+            : 0;
 
+        $score_pish_gozaresh = ($score_gozaresh > 0)
+            ? min(
+                $evaluationLimits->report_quality,
+                $d_scores * $evaluationLimits->report_quality / $score_gozaresh
+            )
+            : 0;
+
+        $score_pish_azmoon = ($score_azmoon > 0)
+            ? min(
+                $evaluationLimits->self_test_quality,
+                ($qu_scores / $evaluationLimits->self_test_quality) * $score_azmoon
+            )
+            : 0;
+
+        $score_keifiat = min(
+            $evaluationLimits->judging_quality,
+            (($q_scores + $d_scores + $qu_scores + 5) / 4)
+            * $evaluationLimits->judging_quality
+        );
+
+        $pishraftMax =
+            $evaluationLimits->question_quality +
+            $evaluationLimits->report_quality +
+            $evaluationLimits->self_test_quality +
+            $evaluationLimits->judging_quality;
+
+        $pishraft = min(
+            $pishraftMax,
+            $score_pish_soal +
+            $score_pish_gozaresh +
+            $score_pish_azmoon +
+            $score_keifiat
+        );
         // ارزشیابی مستمر
         $mostamer = ($pishraft + $kelasi) * 12 / 100;
         if ($mostamer > 12) $mostamer = 12;
@@ -778,7 +841,9 @@ class StudentSiteController extends Controller
             'qu_scores',
             'd_scores',
             'kelasi',
+            'kelasiMax',
             'pishraft',
+            'pishraftMax',
             'mostamer',
             'mostamer_score',
             'score_soal',
@@ -789,7 +854,8 @@ class StudentSiteController extends Controller
             'score_pish_gozaresh',
             'score_pish_azmoon',
             'score_keifiat',
-            'maxScores'
+            'maxScores',
+            'evaluationLimits'
         ))->with([
             'pageTitle' => 'پیشرفت درسی',
             'pageName' => 'پیشرفت درسی',

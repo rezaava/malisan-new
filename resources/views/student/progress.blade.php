@@ -71,7 +71,7 @@
                     فعالیت کلاسی
                 </div>
                 <div class="info">
-                    <span>سقف: <strong>30</strong></span>
+                    <span>سقف: <strong>{{ $kelasiMax }}</strong></span>
                     <span>تاکنون: <strong class="score">{{ number_format($kelasi, 2) }}</strong></span>
                     <span><i class="fas fa-chevron-down" style="font-size:12px;color:#6b7a8f;"></i></span>
                 </div>
@@ -91,10 +91,30 @@
                         <tbody>
                             @php
                                 $kelasiRows = [
-                                    ['label' => 'طرح سوال', 'count' => $questions['all'], 'score' => $score_soal, 'max' => 8],
-                                    ['label' => 'ارسال گزارش', 'count' => $discs['all'], 'score' => $score_gozaresh, 'max' => 5],
-                                    ['label' => 'انجام داوری', 'count' => $davarii['q'] + $davarii['gozaresh'], 'score' => $score_davari, 'max' => 8],
-                                    ['label' => 'شرکت در خودآزمایی', 'count' => $count_azmoon, 'score' => $score_azmoon, 'max' => 9],
+                                    [
+                                        'label' => 'طرح سوال',
+                                        'count' => $questions['all'],
+                                        'score' => $score_soal,
+                                        'max' => $evaluationLimits->question_creation
+                                    ],
+                                    [
+                                        'label' => 'ارسال گزارش',
+                                        'count' => $discs['all'],
+                                        'score' => $score_gozaresh,
+                                        'max' => $evaluationLimits->report_submission
+                                    ],
+                                    [
+                                        'label' => 'انجام داوری',
+                                        'count' => $davarii['q'] + $davarii['gozaresh'],
+                                        'score' => $score_davari,
+                                        'max' => $evaluationLimits->judging_completion
+                                    ],
+                                    [
+                                        'label' => 'شرکت در خودآزمایی',
+                                        'count' => $count_azmoon,
+                                        'score' => $score_azmoon,
+                                        'max' => $evaluationLimits->self_test_participation
+                                    ],
                                 ];
                             @endphp
                             @foreach($kelasiRows as $row)
@@ -129,7 +149,7 @@
                     پیشرفت درسی
                 </div>
                 <div class="info">
-                    <span>سقف: <strong>70</strong></span>
+                    <span>سقف: <strong>{{ $pishraftMax }}</strong></span>
                     <span>تاکنون: <strong class="score">{{ number_format($pishraft, 2) }}</strong></span>
                     <span><i class="fas fa-chevron-down" style="font-size:12px;color:#6b7a8f;"></i></span>
                 </div>
@@ -149,10 +169,30 @@
                         <tbody>
                             @php
                                 $pishRows = [
-                                    ['label' => 'کیفیت سوال', 'status' => $q_scores, 'score' => $score_pish_soal, 'max' => 12],
-                                    ['label' => 'کیفیت گزارش', 'status' => $d_scores, 'score' => $score_pish_gozaresh, 'max' => 10],
-                                    ['label' => 'کیفیت خودآزمایی', 'status' => $qu_scores, 'score' => $score_pish_azmoon, 'max' => 24],
-                                    ['label' => 'کیفیت داوری ها', 'status' => ($q_scores + $d_scores + $qu_scores + 5) / 4, 'score' => $score_keifiat, 'max' => 14],
+                                    [
+                                        'label' => 'کیفیت سوال',
+                                        'status' => $q_scores,
+                                        'score' => $score_pish_soal,
+                                        'max' => $evaluationLimits->question_quality
+                                    ],
+                                    [
+                                        'label' => 'کیفیت گزارش',
+                                        'status' => $d_scores,
+                                        'score' => $score_pish_gozaresh,
+                                        'max' => $evaluationLimits->report_quality
+                                    ],
+                                    [
+                                        'label' => 'کیفیت خودآزمایی',
+                                        'status' => $qu_scores,
+                                        'score' => $score_pish_azmoon,
+                                        'max' => $evaluationLimits->self_test_quality
+                                    ],
+                                    [
+                                        'label' => 'کیفیت داوری ها',
+                                        'status' => ($q_scores + $d_scores + $qu_scores + 5) / 4,
+                                        'score' => $score_keifiat,
+                                        'max' => $evaluationLimits->judging_quality
+                                    ],
                                 ];
                             @endphp
                             @foreach($pishRows as $row)
