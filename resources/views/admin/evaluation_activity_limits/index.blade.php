@@ -64,100 +64,20 @@
             color: #333;
         }
 
-        .score-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 70px;
-            padding: 7px 14px;
-            border-radius: 20px;
-            background: #f0f7ff;
-            color: #0d6efd;
-            font-weight: 700;
-        }
-
-        .btn-edit {
-            border: none;
-            background: #fff3cd;
-            color: #856404;
-            padding: 8px 14px;
+        .score-input {
+            width: 110px;
+            min-height: 42px;
+            border: 1px solid #dee2e6;
             border-radius: 8px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .btn-edit:hover {
-            background: #ffe69c;
-        }
-
-        .btn-add {
-            border: none;
-            background: #198754;
-            color: #fff;
-            padding: 10px 18px;
-            border-radius: 9px;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .btn-add:hover {
-            background: #157347;
-            color: #fff;
-        }
-
-        .empty-box {
             text-align: center;
-            padding: 50px 20px;
-            color: #888;
-        }
-
-        .empty-box i {
-            font-size: 45px;
-            margin-bottom: 15px;
-            color: #ccc;
-        }
-
-        .form-label {
-            font-weight: 600;
-            color: #444;
-        }
-
-        .modal-content {
-            border: none;
-            border-radius: 15px;
-            overflow: hidden;
-        }
-
-        .modal-header {
-            background: #f8f9fa;
-            border-bottom: 1px solid #eee;
-        }
-
-        .modal-title {
             font-weight: 700;
+            font-size: 15px;
+            outline: none;
         }
 
-        .form-control {
-            border-radius: 8px;
-            min-height: 45px;
-        }
-
-        .form-control:focus {
-            box-shadow: none;
+        .score-input:focus {
             border-color: #86b7fe;
-        }
-
-        .btn-save {
-            border: none;
-            background: #0d6efd;
-            color: #fff;
-            border-radius: 8px;
-            padding: 10px 25px;
-        }
-
-        .btn-save:hover {
-            background: #0b5ed7;
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
         }
 
         .total-row {
@@ -185,8 +105,26 @@
             color: #842029;
         }
 
-        .score-error {
-            margin-bottom: 20px;
+        .save-wrapper {
+            margin-top: 25px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-save {
+            border: none;
+            background: #0d6efd;
+            color: #fff;
+            border-radius: 8px;
+            padding: 11px 25px;
+            cursor: pointer;
+        }
+
+        .btn-save:hover {
+            background: #0b5ed7;
+        }
+
+        .alert {
             border-radius: 10px;
         }
 
@@ -200,22 +138,22 @@
                 align-items: stretch;
             }
 
-            .page-header .btn-add {
-                width: 100%;
-            }
-
             .table-responsive {
                 border-radius: 10px;
+            }
+
+            .save-wrapper {
+                justify-content: stretch;
+            }
+
+            .btn-save {
+                width: 100%;
             }
         }
     </style>
 @endsection
 
 @section('mohtava')
-
-    @php
-        $totalScore = $activities->sum('max_score');
-    @endphp
 
     <div class="page-wrapper">
 
@@ -228,172 +166,97 @@
                 </h4>
 
                 <p>
-                    مدیریت فعالیت‌ها و تعیین سقف امتیاز قابل دریافت
+                    تعیین سقف امتیاز فعالیت‌های ارزشیابی
                 </p>
             </div>
 
-            <button type="button"
-                    class="btn-add"
-                    data-bs-toggle="modal"
-                    data-bs-target="#addActivityModal">
-
-                <i class="fas fa-plus me-1"></i>
-                افزودن فعالیت
-
-            </button>
-
         </div>
 
-        {{-- خطای مجموع امتیازها --}}
-        @if($totalScore != 100)
-
-            <div class="alert alert-danger alert-dismissible fade show score-error"
-                 role="alert">
-
-                <i class="fas fa-exclamation-triangle me-1"></i>
-
-                <strong>خطا:</strong>
-
-                مجموع سقف امتیاز فعالیت‌ها باید دقیقاً
-                <strong>۱۰۰</strong>
-                باشد.
-
-                <span class="ms-2">
-                    مجموع فعلی:
-                    <strong>{{ number_format($totalScore) }}</strong>
-                </span>
-
-                <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="alert"
-                        aria-label="Close">
-                </button>
-
+        @if(session('success'))
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle me-1"></i>
+                {{ session('success') }}
             </div>
-
         @endif
 
-        {{-- خطاهای Validation --}}
         @if($errors->any())
-
             <div class="alert alert-danger">
 
                 <ul class="mb-0">
-
                     @foreach($errors->all() as $error)
-
                         <li>
                             {{ $error }}
                         </li>
-
                     @endforeach
-
                 </ul>
 
             </div>
-
         @endif
 
-        <div class="content-card">
+        <form action="{{ route('admin.evaluation-activity-limits.update') }}" method="POST">
 
-            <div class="table-responsive">
+            @csrf
 
-                <table class="table table-hover">
+            @method('PUT')
 
-                    <thead>
+            <div class="content-card">
 
-                    <tr>
+                <div class="table-responsive">
 
-                        <th style="width: 80px;">
-                            ردیف
-                        </th>
+                    <table class="table table-hover">
 
-                        <th>
-                            فعالیت
-                        </th>
-
-                        <th style="width: 180px;">
-                            سقف امتیاز
-                        </th>
-
-                        <th style="width: 130px;">
-                            ویرایش
-                        </th>
-
-                    </tr>
-
-                    </thead>
-
-                    <tbody>
-
-                    @forelse($activities as $index => $activity)
+                        <thead>
 
                         <tr>
 
-                            <td>
-                                {{ $index + 1 }}
-                            </td>
+                            <th style="width: 80px;">
+                                ردیف
+                            </th>
 
-                            <td>
+                            <th>
+                                فعالیت
+                            </th>
 
-                                <span class="activity-name">
-                                    {{ $activity->activity }}
-                                </span>
-
-                            </td>
-
-                            <td>
-
-                                <span class="score-badge">
-                                    {{ number_format($activity->max_score) }}
-                                </span>
-
-                            </td>
-
-                            <td>
-
-                                <button type="button"
-                                        class="btn-edit"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#editActivityModal"
-                                        data-id="{{ $activity->id }}"
-                                        data-activity="{{ $activity->activity }}"
-                                        data-score="{{ $activity->max_score }}"
-                                        onclick="editActivity(this)">
-
-                                    <i class="fas fa-edit me-1"></i>
-
-                                    ویرایش
-
-                                </button>
-
-                            </td>
+                            <th style="width: 200px;">
+                                سقف امتیاز
+                            </th>
 
                         </tr>
 
-                    @empty
+                        </thead>
 
-                        <tr>
+                        <tbody>
 
-                            <td colspan="4">
+                        @foreach($activities as $index => $item)
 
-                                <div class="empty-box">
+                            <tr>
 
-                                    <i class="fas fa-chart-line d-block"></i>
+                                <td>
+                                    {{ $index + 1 }}
+                                </td>
 
-                                    <div>
-                                        هنوز فعالیتی ثبت نشده است.
-                                    </div>
+                                <td>
+                                    <span class="activity-name">
+                                        {{ $item['name'] }}
+                                    </span>
+                                </td>
 
-                                </div>
+                                <td>
 
-                            </td>
+                                    <input
+                                        type="number"
+                                        name="{{ $item['key'] }}"
+                                        value="{{ old($item['key'], $item['score']) }}"
+                                        class="score-input score-field"
+                                        min="0"
+                                        required
+                                    >
 
-                        </tr>
+                                </td>
 
-                    @endforelse
+                            </tr>
 
-                    @if($activities->count() > 0)
+                        @endforeach
 
                         <tr class="total-row">
 
@@ -403,256 +266,89 @@
 
                             <td>
 
-                                <span class="total-score {{ $totalScore == 100 ? 'valid' : 'invalid' }}">
-
+                                <span
+                                    id="totalScore"
+                                    class="total-score {{ $totalScore == 100 ? 'valid' : 'invalid' }}"
+                                >
                                     {{ number_format($totalScore) }}
-
                                 </span>
-
-                            </td>
-
-                            <td>
-
-                                @if($totalScore == 100)
-
-                                    <span class="text-success">
-                                        <i class="fas fa-check-circle"></i>
-                                        صحیح
-                                    </span>
-
-                                @else
-
-                                    <span class="text-danger">
-                                        <i class="fas fa-times-circle"></i>
-                                        نامعتبر
-                                    </span>
-
-                                @endif
 
                             </td>
 
                         </tr>
 
-                    @endif
+                        </tbody>
 
-                    </tbody>
+                    </table>
 
-                </table>
+                </div>
 
-            </div>
+                <div class="save-wrapper">
 
-        </div>
+                    <button type="submit" class="btn-save">
 
-    </div>
+                        <i class="fas fa-save me-1"></i>
 
+                        ذخیره تغییرات
 
-    {{-- Modal افزودن فعالیت --}}
+                    </button>
 
-    <div class="modal fade"
-         id="addActivityModal"
-         tabindex="-1"
-         aria-hidden="true">
-
-        <div class="modal-dialog modal-dialog-centered">
-
-            <div class="modal-content">
-
-                <form action="{{ route('admin.evaluation-activity-limits.store') }}"
-                      method="POST">
-
-                    @csrf
-
-                    <div class="modal-header">
-
-                        <h5 class="modal-title">
-                            افزودن فعالیت
-                        </h5>
-
-                        <button type="button"
-                                class="btn-close"
-                                data-bs-dismiss="modal"
-                                aria-label="Close">
-                        </button>
-
-                    </div>
-
-                    <div class="modal-body">
-
-                        <div class="mb-3">
-
-                            <label class="form-label">
-                                فعالیت
-                            </label>
-
-                            <input type="text"
-                                   name="activity"
-                                   class="form-control"
-                                   placeholder="مثلاً پاسخ به سوالات"
-                                   required>
-
-                        </div>
-
-                        <div class="mb-3">
-
-                            <label class="form-label">
-                                سقف امتیاز
-                            </label>
-
-                            <input type="number"
-                                   name="max_score"
-                                   class="form-control"
-                                   min="0"
-                                   placeholder="مثلاً 100"
-                                   required>
-
-                        </div>
-
-                    </div>
-
-                    <div class="modal-footer">
-
-                        <button type="button"
-                                class="btn btn-secondary"
-                                data-bs-dismiss="modal">
-
-                            انصراف
-
-                        </button>
-
-                        <button type="submit"
-                                class="btn-save">
-
-                            <i class="fas fa-save me-1"></i>
-
-                            ذخیره
-
-                        </button>
-
-                    </div>
-
-                </form>
+                </div>
 
             </div>
 
-        </div>
-
-    </div>
-
-
-    {{-- Modal ویرایش فعالیت --}}
-
-    <div class="modal fade"
-         id="editActivityModal"
-         tabindex="-1"
-         aria-hidden="true">
-
-        <div class="modal-dialog modal-dialog-centered">
-
-            <div class="modal-content">
-
-                <form id="editActivityForm"
-                      method="POST">
-
-                    @csrf
-                    @method('PUT')
-
-                    <div class="modal-header">
-
-                        <h5 class="modal-title">
-                            ویرایش فعالیت
-                        </h5>
-
-                        <button type="button"
-                                class="btn-close"
-                                data-bs-dismiss="modal"
-                                aria-label="Close">
-                        </button>
-
-                    </div>
-
-                    <div class="modal-body">
-
-                        <div class="mb-3">
-
-                            <label class="form-label">
-                                فعالیت
-                            </label>
-
-                            <input type="text"
-                                   id="editActivity"
-                                   name="activity"
-                                   class="form-control"
-                                   required>
-
-                        </div>
-
-                        <div class="mb-3">
-
-                            <label class="form-label">
-                                سقف امتیاز
-                            </label>
-
-                            <input type="number"
-                                   id="editScore"
-                                   name="max_score"
-                                   class="form-control"
-                                   min="0"
-                                   required>
-
-                        </div>
-
-                    </div>
-
-                    <div class="modal-footer">
-
-                        <button type="button"
-                                class="btn btn-secondary"
-                                data-bs-dismiss="modal">
-
-                            انصراف
-
-                        </button>
-
-                        <button type="submit"
-                                class="btn-save">
-
-                            <i class="fas fa-save me-1"></i>
-
-                            ذخیره تغییرات
-
-                        </button>
-
-                    </div>
-
-                </form>
-
-            </div>
-
-        </div>
+        </form>
 
     </div>
 
 @endsection
 
 @section('js')
+
     <script>
 
-        function editActivity(button) {
+        document.addEventListener('DOMContentLoaded', function () {
 
-            const id = button.getAttribute('data-id');
+            const fields = document.querySelectorAll('.score-field');
+            const totalScore = document.getElementById('totalScore');
 
-            const activity = button.getAttribute('data-activity');
+            function calculateTotal() {
 
-            const score = button.getAttribute('data-score');
+                let total = 0;
 
-            document.getElementById('editActivity').value = activity;
+                fields.forEach(function (field) {
 
-            document.getElementById('editScore').value = score;
+                    const value = parseInt(field.value) || 0;
 
-            document.getElementById('editActivityForm').action =
-                "{{ url('/admin/evaluation-activity-limits/update') }}/" + id;
+                    total += value;
 
-        }
+                });
+
+                totalScore.textContent = total.toLocaleString('fa-IR');
+
+                if (total === 100) {
+
+                    totalScore.classList.remove('invalid');
+                    totalScore.classList.add('valid');
+
+                } else {
+
+                    totalScore.classList.remove('valid');
+                    totalScore.classList.add('invalid');
+
+                }
+            }
+
+            fields.forEach(function (field) {
+
+                field.addEventListener('input', calculateTotal);
+
+            });
+
+            calculateTotal();
+
+        });
 
     </script>
+
 @endsection

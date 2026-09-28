@@ -219,8 +219,9 @@
                 </div>
             </a>
             <div class="course-actions">
-                <a href="{{ route('courses.setting',$cours->id) }}" class="action-item action-btn settings-btn">
+                <a href="{{ route('courses.setting',$cours->id) }}" data-action="تنظیمات" class="action-item action-btn settings-btn">
                     <i class="fas fa-cog"></i>
+                    <span class="action-tooltip">تنظیمات</span>
                 </a>
                 <div class="action-item" data-action="ویرایش" onclick="event.preventDefault(); event.stopPropagation(); editCourse({{ $cours->id }})">
                     <i class="fas fa-edit"></i>

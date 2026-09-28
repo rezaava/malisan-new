@@ -10,8 +10,16 @@ return new class extends Migration
     {
         Schema::create('evaluation_activity_limits', function (Blueprint $table) {
             $table->id();
-            $table->string('activity');
-            $table->unsignedInteger('max_score')->default(0);
+
+            $table->unsignedInteger('judging_quality')->default(15);
+            $table->unsignedInteger('self_test_quality')->default(25);
+            $table->unsignedInteger('report_quality')->default(15);
+            $table->unsignedInteger('question_quality')->default(15);
+            $table->unsignedInteger('self_test_participation')->default(9);
+            $table->unsignedInteger('judging_completion')->default(8);
+            $table->unsignedInteger('report_submission')->default(5);
+            $table->unsignedInteger('question_creation')->default(8);
+
             $table->timestamps();
         });
     }

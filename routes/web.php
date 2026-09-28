@@ -56,9 +56,7 @@ Route::prefix('/admin')->middleware(['role:admin'])->group(function () {
     Route::prefix('/evaluation-activity-limits')->group(function () {
         Route::get('/', [AdminEvaluationActivityLimitController::class, 'index'])->name('admin.evaluation-activity-limits');
 
-        Route::post('/store', [AdminEvaluationActivityLimitController::class, 'store'])->name('admin.evaluation-activity-limits.store');
-
-        Route::put('/update/{id}', [AdminEvaluationActivityLimitController::class, 'update'])->name('admin.evaluation-activity-limits.update');
+        Route::put('/update', [AdminEvaluationActivityLimitController::class, 'update'])->name('admin.evaluation-activity-limits.update');
     });
     Route::prefix('/coin')->group(function () {
         Route::get('/', [AdminCoinController::class, 'index'])->name('admin.coin');

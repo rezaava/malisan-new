@@ -8,8 +8,8 @@ use App\Models\Option;
 use App\Models\OptionUser;
 use App\Models\SiteSetting;
 use App\Models\Survey;
-use Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Validator;
 
 class SurveyController extends Controller
