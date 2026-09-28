@@ -21,6 +21,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\log;
 use App\Models\CourseUser;
 use App\Models\Discussion;
+use App\Models\EvaluationActivityLimit;
 use App\Models\Exercise;
 use App\Models\Question;
 use App\Models\User;
@@ -1332,6 +1333,7 @@ class CourseController extends Controller
         $course = Course::findOrFail($courseId);
         $setting = Setting::where('course_id', $course->id)->first();
         $scorring = Scoring::where('course_id', $course->id)->first();
+        $evaluationLimits = EvaluationActivityLimit::first();
 
         $user = User::findOrFail($userId);
 
@@ -1516,38 +1518,227 @@ class CourseController extends Controller
         // ==========================================
         // 6. محاسبه امتیازات
         // ==========================================
-
+        // ==========================================
         // 6.1. فعالیت کلاسی
-        $score_soal = min(8, ($questions_all * 8) / ($max_session * $setting->max_soal * 5 / 6));
-        $score_gozaresh = min(5, $disc_all * 5 / $max_session);
-        $score_davari = min(8, (($davarii['q'] + $davarii['gozaresh']) * 8) / ($max_session * (1 + $setting->max_soal) * 3));
-        $score_azmoon = min(9, $count_azmoon * 9 / ($setting->min_w_khod * $max_session));
+        // ==========================================
 
-        $kelasi = min(30, $score_soal + $score_gozaresh + $score_azmoon + $score_davari);
+        // طرح سوال
+        $score_soal = 0;
 
+        if ($max_session > 0 && $setting->max_soal > 0) {
+            $score_soal =
+                $evaluationLimits->question_creation *
+                ($questions_all / ($max_session * $setting->max_soal * 5 / 6));
+        }
+
+        $score_soal = min(
+            $evaluationLimits->question_creation,
+            $score_soal
+        );
+
+
+        // ارسال گزارش
+        // فرمول:
+        // S = N × [ n / ((a - 1) × b) ]
+        //
+        // N = سقف امتیاز ارسال گزارش
+        // n = تعداد گزارش‌های ارسال‌شده توسط دانشجو
+        // a = تعداد جلسات
+        // b = حداکثر تعداد گزارش در هر جلسه
+
+        $score_gozaresh = 0;
+
+        if ($setting->jalasat > 1 && $setting->max_gozaresh > 0) {
+            $score_gozaresh =
+                $evaluationLimits->report_submission *
+                (
+                    $disc_all /
+                    (($setting->jalasat - 1) * $setting->max_gozaresh)
+                );
+        }
+
+        $score_gozaresh = min(
+            $evaluationLimits->report_submission,
+            $score_gozaresh
+        );
+
+
+        // انجام داوری
+        $score_davari = 0;
+
+        if ($max_session > 0 && $setting->max_soal > 0) {
+            $score_davari =
+                $evaluationLimits->judging_completion *
+                (
+                    ($davarii['q'] + $davarii['gozaresh']) /
+                    ($max_session * (1 + $setting->max_soal) * 3)
+                );
+        }
+
+        $score_davari = min(
+            $evaluationLimits->judging_completion,
+            $score_davari
+        );
+
+
+        // شرکت در خودآزمایی
+        $score_azmoon = 0;
+
+        if ($setting->min_w_khod > 0 && $max_session > 0) {
+            $score_azmoon =
+                $evaluationLimits->self_test_participation *
+                (
+                    $count_azmoon /
+                    ($setting->min_w_khod * $max_session)
+                );
+        }
+
+        $score_azmoon = min(
+            $evaluationLimits->self_test_participation,
+            $score_azmoon
+        );
+
+
+        // سقف کل فعالیت کلاسی
+        $kelasiMax =
+            $evaluationLimits->question_creation +
+            $evaluationLimits->report_submission +
+            $evaluationLimits->judging_completion +
+            $evaluationLimits->self_test_participation;
+
+
+        // نمره فعالیت کلاسی
+        $kelasi = min(
+            $kelasiMax,
+            $score_soal +
+            $score_gozaresh +
+            $score_azmoon +
+            $score_davari
+        );
+
+
+        // ==========================================
         // 6.2. پیشرفت درسی
-        $score_pish_soal = ($score_soal > 0) ? min(12, $q_scores * 12 / $score_soal) : 0;
-        $score_pish_gozaresh = ($score_gozaresh > 0) ? min(10, $d_scores * 10 / $score_gozaresh) : 0;
-        $score_pish_azmoon = ($score_azmoon > 0) ? min(24, ($qu_scores / 24) * $score_azmoon) : 0;
-        $score_keifiat = min(14, ((($q_scores + $d_scores + $qu_scores + 5) / 4) * 14));
+        // ==========================================
 
-        $pishraft = min(70, $score_pish_soal + $score_pish_gozaresh + $score_pish_azmoon + 5 + $score_keifiat);
+        // کیفیت سوال
+        $score_pish_soal = ($score_soal > 0)
+            ? min(
+                $evaluationLimits->question_quality,
+                $q_scores * $evaluationLimits->question_quality / $score_soal
+            )
+            : 0;
 
+
+        // کیفیت گزارش
+        $score_pish_gozaresh = ($score_gozaresh > 0)
+            ? min(
+                $evaluationLimits->report_quality,
+                $d_scores * $evaluationLimits->report_quality / $score_gozaresh
+            )
+            : 0;
+
+
+        // کیفیت خودآزمایی
+        $score_pish_azmoon = ($score_azmoon > 0)
+            ? min(
+                $evaluationLimits->self_test_quality,
+                ($qu_scores / $evaluationLimits->self_test_quality) * $score_azmoon
+            )
+            : 0;
+
+
+        // کیفیت داوری
+        $score_keifiat = min(
+            $evaluationLimits->judging_quality,
+            (
+                ($q_scores + $d_scores + $qu_scores + 5) / 4
+            ) * $evaluationLimits->judging_quality
+        );
+
+
+        // سقف کل پیشرفت درسی
+        $pishraftMax =
+            $evaluationLimits->question_quality +
+            $evaluationLimits->report_quality +
+            $evaluationLimits->self_test_quality +
+            $evaluationLimits->judging_quality;
+
+
+        // نمره پیشرفت درسی
+        $pishraft = min(
+            $pishraftMax,
+            $score_pish_soal +
+            $score_pish_gozaresh +
+            $score_pish_azmoon +
+            $score_keifiat
+        );
+
+
+        // ==========================================
         // 6.3. ارزشیابی مستمر
+        // ==========================================
+
         $mostamer = ($pishraft + $kelasi) * 12 / 100;
-        if ($mostamer > 12)
+
+        if ($mostamer > 12) {
             $mostamer = 12;
-        $mostamer_score = ($setting->mostamar_nomre > 0) ? ($mostamer * 20 / $setting->mostamar_nomre) : 0;
+        }
 
-        // 6.4. نمرات سایر بخش‌ها
+        $mostamer_score = ($setting->mostamar_nomre > 0)
+            ? ($mostamer * 20 / $setting->mostamar_nomre)
+            : 0;
+
+
+        // ==========================================
+        // 6.4. نمره تلاش
+        // ==========================================
+
         $nomre_har_talash = 5;
-        $talash_soal = min(5, $nomre_har_talash * $questions_all / ($setting->jalasat * ($setting->max_soal - 1)));
-        $talash_gozaresh = min(5, $nomre_har_talash * $disc_all / $setting->jalasat);
-        $talash_davari_soal = min(5, $nomre_har_talash * $davarii['q'] / ($setting->jalasat * 2 * 6));
-        $talash_davari_gozaresh = min(5, $nomre_har_talash * $davarii['gozaresh'] / ($setting->jalasat * 6));
-        $talash_khod = min(5, $nomre_har_talash * $count_azmoon / ($setting->jalasat * (7 * 5)));
 
-        $nomre['talash'] = round($talash_davari_soal + $talash_davari_gozaresh + $talash_soal + $talash_gozaresh + $talash_khod, 2);
+        $talash_soal = min(
+            5,
+            $nomre_har_talash *
+            $questions_all /
+            ($setting->jalasat * ($setting->max_soal - 1))
+        );
+
+        $talash_gozaresh = min(
+            5,
+            $nomre_har_talash *
+            $disc_all /
+            $setting->jalasat
+        );
+
+        $talash_davari_soal = min(
+            5,
+            $nomre_har_talash *
+            $davarii['q'] /
+            ($setting->jalasat * 2 * 6)
+        );
+
+        $talash_davari_gozaresh = min(
+            5,
+            $nomre_har_talash *
+            $davarii['gozaresh'] /
+            ($setting->jalasat * 6)
+        );
+
+        $talash_khod = min(
+            5,
+            $nomre_har_talash *
+            $count_azmoon /
+            ($setting->jalasat * (7 * 5))
+        );
+
+        $nomre['talash'] = round(
+            $talash_davari_soal +
+            $talash_davari_gozaresh +
+            $talash_soal +
+            $talash_gozaresh +
+            $talash_khod,
+            2
+        );
 
         // ==========================================
         // 7. نمره نهایی
@@ -1581,6 +1772,9 @@ class CourseController extends Controller
             'mostamer',
             'mostamer_score',
             'score_soal',
+            'evaluationLimits',
+            'kelasiMax',
+            'pishraftMax',
             'score_gozaresh',
             'score_davari',
             'score_azmoon',
