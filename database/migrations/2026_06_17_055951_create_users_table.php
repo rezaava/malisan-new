@@ -28,6 +28,7 @@ return new class extends Migration
             $table->string('mobile', 191)->nullable();
             $table->string('sms', 5)->nullable();
             $table->integer('active')->default(0);
+            $table->integer('coin')->default(0);
             $table->integer('tour')->default(0);
             $table->string('tel_work', 191)->nullable();
             $table->string('uni_email', 191)->nullable();

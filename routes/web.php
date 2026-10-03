@@ -24,6 +24,7 @@ use App\Http\Controllers\AdminEvaluationActivityLimitController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\TeacherSiteController;
 use App\Http\Controllers\ExamController;
+use App\Http\Controllers\Teacher\TeacherCoinController;
 use App\Http\Controllers\UploadController;
 use Illuminate\Support\Facades\Route;
 
@@ -398,7 +399,12 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         Route::get('/chat/messages/{chatId}', [ChatController::class, 'getMessages'])->name('teacher.chat.messages');
     });
 
-    Route::get('/coin', [TeacherSiteController::class, 'coin'])->name('teacher.coin');
+    Route::prefix('coin')->name('teacher.coin.')->group(function () {
+        Route::get('/', [TeacherCoinController::class, 'coin'])->name('coin');
+
+        Route::get('/daily', [TeacherCoinController::class, 'daily'])->name('daily');
+        Route::post('/daily', [TeacherCoinController::class, 'dailyStore'])->name('daily.store');
+    });
     Route::get('/profile', [TeacherSiteController::class, 'profile'])->name('teacher.profile');
     Route::post('/profile/update', [StudentSiteController::class, 'updateStudentProfile'])->name('teacherProfile.update');
 

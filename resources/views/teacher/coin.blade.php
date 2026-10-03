@@ -98,7 +98,7 @@
             <div class="vc-logo-sub">هر ویرا کوین معادل ۱۰،۰۰۰ ریال</div>
         </div>
         <div class="vc-logo-box">
-            موجودی: <b>[ ۱۰۰۰ ]</b> ویرا کوین
+            موجودی: <b>{{ Auth::user()->coin }}</b> ویرا کوین
         </div>
     </div>
 
