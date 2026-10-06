@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Amali;
 use App\Models\Angizesh;
 use App\Models\Azmon;
+use App\Models\CoinSpin;
 use App\Models\Course;
 use App\Models\CourseUser;
 use App\Models\Discussion;
@@ -42,6 +43,49 @@ class StudentSiteController extends Controller
     public function coin()
     {
         return view('student.coin',);
+    }
+
+    public function daily()
+    {
+        $user = auth()->user();
+
+        $lastSpin = CoinSpin::where('user_id', $user->id)
+            ->latest('created_at')
+            ->first();
+
+        if ($lastSpin && $lastSpin->created_at->gt(now()->subDay())) {
+            return back()->with('error', 'شما امروز گردونه را چرخانده‌اید.');
+        }
+
+        return view('student.coin.daily');
+    }
+
+    public function dailyStore(Request $request)
+    {
+        $request->validate([
+            'receive_coin' => ['required', 'integer', 'min:0'],
+        ]);
+
+        $user = auth()->user();
+
+        $lastSpin = CoinSpin::where('user_id', $user->id)
+            ->latest('created_at')
+            ->first();
+
+        if ($lastSpin && $lastSpin->created_at->gt(now()->subDay())) {
+            return back()->with('error', 'شما امروز گردونه را چرخانده‌اید.');
+        }
+
+        DB::transaction(function () use ($user, $request) {
+            $user->increment('coin', $request->receive_coin);
+
+            $coinSpin = new CoinSpin();
+            $coinSpin->user_id = $user->id;
+            $coinSpin->receive_coin = $request->receive_coin;
+            $coinSpin->save();
+        });
+
+        return back()->with('success', 'گردونه با موفقیت ثبت شد.');
     }
     /**
      * به‌روزرسانی پروفایل کاربر

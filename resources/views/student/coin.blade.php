@@ -105,7 +105,7 @@
     <div class="vc-actions">
         <a href="#" class="vc-btn">ماموریت ها</a>
         <a href="#" class="vc-btn">تاریخچه</a>
-        <a href="#" class="vc-btn">جایزه روزانه</a>
+        <a href="{{ route('student.coin.daily') }}" class="vc-btn">جایزه روزانه</a>
         <a href="#" class="vc-btn">افزایش موجودی</a>
     </div>
 </div>

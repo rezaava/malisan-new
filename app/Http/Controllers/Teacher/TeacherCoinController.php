@@ -11,6 +11,12 @@ class TeacherCoinController extends Controller
 {
     public function coin()
     {
+        $user = auth()->user();
+
+        if ($user->hasRole('student')) {
+            return view('student.coin');
+        }
+
         return view('teacher.coin');
     }
 
@@ -23,7 +29,11 @@ class TeacherCoinController extends Controller
             ->first();
 
         if ($lastSpin && $lastSpin->created_at->gt(now()->subDay())) {
-            return back();
+            return back()->with('error', 'شما امروز گردونه را چرخانده‌اید.');
+        }
+
+        if ($user->hasRole('student')) {
+            return view('student.coin.daily');
         }
 
         return view('teacher.coin.daily');
@@ -42,7 +52,7 @@ class TeacherCoinController extends Controller
             ->first();
 
         if ($lastSpin && $lastSpin->created_at->gt(now()->subDay())) {
-            return back();
+            return back()->with('error', 'شما امروز گردونه را چرخانده‌اید.');
         }
 
         DB::transaction(function () use ($user, $request) {
@@ -54,8 +64,6 @@ class TeacherCoinController extends Controller
             $coinSpin->save();
         });
 
-        return redirect()
-            ->route('teacher.coin.coin')
-            ->with('success', 'گردونه با موفقیت ثبت شد.');
+        return back()->with('success', 'گردونه با موفقیت ثبت شد.');
     }
 }

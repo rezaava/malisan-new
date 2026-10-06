@@ -399,9 +399,8 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         Route::get('/chat/messages/{chatId}', [ChatController::class, 'getMessages'])->name('teacher.chat.messages');
     });
 
+    Route::get('/coin', [TeacherCoinController::class, 'coin'])->name('teacher.coin');
     Route::prefix('coin')->name('teacher.coin.')->group(function () {
-        Route::get('/', [TeacherCoinController::class, 'coin'])->name('coin');
-
         Route::get('/daily', [TeacherCoinController::class, 'daily'])->name('daily');
         Route::post('/daily', [TeacherCoinController::class, 'dailyStore'])->name('daily.store');
     });
@@ -433,6 +432,10 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
     Route::get('/', [StudentSiteController::class, 'index'])->name('index_student');
 
     Route::get('/coin', [StudentSiteController::class, 'coin'])->name('student.coin');
+    Route::prefix('coin')->name('student.coin.')->group(function () {
+        Route::get('/daily', [TeacherCoinController::class, 'daily'])->name('daily');
+        Route::post('/daily', [TeacherCoinController::class, 'dailyStore'])->name('daily.store');
+    });
     Route::get('/profile', [StudentSiteController::class, 'profile'])->name('student.profile');
     Route::post('/profile/update', [StudentSiteController::class, 'updateStudentProfile'])->name('studentProfile.updatest');
 
