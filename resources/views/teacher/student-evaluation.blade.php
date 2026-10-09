@@ -230,12 +230,7 @@
                                     ],
                                     [
                                         'label' => 'کیفیت داوری‌ها',
-                                        'status' => (
-                                            ($q_scores ?? 0) +
-                                            ($d_scores ?? 0) +
-                                            ($qu_scores ?? 0) +
-                                            5
-                                        ) / 4,
+                                        'status' => (0),
                                         'score' => $score_keifiat ?? 0,
                                         'max' => $evaluationLimits->judging_quality ?? 0
                                     ],

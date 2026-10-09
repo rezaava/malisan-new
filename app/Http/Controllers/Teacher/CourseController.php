@@ -1648,12 +1648,7 @@ class CourseController extends Controller
 
 
         // کیفیت داوری
-        $score_keifiat = min(
-            $evaluationLimits->judging_quality,
-            (
-                ($q_scores + $d_scores + $qu_scores + 5) / 4
-            ) * $evaluationLimits->judging_quality
-        );
+        $score_keifiat = 0;
 
 
         // سقف کل پیشرفت درسی

@@ -80,21 +80,7 @@
             </div>
             <div class="sessions-list">
                 @forelse($sessions as $session)
-                    <a href="javascript:void(0);"
-                       class="session-item {{ $loop->first ? 'active' : '' }}"
-                       data-session="{{ $session->id }}"
-                       data-can-question="{{ isset($session['can_question']) && $session['can_question'] ? 'true' : 'false' }}"
-                       data-can-homework="{{ isset($session['can_homework']) && $session['can_homework'] ? 'true' : 'false' }}"
-                       data-can-report="{{ isset($session['can_report']) && $session['can_report'] ? 'true' : 'false' }}"
-                       data-pdf="{{ $session->file ?? '' }}"
-                       data-link="{{ e($session->link ?? '') }}"
-                       data-title="{{ e($session->name ?? '') }}"
-                       data-number="جلسه {{ $session->number ?? '' }}"
-                       data-description="{{ e($session->text ?? '') }}"
-                       data-lessonplan="{{ e($session->lesson_plan ?? '') }}"
-                       data-majazi="{{ e($session->majazi ?? '') }}"
-                       data-aparat="{{ e($session->aparat ?? '') }}"
-                       onclick="changeSession(this)">
+                    <a href="javascript:void(0);" class="session-item {{ $loop->first ? 'active' : '' }}" data-session="{{ $session->id }}" data-can-question="{{ isset($session['can_question']) && $session['can_question'] ? 'true' : 'false' }}" data-can-homework="{{ isset($session['can_homework']) && $session['can_homework'] ? 'true' : 'false' }}" data-can-report="{{ isset($session['can_report']) && $session['can_report'] ? 'true' : 'false' }}" data-pdf="{{ $session->file ?? '' }}" data-link="{{ e($session->link ?? '') }}" data-title="{{ e($session->name ?? '') }}" data-number="جلسه {{ $session->number ?? '' }}" data-description="{{ base64_encode($session->text ?? '') }}" data-lessonplan="{{ base64_encode($session->lesson_plan ?? '') }}" data-majazi="{{ e($session->majazi ?? '') }}" data-aparat="{{ e($session->aparat ?? '') }}" onclick="changeSession(this)">
                         <span class="session-check">
                             <i class="fas fa-check-circle"></i>
                         </span>
@@ -135,12 +121,7 @@
                                 @endif
                             </span>
                         </div>
-                        <a href="#"
-                           id="majaziSessionBtn"
-                           class="info-badge majazi-badge"
-                           target="_blank"
-                           rel="noopener noreferrer"
-                           style="display:{{ $sessions->isNotEmpty() && !empty($sessions->first()->majazi) ? 'inline-flex' : 'none' }};text-decoration:none;cursor:pointer;">
+                        <a href="#" id="majaziSessionBtn" class="info-badge majazi-badge" target="_blank" rel="noopener noreferrer" style="display:{{ $sessions->isNotEmpty() && !empty($sessions->first()->majazi) ? 'inline-flex' : 'none' }};text-decoration:none;cursor:pointer;">
                             <span class="badge-icon"><i class="fas fa-video"></i></span>
                             <span class="badge-value">کلاس مجازی</span>
                         </a>
@@ -216,14 +197,7 @@
                     <div class="collapsible-body" id="sessionAparat">
                         @if($sessions->isNotEmpty() && !empty($sessions->first()->aparat))
                             <div class="aparat-video-wrapper">
-                                <iframe id="aparatIframe"
-                                        src="{{ $sessions->first()->aparat }}"
-                                        frameborder="0"
-                                        allowfullscreen="true"
-                                        webkitallowfullscreen="true"
-                                        mozallowfullscreen="true"
-                                        scrolling="no"
-                                        allow="encrypted-media *;"></iframe>
+                                <iframe id="aparatIframe" src="{{ $sessions->first()->aparat }}" frameborder="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" scrolling="no" allow="encrypted-media *;"></iframe>
                             </div>
                         @endif
                     </div>
@@ -235,22 +209,10 @@
                         <div class="pdf-toolbar d-flex justify-content-between align-items-center w-100">
                             <div class="w-100">
                                 <span class="px-2">پیوست (جزوه، کتاب، پاورپوینت و...)</span>
-                                <a href="#"
-                                   id="pdfOpenBtn"
-                                   class="pdf-open-btn"
-                                   title="باز کردن فایل پیوست در صفحه جدید"
-                                   target="_blank"
-                                   rel="noopener noreferrer"
-                                   style="float:left;display:none;">
+                                <a href="#" id="pdfOpenBtn" class="pdf-open-btn" title="باز کردن فایل پیوست در صفحه جدید" target="_blank" rel="noopener noreferrer" style="float:left;display:none;">
                                     <i class="fas fa-file-pdf" style="color:black"></i>
                                 </a>
-                                <a href="#"
-                                   id="linkOpenBtn"
-                                   class="pdf-open-btn"
-                                   title="باز کردن لینک محتوای جلسه در صفحه جدید"
-                                   target="_blank"
-                                   rel="noopener noreferrer"
-                                   style="float:left;display:none;">
+                                <a href="#" id="linkOpenBtn" class="pdf-open-btn" title="باز کردن لینک محتوای جلسه در صفحه جدید" target="_blank" rel="noopener noreferrer" style="float:left;display:none;">
                                     <i class="fas fa-link" style="color:#1e6f9f"></i>
                                 </a>
                             </div>
@@ -260,21 +222,14 @@
                     <div class="collapsible-body">
                         <div class="pdf-viewer" id="attachmentViewer">
                             @if($sessions->isNotEmpty() && $sessions->first()->file)
-                                <object id="pdfViewer"
-                                        data="/files/session{{ $sessions->first()->file }}"
-                                        type="application/pdf"
-                                        width="100%"
-                                        height="550px">
+                                <object id="pdfViewer" data="/files/session{{ $sessions->first()->file }}" type="application/pdf" width="100%" height="550px">
                                     <object width="100%" height="550" data="/files/session{{ $sessions->first()->file }}"></object>
                                 </object>
                             @elseif($sessions->isNotEmpty() && $sessions->first()->link)
                                 <div class="text-center p-5">
                                     <i class="fas fa-link fa-3x mb-3" style="color:#1e6f9f;"></i>
                                     <p class="mb-3">محتوای این جلسه به صورت لینک ارائه شده است.</p>
-                                    <a href="{{ $sessions->first()->link }}"
-                                       class="btn btn-primary"
-                                       target="_blank"
-                                       rel="noopener noreferrer">
+                                    <a href="{{ $sessions->first()->link }}" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
                                         <i class="fas fa-external-link-alt"></i>
                                         باز کردن محتوای جلسه
                                     </a>
@@ -299,6 +254,7 @@ let currentMajaziUrl=@json($sessions->first()->majazi ?? '');
 let currentAparatUrl=@json($sessions->first()->aparat ?? '');
 let currentLessonPlan=@json($sessions->first()->lesson_plan ?? '');
 let currentLinkUrl=@json($sessions->first()->link ?? '');
+
 function hasContent(value){
     if(value===null||value===undefined)return false;
     const text=String(value).trim();
@@ -307,6 +263,24 @@ function hasContent(value){
     temp.innerHTML=text;
     return temp.textContent.trim()!==''||temp.querySelector('img,video,iframe,object,embed,table,ul,ol')!==null;
 }
+
+function decodeBase64(value){
+    if(!value)return '';
+    try{
+        return decodeURIComponent(
+            Array.prototype.map.call(
+                atob(value),
+                function(c){
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }
+            ).join('')
+        );
+    }catch(error){
+        console.error('Base64 decode error:',error);
+        return '';
+    }
+}
+
 function normalizeUrl(value){
     let url=(value||'').trim();
     if(!url||url==='null'||url==='undefined')return '';
@@ -317,6 +291,7 @@ function normalizeUrl(value){
         return '';
     }
 }
+
 function getAparatUrl(value){
     let url=(value||'').trim();
     if(!url||url==='null'||url==='undefined')return '';
@@ -324,10 +299,12 @@ function getAparatUrl(value){
     if(iframeMatch)url=iframeMatch[1];
     return normalizeUrl(url);
 }
+
 function setSectionVisibility(sectionId,visible){
     const section=document.getElementById(sectionId);
     if(section)section.classList.toggle('session-section-hidden',!visible);
 }
+
 function openSection(sectionId){
     const section=document.getElementById(sectionId);
     if(!section)return;
@@ -336,6 +313,7 @@ function openSection(sectionId){
     if(body)body.classList.add('open');
     if(icon)icon.classList.add('rotated');
 }
+
 function resetSection(sectionId){
     const section=document.getElementById(sectionId);
     if(!section)return;
@@ -344,6 +322,7 @@ function resetSection(sectionId){
     if(body)body.classList.remove('open');
     if(icon)icon.classList.remove('rotated');
 }
+
 function changeSession(element){
     if(!element)return;
     const sessionId=element.dataset.session||'';
@@ -351,8 +330,8 @@ function changeSession(element){
     const linkUrl=element.dataset.link||'';
     const title=element.dataset.title||'';
     const number=element.dataset.number||'';
-    const description=element.dataset.description||'';
-    const lessonPlan=element.dataset.lessonplan||'';
+    const description=decodeBase64(element.dataset.description||'');
+    const lessonPlan=decodeBase64(element.dataset.lessonplan||'');
     const majaziUrl=element.dataset.majazi||'';
     const aparatUrl=element.dataset.aparat||'';
     document.querySelectorAll('.session-item').forEach(item=>item.classList.remove('active'));
@@ -391,17 +370,13 @@ function changeSession(element){
     }
     const sessionLessonPlan=document.getElementById('sessionLessonPlan');
     const lessonPlanExists=hasContent(lessonPlan);
-    if(sessionLessonPlan){
-        sessionLessonPlan.innerHTML=lessonPlanExists?lessonPlan:'';
-    }
+    if(sessionLessonPlan)sessionLessonPlan.innerHTML=lessonPlanExists?lessonPlan:'';
     setSectionVisibility('lessonPlanSection',lessonPlanExists);
     resetSection('lessonPlanSection');
     if(lessonPlanExists)openSection('lessonPlanSection');
     const sessionText=document.getElementById('sessionText');
     const descriptionExists=hasContent(description);
-    if(sessionText){
-        sessionText.innerHTML=descriptionExists?description:'';
-    }
+    if(sessionText)sessionText.innerHTML=descriptionExists?description:'';
     setSectionVisibility('lessonTextSection',descriptionExists);
     resetSection('lessonTextSection');
     if(descriptionExists)openSection('lessonTextSection');
@@ -422,7 +397,7 @@ function changeSession(element){
     if(pdfUrl){
         fullPdfUrl=pdfUrl.startsWith('http://')||pdfUrl.startsWith('https://')?pdfUrl:'/files/session'+pdfUrl;
     }
-    let fullLinkUrl=normalizeUrl(linkUrl);
+    const fullLinkUrl=normalizeUrl(linkUrl);
     const attachmentExists=!!fullPdfUrl||!!fullLinkUrl;
     const attachmentViewer=document.getElementById('attachmentViewer');
     const pdfOpenBtn=document.getElementById('pdfOpenBtn');
@@ -505,10 +480,10 @@ function changeSession(element){
         studentActivitiesSection.classList.toggle('session-section-hidden',!canQuestion&&!canHomework&&!canReport);
     }
 }
+
 document.addEventListener('DOMContentLoaded',function(){
     document.querySelectorAll('.collapsible-header').forEach(function(header){
         header.addEventListener('click',function(){
-            const section=this.closest('.session-section');
             const body=this.nextElementSibling;
             const icon=this.querySelector('.expand-icon');
             if(!body)return;
