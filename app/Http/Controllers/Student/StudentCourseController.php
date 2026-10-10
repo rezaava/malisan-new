@@ -444,7 +444,7 @@ class StudentCourseController extends Controller
             $courseUser->course_id = $course->id;
             $courseUser->user_id = $user->id;
             $courseUser->role_id = $studentRole->id;
-            $courseUser->course_type = $course->type; 
+            $courseUser->course_type = $course->type+1; 
             $courseUser->status = $status;
             $courseUser->save();
 

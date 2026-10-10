@@ -189,8 +189,8 @@
                                     ],
                                     [
                                         'label' => 'کیفیت داوری ها',
-                                        'status' => ($q_scores + $d_scores + $qu_scores + 5) / 4,
-                                        'score' => $score_keifiat,
+                                        'status' => 0,
+                                        'score' => 0,
                                         'max' => $evaluationLimits->judging_quality
                                     ],
                                 ];

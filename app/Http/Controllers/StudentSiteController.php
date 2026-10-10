@@ -219,7 +219,7 @@ class StudentSiteController extends Controller
     {
         $user = Auth::user();
         
-        $courses = $user->courses()->where('courses.archieve', 0)->where('is_ended', 0)->whereIn('courses.type', ['0','2'])->get();
+        $courses = $user->s()->where('courses.archieve', 0)->where('is_ended', 0)->whereIn('courses.type', ['0','2'])->get();
         
         return view('student.courses', compact('courses'));
     }

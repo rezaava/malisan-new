@@ -808,7 +808,8 @@ class CourseController extends Controller
 
         $query = $course->users()
             ->wherePivotNull('deleted_at')
-            ->where('role_id', $role->id);
+            ->where('role_id', $role->id)
+            ->wherePivot('status', 1);
 
         // فیلتر بر اساس type دوره
         // type: 0 = lesson, 1 = skill, 2 = both
@@ -2072,6 +2073,7 @@ class CourseController extends Controller
 
         $users = $course->users()
             ->where('role_id', $studentRole->id)
+            ->wherePivot('status', 1)
             ->orderBy('family', 'asc')
             ->get();
 
