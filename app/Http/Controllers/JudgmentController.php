@@ -25,7 +25,6 @@ class JudgmentController extends Controller
      */
     public function index($course_id = null)
     {
-        return 'a';
         $user = Auth::user();
 
         // ===== بررسی محدودیت روزانه =====
@@ -78,7 +77,7 @@ class JudgmentController extends Controller
         $result = $this->getPendingItems($user->id, $course_id);
         $items = $result['items'];
         $totalPending = $result['total'];
-
+return $items;
         // اگر کاربر دانشجو است، فقط یک آیتم تصادفی نمایش داده شود
         if ($user->hasRole('student') && !empty($items)) {
             $randomIndex = array_rand($items);

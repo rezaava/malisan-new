@@ -1564,22 +1564,25 @@ class CourseController extends Controller
 
 
         // انجام داوری
-        $score_davari = 0;
-
-        if ($max_session > 0 && $setting->max_soal > 0) {
-            $score_davari =
-                $evaluationLimits->judging_completion *
-                (
-                    ($davarii['q'] + $davarii['gozaresh']) /
-                    ($max_session * (1 + $setting->max_soal) * 3)
-                );
-        }
-
-        $score_davari = min(
+        $peerReview = $this->peerReviewScore(
+            $setting->daily_judgment_limit,
+            $setting->jalasat,
             $evaluationLimits->judging_completion,
-            $score_davari
+            $course->students()->count(),
+            $setting->max_soal,
+            $setting->max_gozaresh,
+            7
         );
+        Log::info('Peer Review Score Inputs', [
+            'daily_judgment_limit' => $setting->daily_judgment_limit,
+            'jalasat' => $setting->jalasat,
+            'judging_completion' => $evaluationLimits->judging_completion,
+            'students_count' => $course->students()->count(),
+            'max_soal' => $setting->max_soal,
+            'max_gozaresh' => $setting->max_gozaresh,
+        ]);
 
+        $score_davari = $peerReview['score'];
 
         // شرکت در خودآزمایی
         $score_azmoon = 0;
@@ -1784,6 +1787,40 @@ class CourseController extends Controller
                 ]);
     }
 
+    private function peerReviewScore(
+        $a = 5,
+        $b = 16,
+        $c = 8,
+        $d = 10,
+        $e = 3,
+        $f = 1,
+        $h = 7
+    ) {
+        $g = 3;
+
+        if ($d <= 1) {
+            return ['n' => 0, 'score' => 0];
+        }
+
+        $r = $g * ($e + $f);
+        $dailyCapacity = $a * $h;
+        $availableItems = ($d - 1) * ($e + $f);
+        $m = min($dailyCapacity, $r, $availableItems);
+
+        $n = $b * $m;
+        $nTarget = 0.95 * $b * $r;
+
+        if ($nTarget == 0) {
+            return ['n' => $n, 'score' => 0];
+        }
+
+        $score = round(min($c * $n / $nTarget, $c), 2);
+
+        return [
+            'n' => $n,
+            'score' => $score,
+        ];
+    }
     /**
      * نمایش نمرات دانشجویان - نسخه Query Builder
      */

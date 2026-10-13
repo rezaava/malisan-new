@@ -71,52 +71,63 @@
                 {{-- CONTENT --}}
                 <div class="content">
                     @if($item['type'] == 'question')
-                        <strong>سوال:</strong> 
+                        <strong>سوال:</strong>
                         {!! is_array($item['title']) ? ($item['title']['question'] ?? json_encode($item['title'])) : $item['title'] !!}
-                        
-                        @if(isset($item['answers']) && is_array($item['answers']))
+
+                        @if(isset($item['data']['type']) && $item['data']['type'] == 1)
+                            <div class="options">
+                                <div class="option-item">
+                                    <span>{!! $item['data']['answer'] ?? '' !!}</span>
+                                </div>
+                            </div>
+                        @elseif(isset($item['answers']) && is_array($item['answers']))
                             <div class="options">
                                 @foreach($item['answers'] as $key => $answer)
                                     @php
                                         if (is_array($answer)) {
-                                            $displayValue = $answer['value'] ?? json_encode($answer);
+                                            $displayValue = $answer['value'] ?? json_encode($answer, JSON_UNESCAPED_UNICODE);
                                         } else {
                                             $displayValue = $answer;
                                         }
+
                                         $label = ['الف', 'ب', 'ج', 'د'][$key] ?? $key;
+                                        $isCorrect = $displayValue == ($item['correct_answer'] ?? null);
                                     @endphp
-                                    <div class="option-item {{ ($key + 1) == $item['correct_answer'] ? 'correct' : '' }}">
+
+                                    <div class="option-item {{ $isCorrect ? 'correct' : '' }}">
                                         <span class="opt-label">{{ $label }}</span>
                                         <span>{{ $displayValue }}</span>
-                                        @if(($key + 1) == $item['correct_answer'])
+
+                                        @if($isCorrect)
                                             <span style="color:#4caf50;margin-right:auto;">✓</span>
                                         @endif
                                     </div>
                                 @endforeach
                             </div>
                         @endif
-                        
+
                     @elseif($item['type'] == 'discussion')
-                        <strong>عنوان:</strong> 
+                        <strong>عنوان:</strong>
                         {{ $item['title'] }}
+
                         @if(isset($item['text']))
                             <div style="margin-top:8px;color:#4a5a6e;">
-                                {{ $item['text'] }}
+                                {!! $item['text'] !!}
                             </div>
                         @endif
-                        
+
                     @elseif($item['type'] == 'exercise')
-                        <strong>تکلیف:</strong> 
+                        <strong>تکلیف:</strong>
                         {{ is_array($item['title']) ? json_encode($item['title']) : $item['title'] }}
+
                         @if(isset($item['answer_text']))
                             <div style="margin-top:8px;color:#4a5a6e;">
-                                <strong>پاسخ:</strong> 
+                                <strong>پاسخ:</strong>
                                 {{ is_array($item['answer_text']) ? json_encode($item['answer_text']) : $item['answer_text'] }}
                             </div>
                         @endif
                     @endif
                 </div>
-
                 {{-- JUDGMENT FORMS --}}
                 @if($item['score_count'] < 3)
                     <div class="judgment-forms-container">
