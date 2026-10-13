@@ -7,6 +7,59 @@
     <link rel="stylesheet" href="{{ asset('css/badge.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.css">
     <style>
+        .aparat-help-image {
+            margin-top: 12px;
+        }
+
+        .aparat-help-image img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .aparat-help-image[hidden] {
+            display: none !important;
+        }
+
+        .aparat-help-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            padding: 0;
+            margin-right: 5px;
+            border: none;
+            background: transparent;
+            color: #1e6f9f;
+            cursor: pointer;
+            font-size: 16px;
+            vertical-align: middle;
+            transition: color .2s ease;
+        }
+
+        .aparat-help-btn:hover {
+            color: #e53935;
+        }
+
+        .aparat-help-image {
+            width: 100%;
+            margin: 10px 0 15px;
+            padding: 12px;
+            background: #f8fafc;
+            border: 1px solid #dce3ec;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .aparat-help-image img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            margin: 0 auto;
+            border-radius: 6px;
+        }
+
         /* ===== Fix Jodit editor scrolling ===== */
         .jodit-container {
             display: flex !important;
@@ -446,12 +499,9 @@
                     <div class="activity-header">
                         <div class="header-left"><i class="fas fa-users"></i><span>فعالیت‌های دانشجو</span></div>
                         <div class="activity-icons">
-                            <a href="#" id="questionTeacherBtn" data-tooltip="ثبت سوال"><i
-                                    class="fas fa-question-circle"></i></a>
-                            <a href="#" id="homeworkTeacherBtn" data-tooltip="مدیریت تکالیف"><i
-                                    class="fas fa-file-alt"></i></a>
-                            <a href="#" onclick="openProfExModal()" data-tooltip="مدیریت گزارش"><i
-                                    class="fas fa-list-ul"></i></a>
+                            <a href="#" id="questionTeacherBtn" title="ثبت سوال"><i class="fas fa-question-circle"></i></a>
+                            <a href="#" id="homeworkTeacherBtn" title="مدیریت تکالیف"><i class="fas fa-file-alt"></i></a>
+                            <a href="#" onclick="openProfExModal()" title="مدیریت گزارش"><i  class="fas fa-list-ul"></i></a>
                         </div>
                     </div>
                 </div>
@@ -759,8 +809,15 @@
                                 @enderror
                             </div>
                             <div class="form-group">
-                                <label for="modalAparat"><i class="fas fa-play-circle" style="color:#e53935;"></i>لینک
-                                    آپارات (اختیاری)</label>
+                                <label for="modalAparat">
+                                    <i class="fas fa-play-circle" style="color:#e53935;"></i>
+                                    لینک آپارات (اختیاری)
+                                    <button type="button" id="aparatHelpBtn" class="aparat-help-btn"
+                                        onclick="toggleAparatHelp()" title="راهنمای لینک آپارات">
+                                        <i class="fas fa-question-circle"></i>
+                                    </button>
+                                </label>
+
                                 <input type="text" class="form-control @error('aparat') is-invalid @enderror"
                                     name="aparat" id="modalAparat" value="{{ old('aparat') }}"
                                     placeholder="لینک Embed آپارات را وارد کنید">
@@ -769,13 +826,14 @@
                                 @enderror
                             </div>
                         </div>
+                        <div id="aparatHelpImage" class="aparat-help-image" hidden>
+                            <img src="{{ asset('img/iframe.png') }}" alt="راهنمای لینک آپارات">
+                        </div>
+
                         @if ($errors->has('content'))
                             <div class="alert alert-danger mt-2"><i
                                     class="fas fa-exclamation-circle"></i>{{ $errors->first('content') }}</div>
                         @endif
-                    </div>
-                    <div class="form-group">
-                        <img src="{{ asset('img/iframe.png') }}" class="img-fluid" alt="" />
                     </div>
                 </div>
                 <div class="form-group">
@@ -814,6 +872,16 @@
         let reportJoditEditor = null;
         let currentReportDesc = '';
         const courseId = '{{ $course->id }}';
+
+        function toggleAparatHelp() {
+            const image = document.getElementById('aparatHelpImage');
+            const icon = document.querySelector('#aparatHelpBtn i');
+
+            image.hidden = !image.hidden;
+            icon.className = image.hidden ?
+                'fas fa-question-circle' :
+                'fas fa-times';
+        }
 
         function setContentType(type) {
             const linkRadio = document.getElementById('contentTypeLink');
