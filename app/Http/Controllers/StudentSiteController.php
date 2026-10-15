@@ -12,10 +12,8 @@ use App\Models\Discussion;
 use App\Models\EvaluationActivityLimit;
 use App\Models\Exercise;
 use App\Models\ExerciseAnswer;
-use App\Models\Konkor;
 use App\Models\Question;
 use App\Models\Quiz;
-use App\Models\Role;
 use App\Models\Score;
 use App\Models\ScoreDiscussion;
 use App\Models\ScoreExercise;
@@ -38,11 +36,13 @@ class StudentSiteController extends Controller
     public function profile()
     {
         $user = auth()->user();
+
         return view('student.profile', compact('user'));
     }
+
     public function coin()
     {
-        return view('student.coin',);
+        return view('student.coin');
     }
 
     public function daily()
@@ -79,7 +79,7 @@ class StudentSiteController extends Controller
         DB::transaction(function () use ($user, $request) {
             $user->increment('coin', $request->receive_coin);
 
-            $coinSpin = new CoinSpin();
+            $coinSpin = new CoinSpin;
             $coinSpin->user_id = $user->id;
             $coinSpin->receive_coin = $request->receive_coin;
             $coinSpin->save();
@@ -87,13 +87,14 @@ class StudentSiteController extends Controller
 
         return back()->with('success', 'گردونه با موفقیت ثبت شد.');
     }
+
     /**
      * به‌روزرسانی پروفایل کاربر
      */
     public function updateStudentProfile(Request $request)
     {
         $user = auth()->user();
-        
+
         $validator = Validator::make($request->all(), [
             'name' => 'nullable|string|max:255',
             'family' => 'nullable|string|max:255',
@@ -117,91 +118,92 @@ class StudentSiteController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'password' => 'nullable|min:8|confirmed',
         ]);
-        
+
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
         }
-        
+
         try {
             $data = $request->except(['_token', '_method', 'password', 'password_confirmation', 'image']);
-            
+
             // تغییر رمز عبور
             if ($request->filled('password')) {
                 $data['password'] = bcrypt($request->password);
             }
-            
+
             // آپلود عکس
             if ($request->hasFile('image')) {
                 // حذف عکس قبلی
                 if ($user->image && file_exists(public_path($user->image))) {
                     unlink(public_path($user->image));
                 }
-                
+
                 $file = $request->file('image');
-                $fileName = time() . '_' . $user->id . '.' . $file->getClientOriginalExtension();
+                $fileName = time().'_'.$user->id.'.'.$file->getClientOriginalExtension();
                 $destinationPath = public_path('files/users');
-                
-                if (!file_exists($destinationPath)) {
+
+                if (! file_exists($destinationPath)) {
                     mkdir($destinationPath, 0777, true);
                 }
-                
+
                 $file->move($destinationPath, $fileName);
-                $data['image'] = '/files/users/' . $fileName;
+                $data['image'] = '/files/users/'.$fileName;
             }
-            
+
             $user->update($data);
-            
+
             return redirect()->back()
                 ->with('success', 'پروفایل با موفقیت به‌روزرسانی شد');
-                
+
         } catch (\Exception $e) {
-            Log::error('Update profile failed: ' . $e->getMessage());
+            Log::error('Update profile failed: '.$e->getMessage());
+
             return redirect()->back()
-                ->with('error', 'خطا در به‌روزرسانی پروفایل: ' . $e->getMessage())
+                ->with('error', 'خطا در به‌روزرسانی پروفایل: '.$e->getMessage())
                 ->withInput();
         }
     }
+
     public function index()
     {
         $user = Auth::user();
 
-        if ($user->hasRole('student') && !session()->has('onboarding_done')) {
+        if ($user->hasRole('student') && ! session()->has('onboarding_done')) {
             return redirect()->route('student.onboarding');
         }
-        
+
         // دریافت پیام انگیزشی
         $message = Angizesh::whereIn('level', [7, 8])
             ->inRandomOrder()
             ->first();
-        
+
         // دریافت دوره‌های کاربر
         $userCourseIds = DB::table('course_user')
             ->where('user_id', $user->id)
             ->pluck('course_id');
-        
+
         // دریافت آزمون‌های شرکت کرده
         $participatedAzmonIds = DB::table('quizzes')
             ->where('user_id', $user->id)
             ->whereNotNull('azmon_id')
             ->pluck('azmon_id');
-        
+
         // دریافت آزمون‌های فعال
         $activeExams = Azmon::whereIn('course_id', $userCourseIds)
-        ->where('start', '<=', Carbon::now())
-        ->where('end', '>=', Carbon::now())
-        ->whereNotIn('id', $participatedAzmonIds)
-        ->with('course')
-        ->get();
-        
+            ->where('start', '<=', Carbon::now())
+            ->where('end', '>=', Carbon::now())
+            ->whereNotIn('id', $participatedAzmonIds)
+            ->with('course')
+            ->get();
 
         // آمار کلی
-        $course_count = $user->courses()->where('archieve','0')->where('is_ended','0')->whereIn('type',[1,2])->count();
+        $course_count = $user->courses()->where('archieve', '0')->where('is_ended', '0')->whereIn('type', [1, 2])->count();
 
         // تعداد آزمون‌های فعال برای نمایش در کارت
         $active_exam_count = $activeExams->count();
-        
+
         return view('student.index', compact(
             'user',
             'message',
@@ -218,24 +220,25 @@ class StudentSiteController extends Controller
     public function courses()
     {
         $user = Auth::user();
-        
-        $courses = $user->s()->where('courses.archieve', 0)->where('is_ended', 0)->whereIn('courses.type', ['0','2'])->get();
-        
+
+        $courses = $user->s()->where('courses.archieve', 0)->where('is_ended', 0)->whereIn('courses.type', ['0', '2'])->get();
+
         return view('student.courses', compact('courses'));
     }
+
     /**
      * نمایش فعالیت‌های من در یک درس خاص
      */
     public function myActivities($courseId)
     {
         $user = Auth::user();
-        
+
         // بررسی اینکه کاربر در این درس ثبت نام کرده باشد
-        $isEnrolled = \App\Models\CourseUser::where('user_id', $user->id)
+        $isEnrolled = CourseUser::where('user_id', $user->id)
             ->where('course_id', $courseId)
             ->exists();
 
-        if (!$isEnrolled) {
+        if (! $isEnrolled) {
             return redirect()->back()->with('error', 'شما در این درس ثبت نام نکرده‌اید.');
         }
 
@@ -253,7 +256,7 @@ class StudentSiteController extends Controller
                 'questions' => collect(),
                 'discussions' => collect(),
                 'exercises' => collect(),
-                'stats' => $this->getEmptyStats()
+                'stats' => $this->getEmptyStats(),
             ]);
         }
 
@@ -295,7 +298,7 @@ class StudentSiteController extends Controller
         // 3. تکالیف دانشجو در این درس
         // ==========================================
         $exercises = ExerciseAnswer::where('user_id', $user->id)
-            ->whereHas('exercise', function($query) use ($sessionIds) {
+            ->whereHas('exercise', function ($query) use ($sessionIds) {
                 $query->whereIn('session_id', $sessionIds);
             })
             ->with(['exercise.session.course'])
@@ -345,15 +348,15 @@ class StudentSiteController extends Controller
         if ($scores->count() > 0) {
             $approvedCount = $scores->where('status', 'approved')->count();
             $rejectedCount = $scores->where('status', 'rejected')->count();
-            
+
             if ($rejectedCount > 0) {
                 return 'rejected';
             }
-            
+
             if ($approvedCount > 0 && $approvedCount < 3) {
                 return 'pending';
             }
-            
+
             if ($approvedCount >= 3) {
                 return 'approved';
             }
@@ -374,6 +377,7 @@ class StudentSiteController extends Controller
                 3 => 'متوسط',
                 4 => 'بد',
             ];
+
             return $labels[$status] ?? 'نامشخص';
         }
 
@@ -384,11 +388,11 @@ class StudentSiteController extends Controller
         if ($scores->count() > 0) {
             $approvedCount = $scores->where('status', 'approved')->count();
             $rejectedCount = $scores->where('status', 'rejected')->count();
-            
+
             if ($rejectedCount > 0) {
                 return 'رد شده';
             }
-            
+
             if ($approvedCount >= 3) {
                 return 'تایید شده';
             }
@@ -417,6 +421,7 @@ class StudentSiteController extends Controller
             'rejected_exercises' => 0,
         ];
     }
+
     /**
      * مشاهده جزئیات سوال (دانشجو)
      */
@@ -442,8 +447,8 @@ class StudentSiteController extends Controller
             ->pluck('score')
             ->toArray();
 
-        $averageScore = count($approvedScores) > 0 
-            ? round(array_sum($approvedScores) / count($approvedScores), 2) 
+        $averageScore = count($approvedScores) > 0
+            ? round(array_sum($approvedScores) / count($approvedScores), 2)
             : null;
 
         $statusLabels = [
@@ -490,8 +495,8 @@ class StudentSiteController extends Controller
             ->pluck('score')
             ->toArray();
 
-        $averageScore = count($approvedScores) > 0 
-            ? round(array_sum($approvedScores) / count($approvedScores), 2) 
+        $averageScore = count($approvedScores) > 0
+            ? round(array_sum($approvedScores) / count($approvedScores), 2)
             : null;
 
         $statusLabels = [
@@ -514,6 +519,7 @@ class StudentSiteController extends Controller
             'pageDescription' => 'مشاهده جزئیات گزارش',
         ]);
     }
+
     /**
      * مشاهده جزئیات تکلیف (دانشجو)
      */
@@ -537,8 +543,8 @@ class StudentSiteController extends Controller
             ->pluck('score')
             ->toArray();
 
-        $averageScore = count($approvedScores) > 0 
-            ? round(array_sum($approvedScores) / count($approvedScores), 2) 
+        $averageScore = count($approvedScores) > 0
+            ? round(array_sum($approvedScores) / count($approvedScores), 2)
             : null;
 
         $statusLabels = [
@@ -566,20 +572,20 @@ class StudentSiteController extends Controller
     {
         $user = Auth::user();
         $course = Course::findOrFail($courseId);
-        
+
         // بررسی اینکه کاربر در این درس ثبت نام کرده باشد
         $isEnrolled = CourseUser::where('user_id', $user->id)
             ->where('course_id', $courseId)
             ->exists();
 
-        if (!$isEnrolled) {
+        if (! $isEnrolled) {
             return redirect()->back()->with('error', 'شما در این درس ثبت نام نکرده‌اید.');
         }
-        
+
         $setting = Setting::where('course_id', $course->id)->first();
         $scorring = Scoring::where('course_id', $course->id)->first();
-        
-        if (!$setting || !$scorring) {
+
+        if (! $setting || ! $scorring) {
             return redirect()->back()->with('error', 'تنظیمات این درس کامل نیست.');
         }
         $evaluationLimits = EvaluationActivityLimit::first();
@@ -592,7 +598,7 @@ class StudentSiteController extends Controller
         $questions_all = Question::where('user_id', $user->id)
             ->whereIn('session_id', $sessions)
             ->count();
-            
+
         $questions_1 = Question::where('user_id', $user->id)
             ->whereIn('session_id', $sessions)
             ->where('status', 1)->count();
@@ -619,11 +625,13 @@ class StudentSiteController extends Controller
         foreach (Question::where('user_id', $user->id)->whereIn('session_id', $sessions)->get() as $qq) {
             $q_scores += $qq->score;
         }
-        $q_scores = ($questions_all != 0) ? $q_scores / ($questions_all * (20/25)) : 0;
-        if ($q_scores > 20) $q_scores = 20;
+        $q_scores = ($questions_all != 0) ? $q_scores / ($questions_all * (20 / 25)) : 0;
+        if ($q_scores > 20) {
+            $q_scores = 20;
+        }
 
         // نمره نهایی سوالات
-        $q_nomre = ($scorring->q_1 * $questions_1) + ($scorring->q_2 * $questions_2) + 
+        $q_nomre = ($scorring->q_1 * $questions_1) + ($scorring->q_2 * $questions_2) +
                 ($scorring->q_3 * $questions_3) + ($scorring->q_4 * $questions_4);
         $nomre_har_soal = $setting->tarahi_soal_nomre / ($setting->jalasat * ($setting->max_soal - 1));
         $q_nomre *= $nomre_har_soal;
@@ -638,7 +646,7 @@ class StudentSiteController extends Controller
         $disc_all = Discussion::where('user_id', $user->id)
             ->whereIn('session_id', $sessions)
             ->count();
-            
+
         $disc_1 = Discussion::where('user_id', $user->id)
             ->whereIn('session_id', $sessions)
             ->where('status', 1)->count();
@@ -665,11 +673,13 @@ class StudentSiteController extends Controller
         foreach (Discussion::where('user_id', $user->id)->whereIn('session_id', $sessions)->get() as $dd) {
             $d_scores += $dd->score;
         }
-        $d_scores = ($disc_all != 0) ? $d_scores / ($disc_all * (20/25)) : 0;
-        if ($d_scores > 20) $d_scores = 20;
+        $d_scores = ($disc_all != 0) ? $d_scores / ($disc_all * (20 / 25)) : 0;
+        if ($d_scores > 20) {
+            $d_scores = 20;
+        }
 
         // نمره نهایی گزارش‌ها
-        $d_nomre = ($scorring->d_1 * $disc_1) + ($scorring->d_2 * $disc_2) + 
+        $d_nomre = ($scorring->d_1 * $disc_1) + ($scorring->d_2 * $disc_2) +
                 ($scorring->d_3 * $disc_3) + ($scorring->d_4 * $disc_4);
         if ($d_nomre > $setting->ersal_gozaresh_nomre) {
             $d_nomre = $setting->ersal_gozaresh_nomre;
@@ -682,7 +692,7 @@ class StudentSiteController extends Controller
         // 3. آمار تکالیف
         // ==========================================
         $exercises = Exercise::whereIn('session_id', $sessions)->pluck('id');
-        
+
         $exer_1 = ExerciseAnswer::where('user_id', $user->id)
             ->whereIn('exercise_id', $exercises)
             ->where('status', 1)->count();
@@ -708,7 +718,7 @@ class StudentSiteController extends Controller
         ];
 
         // نمره نهایی تکالیف
-        $e_nomre = ($scorring->e_1 * $exer_1) + ($scorring->e_2 * $exer_2) + 
+        $e_nomre = ($scorring->e_1 * $exer_1) + ($scorring->e_2 * $exer_2) +
                 ($scorring->e_3 * $exer_3) + ($scorring->e_4 * $exer_4);
         if ($e_nomre > $setting->taklif_seminar_nomre) {
             $e_nomre = $setting->taklif_seminar_nomre;
@@ -728,7 +738,9 @@ class StudentSiteController extends Controller
             $qu_scores += $qq->score;
         }
         $qu_scores = ($questions_all != 0) ? $qu_scores / $questions_all : 0;
-        if ($qu_scores > 20) $qu_scores = 20;
+        if ($qu_scores > 20) {
+            $qu_scores = 20;
+        }
 
         // ==========================================
         // 5. آمار داوری
@@ -756,7 +768,7 @@ class StudentSiteController extends Controller
         // ==========================================
         // 6. محاسبات نهایی
         // ==========================================
-        
+
         // فعالیت کلاسی
         $score_soal = min(
             $evaluationLimits->question_creation,
@@ -769,11 +781,17 @@ class StudentSiteController extends Controller
             $disc_all * $evaluationLimits->report_submission / $max_session
         );
 
-        $score_davari = min(
+        $peerReview = $this->peerReviewScore(
+            $setting->daily_judgment_limit,
+            $setting->jalasat,
             $evaluationLimits->judging_completion,
-            (($davarii['q'] + $davarii['gozaresh']) * $evaluationLimits->judging_completion) /
-            ($max_session * (1 + $setting->max_soal) * 3)
+            $course->students()->count(),
+            $setting->max_soal,
+            $setting->max_gozaresh,
+            7
         );
+
+        $score_davari = $peerReview['score'];
 
         $score_azmoon = min(
             $evaluationLimits->self_test_participation,
@@ -837,7 +855,9 @@ class StudentSiteController extends Controller
         );
         // ارزشیابی مستمر
         $mostamer = ($pishraft + $kelasi) * 12 / 100;
-        if ($mostamer > 12) $mostamer = 12;
+        if ($mostamer > 12) {
+            $mostamer = 12;
+        }
         $mostamer_score = ($setting->mostamar_nomre > 0) ? ($mostamer * 20 / $setting->mostamar_nomre) : 0;
 
         // نمره تلاش
@@ -847,7 +867,7 @@ class StudentSiteController extends Controller
         $talash_davari_soal = min(5, $nomre_har_talash * $davarii['q'] / ($setting->jalasat * 2 * 6));
         $talash_davari_gozaresh = min(5, $nomre_har_talash * $davarii['gozaresh'] / ($setting->jalasat * 6));
         $talash_khod = min(5, $nomre_har_talash * $count_azmoon / ($setting->jalasat * (7 * 5)));
-        
+
         $nomre['talash'] = round($talash_davari_soal + $talash_davari_gozaresh + $talash_soal + $talash_gozaresh + $talash_khod, 2);
 
         // نمره نهایی
@@ -903,7 +923,42 @@ class StudentSiteController extends Controller
         ))->with([
             'pageTitle' => 'پیشرفت درسی',
             'pageName' => 'پیشرفت درسی',
-            'pageDescription' => 'مشاهده پیشرفت درسی شما در درس ' . $course->name,
+            'pageDescription' => 'مشاهده پیشرفت درسی شما در درس '.$course->name,
         ]);
+    }
+
+    private function peerReviewScore(
+        $a = 5,
+        $b = 16,
+        $c = 8,
+        $d = 10,
+        $e = 3,
+        $f = 1,
+        $h = 7
+    ) {
+        $g = 3;
+
+        if ($d <= 1) {
+            return ['n' => 0, 'score' => 0];
+        }
+
+        $r = $g * ($e + $f);
+        $dailyCapacity = $a * $h;
+        $availableItems = ($d - 1) * ($e + $f);
+        $m = min($dailyCapacity, $r, $availableItems);
+
+        $n = $b * $m;
+        $nTarget = 0.95 * $b * $r;
+
+        if ($nTarget == 0) {
+            return ['n' => $n, 'score' => 0];
+        }
+
+        $score = round(min($c * $n / $nTarget, $c), 2);
+
+        return [
+            'n' => $n,
+            'score' => $score,
+        ];
     }
 }

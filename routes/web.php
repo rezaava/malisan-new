@@ -479,9 +479,9 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
         Route::get('/my-activities/{course_id}', [StudentSiteController::class, 'myActivities'])->name('student.my.activities.skill');
 
         // ===== مشاهده جزئیات =====
-        Route::get('/question/{id}', [StudentSkillController::class, 'viewQuestion'])->name('student.question.view');
-        Route::get('/discussion/{id}', [StudentSkillController::class, 'viewDiscussion'])->name('student.discussion.view');
-        Route::get('/exercise/{id}', [StudentSkillController::class, 'viewExercise'])->name('student.exercise.view');
+        Route::get('/question/{id}', [StudentSkillController::class, 'viewQuestion'])->name('student.question.view.skill');
+        Route::get('/discussion/{id}', [StudentSkillController::class, 'viewDiscussion'])->name('student.discussion.view.skill');
+        Route::get('/exercise/{id}', [StudentSkillController::class, 'viewExercise'])->name('student.exercise.view.skill');
 
         // ===== پیشرفت درسی =====
         Route::get('/progress/{course_id}', [StudentSiteController::class, 'progress'])->name('student.progress.skill');

@@ -1573,14 +1573,6 @@ class CourseController extends Controller
             $setting->max_gozaresh,
             7
         );
-        Log::info('Peer Review Score Inputs', [
-            'daily_judgment_limit' => $setting->daily_judgment_limit,
-            'jalasat' => $setting->jalasat,
-            'judging_completion' => $evaluationLimits->judging_completion,
-            'students_count' => $course->students()->count(),
-            'max_soal' => $setting->max_soal,
-            'max_gozaresh' => $setting->max_gozaresh,
-        ]);
 
         $score_davari = $peerReview['score'];
 
@@ -1821,6 +1813,7 @@ class CourseController extends Controller
             'score' => $score,
         ];
     }
+
     /**
      * نمایش نمرات دانشجویان - نسخه Query Builder
      */
