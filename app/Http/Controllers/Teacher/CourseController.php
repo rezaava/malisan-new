@@ -7,7 +7,12 @@ use App\Models\Amali;
 use App\Models\Answer;
 use App\Models\Azmon;
 use App\Models\Course;
+use App\Models\CourseUser;
+use App\Models\Discussion;
+use App\Models\EvaluationActivityLimit;
+use App\Models\Exercise;
 use App\Models\ExerciseAnswer;
+use App\Models\Question;
 use App\Models\QuestionReport;
 use App\Models\Quiz;
 use App\Models\Role;
@@ -16,19 +21,15 @@ use App\Models\Scoring;
 use App\Models\Session;
 use App\Models\Setting;
 use App\Models\SiteSetting;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\log;
-use App\Models\CourseUser;
-use App\Models\Discussion;
-use App\Models\EvaluationActivityLimit;
-use App\Models\Exercise;
-use App\Models\Question;
 use App\Models\User;
 use Carbon\Carbon;
+use Hekmatinasser\Verta\Verta;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class CourseController extends Controller
 {
@@ -42,16 +43,16 @@ class CourseController extends Controller
         // بررسی دسترسی استاد به این سوال
         $course = $question->session->course;
 
-        if (!$course) {
+        if (! $course) {
             return response()->json([
                 'success' => false,
-                'message' => 'شما دسترسی به ویرایش این سوال ندارید.'
+                'message' => 'شما دسترسی به ویرایش این سوال ندارید.',
             ], 403);
         }
 
         return response()->json([
             'success' => true,
-            'question' => $question
+            'question' => $question,
         ]);
     }
 
@@ -64,10 +65,10 @@ class CourseController extends Controller
 
         // بررسی دسترسی استاد به این سوال
         $course = $question->session->course ?? null;
-        if (!$course) {
+        if (! $course) {
             return response()->json([
                 'success' => false,
-                'message' => 'شما دسترسی به ویرایش این سوال ندارید.'
+                'message' => 'شما دسترسی به ویرایش این سوال ندارید.',
             ], 403);
         }
 
@@ -85,7 +86,7 @@ class CourseController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -112,13 +113,13 @@ class CourseController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'سوال با موفقیت ویرایش شد.',
-                'question' => $question
+                'question' => $question,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در ویرایش سوال: ' . $e->getMessage()
+                'message' => 'خطا در ویرایش سوال: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -132,10 +133,10 @@ class CourseController extends Controller
             // دریافت course_id از درخواست
             $courseId = $request->input('course_id');
 
-            if (!$courseId) {
+            if (! $courseId) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'شناسه درس ارسال نشده است'
+                    'message' => 'شناسه درس ارسال نشده است',
                 ], 400);
             }
 
@@ -150,34 +151,34 @@ class CourseController extends Controller
                 ->where('role_id', $teacherRole->id)
                 ->exists();
 
-            if (!$isOwner) {
+            if (! $isOwner) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'شما دسترسی به این درس ندارید'
+                    'message' => 'شما دسترسی به این درس ندارید',
                 ], 403);
             }
 
             // گرفتن تنظیمات این درس
             $setting = Setting::where('course_id', $course->id)->first();
 
-            if (!$setting) {
+            if (! $setting) {
                 $setting = Setting::create([
                     'course_id' => $course->id,
-                    'ersal_gozaresh_desc' => 'موضوع اصلی این جلسه چه بود و چه هدفی داشت؟ لطفاً یک نکتهٔ آموزنده از مطالب ارائه شده را با بیانی دیگر (به زبان خودتان) بازنویسی کنید.'
+                    'ersal_gozaresh_desc' => 'موضوع اصلی این جلسه چه بود و چه هدفی داشت؟ لطفاً یک نکتهٔ آموزنده از مطالب ارائه شده را با بیانی دیگر (به زبان خودتان) بازنویسی کنید.',
                 ]);
             }
 
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'description' => $setting->ersal_gozaresh_desc ?? 'موضوع اصلی این جلسه چه بود و چه هدفی داشت؟ لطفاً یک نکتهٔ آموزنده از مطالب ارائه شده را با بیانی دیگر (به زبان خودتان) بازنویسی کنید.'
-                ]
+                    'description' => $setting->ersal_gozaresh_desc ?? 'موضوع اصلی این جلسه چه بود و چه هدفی داشت؟ لطفاً یک نکتهٔ آموزنده از مطالب ارائه شده را با بیانی دیگر (به زبان خودتان) بازنویسی کنید.',
+                ],
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در دریافت توضیحات: ' . $e->getMessage()
+                'message' => 'خطا در دریافت توضیحات: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -189,13 +190,13 @@ class CourseController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'description' => 'required|string|max:5000',
-            'course_id' => 'required|exists:courses,id'
+            'course_id' => 'required|exists:courses,id',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -212,17 +213,17 @@ class CourseController extends Controller
                 ->where('role_id', $teacherRole->id)
                 ->exists();
 
-            if (!$isOwner) {
+            if (! $isOwner) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'شما دسترسی به این درس ندارید'
+                    'message' => 'شما دسترسی به این درس ندارید',
                 ], 403);
             }
 
             $setting = Setting::where('course_id', $course->id)->first();
 
-            if (!$setting) {
-                $setting = new Setting();
+            if (! $setting) {
+                $setting = new Setting;
                 $setting->course_id = $course->id;
             }
 
@@ -233,17 +234,18 @@ class CourseController extends Controller
                 'success' => true,
                 'message' => 'توضیحات با موفقیت به‌روزرسانی شد',
                 'data' => [
-                    'description' => $setting->ersal_gozaresh_desc
-                ]
+                    'description' => $setting->ersal_gozaresh_desc,
+                ],
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در به‌روزرسانی توضیحات: ' . $e->getMessage()
+                'message' => 'خطا در به‌روزرسانی توضیحات: '.$e->getMessage(),
             ], 500);
         }
     }
+
     public function toggleDore($id)
     {
         try {
@@ -255,12 +257,12 @@ class CourseController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => $course->type ? 'درس به حالت دوره‌ای تغییر یافت' : 'درس به حالت غیردوره‌ای تغییر یافت',
-                'type' => $course->type
+                'type' => $course->type,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در تغییر وضعیت درس: ' . $e->getMessage()
+                'message' => 'خطا در تغییر وضعیت درس: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -286,6 +288,7 @@ class CourseController extends Controller
 
         return view('teacher.reports-list', compact('course', 'reports', 'stats'));
     }
+
     public function getReportDetail($reportId)
     {
         $report = Discussion::with(['user', 'session.course'])->findOrFail($reportId);
@@ -297,7 +300,7 @@ class CourseController extends Controller
                 'title' => $report->title,
                 'text' => $report->text,
                 'status' => $report->status,
-                'created_at' => \Hekmatinasser\Verta\Verta::instance($report->created_at)->format('Y/m/d H:i'),
+                'created_at' => Verta::instance($report->created_at)->format('Y/m/d H:i'),
                 'user' => [
                     'name' => $report->user->name ?? 'نامشخص',
                     'family' => $report->user->family ?? '',
@@ -306,9 +309,10 @@ class CourseController extends Controller
                     'name' => $report->session->name ?? 'نامشخص',
                     'course_id' => $report->session->course_id ?? null,
                 ],
-            ]
+            ],
         ]);
     }
+
     public function studentActivities(Course $course)
     {
         $role = Role::where('name', 'student')->first();
@@ -370,7 +374,6 @@ class CourseController extends Controller
         return view('teacher.student-questions', compact('user', 'questions'));
     }
 
-
     /**
      * گزارشات یک دانشجو
      */
@@ -388,7 +391,6 @@ class CourseController extends Controller
 
         return view('teacher.student-reports', compact('user', 'reports'));
     }
-
 
     /**
      * تکالیف یک دانشجو
@@ -411,7 +413,6 @@ class CourseController extends Controller
         return view('teacher.student-homeworks', compact('user', 'homeworks'));
     }
 
-
     /**
      * خودآزمایی‌های یک دانشجو
      */
@@ -430,7 +431,6 @@ class CourseController extends Controller
 
         return view('teacher.student-self-tests', compact('user', 'selfTests'));
     }
-
 
     /**
      * آزمون‌های رسمی یک دانشجو
@@ -460,7 +460,7 @@ class CourseController extends Controller
             'sessions' => function ($query) {
                 $query->orderBy('number', 'desc');
             },
-            'settings'
+            'settings',
         ])->findOrFail($id);
 
         $user = Auth::user();
@@ -526,7 +526,7 @@ class CourseController extends Controller
 
         $khodazmaii = 0;
 
-        if (!$sessions->isEmpty() && $setting) {
+        if (! $sessions->isEmpty() && $setting) {
             $sessionIds = $sessions->pluck('id');
 
             $statusFilter = match ($setting->sath_khod) {
@@ -545,7 +545,7 @@ class CourseController extends Controller
             }
         }
 
-        if (!$sessions->isEmpty()) {
+        if (! $sessions->isEmpty()) {
             foreach ($sessions as $index => $session) {
                 $session['ex_count'] = Exercise::where('session_id', $session->id)->count();
                 $session['taklif_last'] = 1;
@@ -599,13 +599,13 @@ class CourseController extends Controller
             'reportCount',
             'paid'
         ))->with([
-                    'pageTitle' => 'صفحه مدیریت درس',
-                    'pageName' => 'درس',
-                    'pageDescription' => $isStudent
-                        ? "دوست من ! اینجا صفحه مدیریت کلاس درسته"
-                        : "مدرس گرامی ! داشبورد مدیریت درس در اختیار شماست",
-                    'student' => (int) $isStudent,
-                ]);
+            'pageTitle' => 'صفحه مدیریت درس',
+            'pageName' => 'درس',
+            'pageDescription' => $isStudent
+                ? 'دوست من ! اینجا صفحه مدیریت کلاس درسته'
+                : 'مدرس گرامی ! داشبورد مدیریت درس در اختیار شماست',
+            'student' => (int) $isStudent,
+        ]);
     }
 
     /**
@@ -656,7 +656,7 @@ class CourseController extends Controller
         try {
             $course = Course::findOrFail($id);
 
-            $session = new Session();
+            $session = new Session;
             $session->name = $request->name;
             $session->text = $request->text;
             $session->lesson_plan = $request->lesson_plan;
@@ -668,16 +668,16 @@ class CourseController extends Controller
             $session->link = $this->cleanUrl($request->link);
             $aparatSrc = null;
 
-            if (!empty($request->aparat)) {
+            if (! empty($request->aparat)) {
 
                 preg_match('/<iframe[^>]+src=["\']([^"\']+)["\']/i', $request->aparat, $matches);
 
-                if (!empty($matches[1])) {
+                if (! empty($matches[1])) {
                     $aparatSrc = $matches[1];
                 } else {
                     return back()
                         ->withErrors([
-                            'aparat' => 'کد iframe آپارات معتبر نیست. لطفاً کد Embed آپارات را وارد کنید.'
+                            'aparat' => 'کد iframe آپارات معتبر نیست. لطفاً کد Embed آپارات را وارد کنید.',
                         ])
                         ->withInput();
                 }
@@ -687,28 +687,29 @@ class CourseController extends Controller
             // آپلود فایل
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
-                $fileName = $id . "_" . time() . "." . $file->getClientOriginalExtension();
+                $fileName = $id.'_'.time().'.'.$file->getClientOriginalExtension();
                 $destinationPath = public_path('files/session');
 
-                if (!file_exists($destinationPath)) {
+                if (! file_exists($destinationPath)) {
                     mkdir($destinationPath, 0777, true);
                 }
 
                 $file->move($destinationPath, $fileName);
-                $session->file = '/' . $fileName; // اصلاح مسیر
+                $session->file = '/'.$fileName; // اصلاح مسیر
             }
 
             $session->save();
 
             DB::commit();
 
-            return redirect('/teacher/courses/view/' . $course->id)
+            return redirect('/teacher/courses/view/'.$course->id)
                 ->with('success', 'جلسه جدید با موفقیت ایجاد شد');
 
         } catch (\Exception $exception) {
             DB::rollBack();
-            log::error('Session creation failed: ' . $exception->getMessage());
-            return back()->with('error', 'خطایی در سرور رخ داده است: ' . $exception->getMessage());
+            log::error('Session creation failed: '.$exception->getMessage());
+
+            return back()->with('error', 'خطایی در سرور رخ داده است: '.$exception->getMessage());
         }
     }
 
@@ -729,9 +730,9 @@ class CourseController extends Controller
                 ->where('role_id', $teacherRole->id)
                 ->exists();
 
-            if (!$isOwner) {
+            if (! $isOwner) {
                 return response()->json([
-                    'error' => 'شما دسترسی به این درس ندارید'
+                    'error' => 'شما دسترسی به این درس ندارید',
                 ], 403);
             }
 
@@ -743,7 +744,7 @@ class CourseController extends Controller
 
         } catch (\Exception $e) {
             return response()->json([
-                'error' => 'خطا در دریافت اطلاعات درس'
+                'error' => 'خطا در دریافت اطلاعات درس',
             ], 500);
         }
     }
@@ -756,7 +757,7 @@ class CourseController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'majazi' => 'nullable|url|max:255',
-            'copy' => 'nullable|exists:courses,id'
+            'copy' => 'nullable|exists:courses,id',
         ]);
 
         if ($validator->fails()) {
@@ -773,7 +774,7 @@ class CourseController extends Controller
 
             $code = $this->generateUniqueCode();
 
-            $course = new Course();
+            $course = new Course;
             $course->name = $request->name;
             $course->majazi = $this->cleanUrl($request->majazi);
             $course->max_session = 16;
@@ -796,15 +797,16 @@ class CourseController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            log::error('Course creation failed: ' . $e->getMessage());
-            return back()->with('error', 'خطایی در سرور رخ داده است: ' . $e->getMessage());
+            log::error('Course creation failed: '.$e->getMessage());
+
+            return back()->with('error', 'خطایی در سرور رخ داده است: '.$e->getMessage());
         }
     }
 
     public function studentsList($id)
     {
         $course = Course::findOrFail($id);
-        $role = Role::where("name", "student")->first();
+        $role = Role::where('name', 'student')->first();
 
         $query = $course->users()
             ->wherePivotNull('deleted_at')
@@ -858,12 +860,13 @@ class CourseController extends Controller
             'pageDescription' => 'مدرس گرامی ! لیست دانشجو های شما به شرح زیر می باشد',
         ]);
     }
+
     public function studentProfile($id)
     {
         $user = User::findOrFail($id);
 
         // بررسی اینکه کاربر دانشجو باشد
-        if (!$user->hasRole('student')) {
+        if (! $user->hasRole('student')) {
             return redirect()->back()->with('error', 'این کاربر دانشجو نیست');
         }
 
@@ -873,6 +876,7 @@ class CourseController extends Controller
             'pageDescription' => 'مشخصات دانشجو',
         ]);
     }
+
     public function updateStudentProfile(Request $request, $id)
     {
         $user = User::findOrFail($id);
@@ -902,15 +906,15 @@ class CourseController extends Controller
             // آپلود عکس
             if ($request->hasFile('image')) {
                 $file = $request->file('image');
-                $fileName = time() . '_' . $user->id . '.' . $file->getClientOriginalExtension();
+                $fileName = time().'_'.$user->id.'.'.$file->getClientOriginalExtension();
                 $destinationPath = public_path('files/users');
 
-                if (!file_exists($destinationPath)) {
+                if (! file_exists($destinationPath)) {
                     mkdir($destinationPath, 0777, true);
                 }
 
                 $file->move($destinationPath, $fileName);
-                $data['image'] = '/files/users/' . $fileName;
+                $data['image'] = '/files/users/'.$fileName;
             }
 
             $user->update($data);
@@ -918,7 +922,8 @@ class CourseController extends Controller
             return redirect()->back()->with('success', 'پروفایل با موفقیت به‌روزرسانی شد');
 
         } catch (\Exception $e) {
-            log::error('Update profile failed: ' . $e->getMessage());
+            log::error('Update profile failed: '.$e->getMessage());
+
             return redirect()->back()->with('error', 'خطا در به‌روزرسانی پروفایل');
         }
     }
@@ -934,10 +939,10 @@ class CourseController extends Controller
                 ->where('course_id', $courseId)
                 ->first();
 
-            if (!$courseUser) {
+            if (! $courseUser) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'این دانشجو در این دوره عضویت ندارد'
+                    'message' => 'این دانشجو در این دوره عضویت ندارد',
                 ]);
             }
 
@@ -946,18 +951,18 @@ class CourseController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'دانشجو با موفقیت از دوره اخراج شد'
+                'message' => 'دانشجو با موفقیت از دوره اخراج شد',
             ]);
 
         } catch (\Exception $e) {
-            log::error('Remove student failed: ' . $e->getMessage());
+            log::error('Remove student failed: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در اخراج دانشجو: ' . $e->getMessage()
+                'message' => 'خطا در اخراج دانشجو: '.$e->getMessage(),
             ]);
         }
     }
-
 
     /**
      * تغییر وضعیت فعال/غیرفعال (private)
@@ -977,14 +982,15 @@ class CourseController extends Controller
                 'success' => true,
                 'message' => "وضعیت دوره با موفقیت به {$status} تغییر یافت",
                 'private' => $course->private,
-                'status_text' => $status
+                'status_text' => $status,
             ]);
 
         } catch (\Exception $e) {
-            log::error('Toggle course status failed: ' . $e->getMessage());
+            log::error('Toggle course status failed: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در تغییر وضعیت دوره: ' . $e->getMessage()
+                'message' => 'خطا در تغییر وضعیت دوره: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -1007,14 +1013,15 @@ class CourseController extends Controller
                 'success' => true,
                 'message' => "دوره با موفقیت {$status} شد",
                 'archieve' => $course->archieve,
-                'status_text' => $status
+                'status_text' => $status,
             ]);
 
         } catch (\Exception $e) {
-            log::error('Toggle archive failed: ' . $e->getMessage());
+            log::error('Toggle archive failed: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در آرشیو دوره: ' . $e->getMessage()
+                'message' => 'خطا در آرشیو دوره: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -1036,14 +1043,15 @@ class CourseController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $archivedCourses
+                'data' => $archivedCourses,
             ]);
 
         } catch (\Exception $e) {
-            log::error('Get archived courses failed: ' . $e->getMessage());
+            log::error('Get archived courses failed: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در دریافت دوره‌های آرشیو شده'
+                'message' => 'خطا در دریافت دوره‌های آرشیو شده',
             ], 500);
         }
     }
@@ -1065,6 +1073,7 @@ class CourseController extends Controller
 
         return view('teacher.courses', compact('courses'));
     }
+
     public function restoreUser($userId, $courseId)
     {
         try {
@@ -1077,17 +1086,17 @@ class CourseController extends Controller
                 ->where('course_id', $courseId)
                 ->first();
 
-            if (!$courseUser) {
+            if (! $courseUser) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'این دانشجو در این دوره وجود ندارد'
+                    'message' => 'این دانشجو در این دوره وجود ندارد',
                 ]);
             }
 
-            if (!$courseUser->trashed()) {
+            if (! $courseUser->trashed()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'این دانشجو اخراج نشده است'
+                    'message' => 'این دانشجو اخراج نشده است',
                 ]);
             }
 
@@ -1096,14 +1105,15 @@ class CourseController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'دانشجو با موفقیت به دوره بازگردانده شد'
+                'message' => 'دانشجو با موفقیت به دوره بازگردانده شد',
             ]);
 
         } catch (\Exception $e) {
-            log::error('Restore student failed: ' . $e->getMessage());
+            log::error('Restore student failed: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در بازگرداندن دانشجو: ' . $e->getMessage()
+                'message' => 'خطا در بازگرداندن دانشجو: '.$e->getMessage(),
             ]);
         }
     }
@@ -1123,14 +1133,15 @@ class CourseController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $removedStudents
+                'data' => $removedStudents,
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Get removed students failed: ' . $e->getMessage());
+            log::error('Get removed students failed: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در دریافت لیست دانشجویان اخراج شده'
+                'message' => 'خطا در دریافت لیست دانشجویان اخراج شده',
             ], 500);
         }
     }
@@ -1147,7 +1158,7 @@ class CourseController extends Controller
                 'daily_judgment_limit' => 5,
             ]
         );
-        
+
         $scoring = Scoring::firstOrCreate(
             ['course_id' => $course->id],
             ['course_id' => $course->id]
@@ -1170,6 +1181,8 @@ class CourseController extends Controller
         // اعتبارسنجی
         $validator = Validator::make($request->all(), [
             'course_id' => 'required|exists:courses,id',
+            'length' => 'nullable|integer|min:1',
+            'sessions_length' => 'nullable|integer|min:1',
             'jalasat' => 'nullable|numeric|min:0',
             'mostamar_nomre' => 'nullable|numeric|min:0|max:100',
             'taklif_seminar_nomre' => 'nullable|numeric|min:0|max:100',
@@ -1200,6 +1213,11 @@ class CourseController extends Controller
 
         try {
             $course = Course::findOrFail($request->course_id);
+            if ($course->type == 1) {
+                $course->length = $request->input('length', $course->length);
+                $course->sessions_length = $request->input('sessions_length', $course->sessions_length);
+                $course->save();
+            }
 
             // ==========================================
             // 1. به‌روزرسانی بارم‌بندی (Scoring)
@@ -1322,10 +1340,12 @@ class CourseController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Edit setting failed: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'خطا در ذخیره تنظیمات: ' . $e->getMessage());
+            log::error('Edit setting failed: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'خطا در ذخیره تنظیمات: '.$e->getMessage());
         }
     }
+
     /**
      * نمایش ارزشیابی دانشجو
      */
@@ -1380,8 +1400,9 @@ class CourseController extends Controller
             $q_scores += $qq->score;
         }
         $q_scores = ($questions_all != 0) ? $q_scores / ($questions_all * (20 / 25)) : 0;
-        if ($q_scores > 20)
+        if ($q_scores > 20) {
             $q_scores = 20;
+        }
 
         // نمره نهایی سوالات
         $q_nomre = ($scorring->q_1 * $questions_1) + ($scorring->q_2 * $questions_2) +
@@ -1427,8 +1448,9 @@ class CourseController extends Controller
             $d_scores += $dd->score;
         }
         $d_scores = ($disc_all != 0) ? $d_scores / ($disc_all * (20 / 25)) : 0;
-        if ($d_scores > 20)
+        if ($d_scores > 20) {
             $d_scores = 20;
+        }
 
         // نمره نهایی گزارش‌ها
         $d_nomre = ($scorring->d_1 * $disc_1) + ($scorring->d_2 * $disc_2) +
@@ -1490,8 +1512,9 @@ class CourseController extends Controller
             $qu_scores += $qq->score;
         }
         $qu_scores = ($questions_all != 0) ? $qu_scores / $questions_all : 0;
-        if ($qu_scores > 20)
+        if ($qu_scores > 20) {
             $qu_scores = 20;
+        }
 
         // ==========================================
         // 5. آمار داوری
@@ -1562,7 +1585,6 @@ class CourseController extends Controller
             $score_gozaresh
         );
 
-
         // انجام داوری
         $peerReview = $this->peerReviewScore(
             $setting->daily_judgment_limit,
@@ -1593,14 +1615,12 @@ class CourseController extends Controller
             $score_azmoon
         );
 
-
         // سقف کل فعالیت کلاسی
         $kelasiMax =
             $evaluationLimits->question_creation +
             $evaluationLimits->report_submission +
             $evaluationLimits->judging_completion +
             $evaluationLimits->self_test_participation;
-
 
         // نمره فعالیت کلاسی
         $kelasi = min(
@@ -1610,7 +1630,6 @@ class CourseController extends Controller
             $score_azmoon +
             $score_davari
         );
-
 
         // ==========================================
         // 6.2. پیشرفت درسی
@@ -1624,7 +1643,6 @@ class CourseController extends Controller
             )
             : 0;
 
-
         // کیفیت گزارش
         $score_pish_gozaresh = ($score_gozaresh > 0)
             ? min(
@@ -1632,7 +1650,6 @@ class CourseController extends Controller
                 $d_scores * $evaluationLimits->report_quality / $score_gozaresh
             )
             : 0;
-
 
         // کیفیت خودآزمایی
         $score_pish_azmoon = ($score_azmoon > 0)
@@ -1642,10 +1659,8 @@ class CourseController extends Controller
             )
             : 0;
 
-
         // کیفیت داوری
         $score_keifiat = 0;
-
 
         // سقف کل پیشرفت درسی
         $pishraftMax =
@@ -1653,7 +1668,6 @@ class CourseController extends Controller
             $evaluationLimits->report_quality +
             $evaluationLimits->self_test_quality +
             $evaluationLimits->judging_quality;
-
 
         // نمره پیشرفت درسی
         $pishraft = min(
@@ -1663,7 +1677,6 @@ class CourseController extends Controller
             $score_pish_azmoon +
             $score_keifiat
         );
-
 
         // ==========================================
         // 6.3. ارزشیابی مستمر
@@ -1678,7 +1691,6 @@ class CourseController extends Controller
         $mostamer_score = ($setting->mostamar_nomre > 0)
             ? ($mostamer * 20 / $setting->mostamar_nomre)
             : 0;
-
 
         // ==========================================
         // 6.4. نمره تلاش
@@ -1773,10 +1785,10 @@ class CourseController extends Controller
             'score_pish_azmoon',
             'score_keifiat'
         ))->with([
-                    'pageTitle' => 'ارزشیابی دانشجو',
-                    'pageName' => 'ارزشیابی',
-                    'pageDescription' => 'مشاهده وضعیت پیشرفت درسی دانشجو',
-                ]);
+            'pageTitle' => 'ارزشیابی دانشجو',
+            'pageName' => 'ارزشیابی',
+            'pageDescription' => 'مشاهده وضعیت پیشرفت درسی دانشجو',
+        ]);
     }
 
     private function peerReviewScore(
@@ -1981,6 +1993,7 @@ class CourseController extends Controller
             'pageDescription' => 'مدرس گرامی! نمرات دانشجویان به شرح زیر می‌باشد',
         ]);
     }
+
     /**
      * ذخیره نمرات پایان ترم
      */
@@ -2030,8 +2043,8 @@ class CourseController extends Controller
                             ->where('type', $type)
                             ->first();
 
-                        if (!$amali) {
-                            $amali = new Amali();
+                        if (! $amali) {
+                            $amali = new Amali;
                             $amali->course_id = $courseId;
                             $amali->user_id = $userId;
                             $amali->type = $type;
@@ -2051,8 +2064,8 @@ class CourseController extends Controller
                             ->where('type', $type)
                             ->first();
 
-                        if (!$amali) {
-                            $amali = new Amali();
+                        if (! $amali) {
+                            $amali = new Amali;
                             $amali->course_id = $courseId;
                             $amali->user_id = $userId;
                             $amali->type = $type;
@@ -2072,8 +2085,8 @@ class CourseController extends Controller
                             ->where('type', $type)
                             ->first();
 
-                        if (!$amali) {
-                            $amali = new Amali();
+                        if (! $amali) {
+                            $amali = new Amali;
                             $amali->course_id = $courseId;
                             $amali->user_id = $userId;
                             $amali->type = $type;
@@ -2087,8 +2100,9 @@ class CourseController extends Controller
             return redirect()->back()->with('success', 'نمرات با موفقیت ذخیره شد');
 
         } catch (\Exception $e) {
-            log::error('Save grades failed: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'خطا در ذخیره نمرات: ' . $e->getMessage());
+            log::error('Save grades failed: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'خطا در ذخیره نمرات: '.$e->getMessage());
         }
     }
 
@@ -2188,6 +2202,7 @@ class CourseController extends Controller
             'pageDescription' => 'مشاهده فعالیت‌های دانشجویان در درس',
         ]);
     }
+
     /**
      * دریافت فعالیت‌های دانشجویان بر اساس بازه زمانی (AJAX)
      */
@@ -2250,7 +2265,7 @@ class CourseController extends Controller
 
         return response()->json([
             'success' => true,
-            'users' => $result
+            'users' => $result,
         ]);
     }
 
@@ -2271,7 +2286,7 @@ class CourseController extends Controller
             if ($question->user) {
                 $question->designer_name = $question->user->hasRole('teacher')
                     ? 'استاد'
-                    : $question->user->name . ' ' . $question->user->family;
+                    : $question->user->name.' '.$question->user->family;
             } else {
                 $question->designer_name = 'نامشخص';
             }
@@ -2300,7 +2315,7 @@ class CourseController extends Controller
 
             foreach ($nazars as $nazar) {
                 if ($nazar->user) {
-                    $nazar->user_name = $nazar->user->name . ' ' . $nazar->user->family;
+                    $nazar->user_name = $nazar->user->name.' '.$nazar->user->family;
                 }
             }
 
@@ -2324,6 +2339,7 @@ class CourseController extends Controller
 
         return view('teacher.question-bank', compact('course', 'questions', 'stats'));
     }
+
     /**
      * تغییر وضعیت ستاره سوال
      */
@@ -2336,12 +2352,12 @@ class CourseController extends Controller
 
             return response()->json([
                 'success' => true,
-                'star' => $question->star
+                'star' => $question->star,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در تغییر وضعیت ستاره'
+                'message' => 'خطا در تغییر وضعیت ستاره',
             ], 500);
         }
     }
@@ -2364,7 +2380,7 @@ class CourseController extends Controller
             $question = Question::findOrFail($id);
 
             // ثبت نظر
-            $score = new Score();
+            $score = new Score;
             $score->user_id = Auth::id();
             $score->type = 1;
             $score->score = $request->score;
@@ -2374,7 +2390,7 @@ class CourseController extends Controller
 
             return redirect()->back()->with('success', 'نظر شما با موفقیت ثبت شد');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'خطا در ثبت نظر: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'خطا در ثبت نظر: '.$e->getMessage());
         }
     }
 
@@ -2389,7 +2405,7 @@ class CourseController extends Controller
 
             return redirect()->back()->with('success', 'سوال با موفقیت حذف شد');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'خطا در حذف سوال: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'خطا در حذف سوال: '.$e->getMessage());
         }
     }
 
@@ -2409,9 +2425,10 @@ class CourseController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'خطا در اعتبارسنجی داده‌ها',
-                    'errors' => $validator->errors()
+                    'errors' => $validator->errors(),
                 ], 422);
             }
+
             // در غیر این صورت به حالت قبل
             return redirect()->back()->withErrors($validator)->withInput();
         }
@@ -2428,10 +2445,10 @@ class CourseController extends Controller
                 ->where('role_id', $teacherRole->id)
                 ->exists();
 
-            if (!$isOwner) {
+            if (! $isOwner) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'شما دسترسی به ویرایش این درس ندارید'
+                    'message' => 'شما دسترسی به ویرایش این درس ندارید',
                 ], 403);
             }
 
@@ -2449,8 +2466,8 @@ class CourseController extends Controller
                         'name' => $course->name,
                         'majazi' => $course->majazi,
                         'code' => $course->code,
-                        'private' => $course->private
-                    ]
+                        'private' => $course->private,
+                    ],
                 ]);
             }
 
@@ -2458,12 +2475,12 @@ class CourseController extends Controller
             return redirect()->route('courses')->with('success', 'درس با موفقیت ویرایش شد');
 
         } catch (\Exception $e) {
-            log::error('Update course failed: ' . $e->getMessage());
+            log::error('Update course failed: '.$e->getMessage());
 
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'خطا در ویرایش درس: ' . $e->getMessage()
+                    'message' => 'خطا در ویرایش درس: '.$e->getMessage(),
                 ], 500);
             }
 
@@ -2488,10 +2505,10 @@ class CourseController extends Controller
                 ->where('role_id', $teacherRole->id)
                 ->exists();
 
-            if (!$isOwner) {
+            if (! $isOwner) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'شما دسترسی به این درس ندارید'
+                    'message' => 'شما دسترسی به این درس ندارید',
                 ], 403);
             }
 
@@ -2501,15 +2518,16 @@ class CourseController extends Controller
                     'id' => $course->id,
                     'name' => $course->name,
                     'majazi' => $course->majazi,
-                    'code' => $course->code
-                ]
+                    'code' => $course->code,
+                ],
             ]);
 
         } catch (\Exception $e) {
-            log::error('Get edit data failed: ' . $e->getMessage());
+            log::error('Get edit data failed: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در دریافت اطلاعات درس: ' . $e->getMessage()
+                'message' => 'خطا در دریافت اطلاعات درس: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -2531,10 +2549,10 @@ class CourseController extends Controller
                 ->where('role_id', $teacherRole->id)
                 ->exists();
 
-            if (!$isOwner) {
+            if (! $isOwner) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'شما دسترسی به حذف این درس ندارید'
+                    'message' => 'شما دسترسی به حذف این درس ندارید',
                 ], 403);
             }
 
@@ -2549,14 +2567,15 @@ class CourseController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'درس با موفقیت حذف شد'
+                'message' => 'درس با موفقیت حذف شد',
             ]);
 
         } catch (\Exception $e) {
-            log::error('Delete course failed: ' . $e->getMessage());
+            log::error('Delete course failed: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در حذف درس: ' . $e->getMessage()
+                'message' => 'خطا در حذف درس: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -2572,12 +2591,11 @@ class CourseController extends Controller
             ->with([
                 'exercises' => function ($query) {
                     $query->withCount('exerciseAnswers');
-                }
+                },
             ])
             ->withCount(['questions', 'discussions'])
             ->orderBy('number', 'desc')
             ->get();
-
 
         return view('teacher.exercise-correction', compact('course', 'sessionsWithExercises'))->with([
             'pageTitle' => 'تصحیح تکالیف',
@@ -2585,7 +2603,6 @@ class CourseController extends Controller
             'pageDescription' => 'مشاهده و تصحیح تکالیف دانشجویان',
         ]);
     }
-
 
     /**
      * دریافت پاسخ‌های یک تکلیف خاص
@@ -2600,7 +2617,7 @@ class CourseController extends Controller
                 ->with([
                     'user' => function ($query) {
                         $query->select('id', 'name', 'family', 'email');
-                    }
+                    },
                 ])
                 ->orderBy('created_at', 'desc')
                 ->get();
@@ -2609,14 +2626,15 @@ class CourseController extends Controller
                 'success' => true,
                 'exercise' => $exercise,
                 'answers' => $answers,
-                'total' => $answers->count()
+                'total' => $answers->count(),
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Get exercise answers failed: ' . $e->getMessage());
+            log::error('Get exercise answers failed: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در دریافت پاسخ‌ها: ' . $e->getMessage()
+                'message' => 'خطا در دریافت پاسخ‌ها: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -2634,13 +2652,14 @@ class CourseController extends Controller
             return response()->json([
                 'success' => true,
                 'questions' => $questions,
-                'total' => $questions->count()
+                'total' => $questions->count(),
             ]);
         } catch (\Exception $e) {
-            log::error('Get session questions failed: ' . $e->getMessage());
+            log::error('Get session questions failed: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در دریافت سوالات: ' . $e->getMessage()
+                'message' => 'خطا در دریافت سوالات: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -2658,13 +2677,14 @@ class CourseController extends Controller
             return response()->json([
                 'success' => true,
                 'discussions' => $discussions,
-                'total' => $discussions->count()
+                'total' => $discussions->count(),
             ]);
         } catch (\Exception $e) {
-            log::error('Get session discussions failed: ' . $e->getMessage());
+            log::error('Get session discussions failed: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در دریافت گزارش‌ها: ' . $e->getMessage()
+                'message' => 'خطا در دریافت گزارش‌ها: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -2678,13 +2698,13 @@ class CourseController extends Controller
             $answer = ExerciseAnswer::findOrFail($answerId);
 
             $validator = Validator::make($request->all(), [
-                'status' => 'required|in:1,2,3,4'
+                'status' => 'required|in:1,2,3,4',
             ]);
 
             if ($validator->fails()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'لطفاً یک مقدار معتبر انتخاب کنید'
+                    'message' => 'لطفاً یک مقدار معتبر انتخاب کنید',
                 ], 422);
             }
 
@@ -2699,14 +2719,15 @@ class CourseController extends Controller
                 'success' => true,
                 'message' => "نمره با موفقیت ثبت شد: {$statusText}",
                 'status' => $request->status,
-                'status_text' => $statusText
+                'status_text' => $statusText,
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Score exercise answer failed: ' . $e->getMessage());
+            log::error('Score exercise answer failed: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در ثبت نمره: ' . $e->getMessage()
+                'message' => 'خطا در ثبت نمره: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -2728,10 +2749,10 @@ class CourseController extends Controller
                 ->where('role_id', $teacherRole->id)
                 ->exists();
 
-            if (!$isOwner) {
+            if (! $isOwner) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'شما دسترسی به ویرایش این جلسه ندارید'
+                    'message' => 'شما دسترسی به ویرایش این جلسه ندارید',
                 ], 403);
             }
 
@@ -2748,14 +2769,14 @@ class CourseController extends Controller
                     'file' => $session->file,
                     'lesson_plan' => $session->lesson_plan,
                     'active' => $session->active,
-                    'course_id' => $session->course_id
-                ]
+                    'course_id' => $session->course_id,
+                ],
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در دریافت اطلاعات جلسه: ' . $e->getMessage()
+                'message' => 'خطا در دریافت اطلاعات جلسه: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -2780,7 +2801,7 @@ class CourseController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -2798,10 +2819,10 @@ class CourseController extends Controller
                 ->where('role_id', $teacherRole->id)
                 ->exists();
 
-            if (!$isOwner) {
+            if (! $isOwner) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'شما دسترسی به ویرایش این جلسه ندارید'
+                    'message' => 'شما دسترسی به ویرایش این جلسه ندارید',
                 ], 403);
             }
 
@@ -2818,22 +2839,22 @@ class CourseController extends Controller
             if ($request->hasFile('file')) {
                 // حذف فایل قبلی
                 if ($session->file) {
-                    $oldFilePath = public_path('files/session' . $session->file);
+                    $oldFilePath = public_path('files/session'.$session->file);
                     if (file_exists($oldFilePath)) {
                         unlink($oldFilePath);
                     }
                 }
 
                 $file = $request->file('file');
-                $fileName = $session->course_id . "_" . time() . "." . $file->getClientOriginalExtension();
+                $fileName = $session->course_id.'_'.time().'.'.$file->getClientOriginalExtension();
                 $destinationPath = public_path('files/session');
 
-                if (!file_exists($destinationPath)) {
+                if (! file_exists($destinationPath)) {
                     mkdir($destinationPath, 0777, true);
                 }
 
                 $file->move($destinationPath, $fileName);
-                $session->file = '/' . $fileName;
+                $session->file = '/'.$fileName;
             }
 
             $session->save();
@@ -2844,8 +2865,9 @@ class CourseController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            log::error('Session update failed: ' . $e->getMessage());
-            return redirect()->back()->with('success',false,'message','خطا در به‌روزرسانی جلسه: ' . $e->getMessage());
+            log::error('Session update failed: '.$e->getMessage());
+
+            return redirect()->back()->with('success', false, 'message', 'خطا در به‌روزرسانی جلسه: '.$e->getMessage());
 
         }
     }
@@ -2867,16 +2889,16 @@ class CourseController extends Controller
                 ->where('role_id', $teacherRole->id)
                 ->exists();
 
-            if (!$isOwner) {
+            if (! $isOwner) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'شما دسترسی به حذف این جلسه ندارید'
+                    'message' => 'شما دسترسی به حذف این جلسه ندارید',
                 ], 403);
             }
 
             // حذف فایل
             if ($session->file) {
-                $filePath = public_path('files/session' . $session->file);
+                $filePath = public_path('files/session'.$session->file);
                 if (file_exists($filePath)) {
                     unlink($filePath);
                 }
@@ -2886,13 +2908,13 @@ class CourseController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'جلسه با موفقیت حذف شد'
+                'message' => 'جلسه با موفقیت حذف شد',
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در حذف جلسه: ' . $e->getMessage()
+                'message' => 'خطا در حذف جلسه: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -2910,13 +2932,13 @@ class CourseController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'وضعیت جلسه با موفقیت تغییر کرد',
-                'active' => $session->active
+                'active' => $session->active,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در تغییر وضعیت جلسه: ' . $e->getMessage()
+                'message' => 'خطا در تغییر وضعیت جلسه: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -2930,7 +2952,7 @@ class CourseController extends Controller
             $session = Session::findOrFail($id);
 
             if ($session->file) {
-                $filePath = public_path('files/session' . $session->file);
+                $filePath = public_path('files/session'.$session->file);
                 if (file_exists($filePath)) {
                     unlink($filePath);
                 }
@@ -2940,16 +2962,17 @@ class CourseController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'فایل با موفقیت حذف شد'
+                'message' => 'فایل با موفقیت حذف شد',
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در حذف فایل: ' . $e->getMessage()
+                'message' => 'خطا در حذف فایل: '.$e->getMessage(),
             ], 500);
         }
     }
+
     public function toggleVisibility(Request $request, $id)
     {
         try {
@@ -2959,10 +2982,10 @@ class CourseController extends Controller
 
             $validFields = ['private', 'active', 'quiz', 'davari', 'faaliat', 'pishraft', 'is_ended'];
 
-            if (!in_array($field, $validFields)) {
+            if (! in_array($field, $validFields)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'فیلد نامعتبر است'
+                    'message' => 'فیلد نامعتبر است',
                 ], 400);
             }
 
@@ -2973,15 +2996,16 @@ class CourseController extends Controller
                 'success' => true,
                 'message' => 'وضعیت با موفقیت به‌روزرسانی شد',
                 'field' => $field,
-                'value' => $value
+                'value' => $value,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در به‌روزرسانی: ' . $e->getMessage()
+                'message' => 'خطا در به‌روزرسانی: '.$e->getMessage(),
             ], 500);
         }
     }
+
     /**
      * به‌روزرسانی تنظیمات همه دوره‌ها (برای course_id = 99999)
      */
@@ -3044,8 +3068,9 @@ class CourseController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            log::error('Update all settings failed: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'خطا در به‌روزرسانی تنظیمات: ' . $e->getMessage());
+            log::error('Update all settings failed: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'خطا در به‌روزرسانی تنظیمات: '.$e->getMessage());
         }
     }
     // ==========================================

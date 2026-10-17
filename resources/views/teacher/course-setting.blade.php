@@ -5,7 +5,7 @@
 @endsection
 
 @section('head')
-    <link rel="stylesheet" href="{{asset('css/badge.css')}}">
+    <link rel="stylesheet" href="{{ asset('css/badge.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jodit/build/jodit.min.css">
     <style>
         /* تمام استایل‌های قبلی بدون تغییر */
@@ -956,8 +956,8 @@
                                         <div class="score-input-wrapper">
                                             <input type="number" name="taklif_seminar_nomre" id="taklif_nomre"
                                                 value="{{ $courseSetting->taklif_seminar_nomre }}"
-                                                class="form-input score-input" onkeyup="validateScores()" min="0" max="20"
-                                                step="0.5">
+                                                class="form-input score-input" onkeyup="validateScores()" min="0"
+                                                max="20" step="0.5">
                                         </div>
                                     </td>
                                     <td>
@@ -989,8 +989,8 @@
                                         <div class="score-input-wrapper">
                                             <input type="number" name="hozor_ghayab_nomre" id="hozor_ghayab_nomre"
                                                 value="{{ $courseSetting->hozor_ghayab_nomre }}"
-                                                class="form-input score-input" onkeyup="validateScores()" min="0" max="20"
-                                                step="0.5">
+                                                class="form-input score-input" onkeyup="validateScores()" min="0"
+                                                max="20" step="0.5">
                                         </div>
                                     </td>
                                     <td>
@@ -1008,8 +1008,8 @@
                                         <div class="score-input-wrapper">
                                             <input type="number" name="miyan_term_nomre" id="miyan_term_nomre"
                                                 value="{{ $courseSetting->miyan_term_nomre }}"
-                                                class="form-input score-input" onkeyup="validateScores()" min="0" max="20"
-                                                step="0.5">
+                                                class="form-input score-input" onkeyup="validateScores()" min="0"
+                                                max="20" step="0.5">
                                         </div>
                                     </td>
                                     <td>
@@ -1034,8 +1034,9 @@
                                     <td>
                                         <div class="score-input-wrapper">
                                             <input type="number" name="kar_amali_nomre" id="kar_amali_nomre"
-                                                value="{{ $courseSetting->kar_amali_nomre }}" class="form-input score-input"
-                                                onkeyup="validateScores()" min="0" max="20" step="0.5">
+                                                value="{{ $courseSetting->kar_amali_nomre }}"
+                                                class="form-input score-input" onkeyup="validateScores()" min="0"
+                                                max="20" step="0.5">
                                         </div>
                                     </td>
                                     <td>
@@ -1052,8 +1053,8 @@
                                         <div class="score-input-wrapper">
                                             <input type="number" name="payan_term_nomre" id="payan_term_nomre"
                                                 value="{{ $courseSetting->payan_term_nomre }}"
-                                                class="form-input score-input" onkeyup="validateScores()" min="0" max="20"
-                                                step="0.5">
+                                                class="form-input score-input" onkeyup="validateScores()" min="0"
+                                                max="20" step="0.5">
                                             <span class="min-label required">حداقل: ۵</span>
                                         </div>
                                     </td>
@@ -1117,7 +1118,8 @@
                                     <td>دانشجو فقط برای آخرین جلسه درس مجاز به ثبت سوال است</td>
                                     <td>
                                         <label class="toggle-switch">
-                                            <input type="checkbox" name="soal_last" {{ $courseSetting->soal_last ? 'checked' : '' }}>
+                                            <input type="checkbox" name="soal_last"
+                                                {{ $courseSetting->soal_last ? 'checked' : '' }}>
                                             <span class="toggle-slider"></span>
                                         </label>
                                     </td>
@@ -1126,7 +1128,8 @@
                                     <td>دانشجو فقط برای آخرین جلسه درس مجاز به ارسال گزارش است</td>
                                     <td>
                                         <label class="toggle-switch">
-                                            <input type="checkbox" name="gozaresh_last" {{ $courseSetting->gozaresh_last ? 'checked' : '' }}>
+                                            <input type="checkbox" name="gozaresh_last"
+                                                {{ $courseSetting->gozaresh_last ? 'checked' : '' }}>
                                             <span class="toggle-slider"></span>
                                         </label>
                                     </td>
@@ -1135,7 +1138,8 @@
                                     <td>دانشجو فقط برای آخرین جلسه درس مجاز به ارسال تکلیف است</td>
                                     <td>
                                         <label class="toggle-switch">
-                                            <input type="checkbox" name="taklif_last" {{ $courseSetting->taklif_last ? 'checked' : '' }}>
+                                            <input type="checkbox" name="taklif_last"
+                                                {{ $courseSetting->taklif_last ? 'checked' : '' }}>
                                             <span class="toggle-slider"></span>
                                         </label>
                                     </td>
@@ -1147,6 +1151,24 @@
                                             class="form-input" min="1">
                                     </td>
                                 </tr>
+                                @if (isset($course) && $course->type == 1)
+                                    <tr>
+                                        <td>طول دوره (روز)</td>
+                                        <td>
+                                            <input type="number" name="length"
+                                                value="{{ old('length', $course->length) }}" class="form-input"
+                                                min="1">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>تعداد جلسات مهارت</td>
+                                        <td>
+                                            <input type="number" name="sessions_length"
+                                                value="{{ old('sessions_length', $course->sessions_length) }}"
+                                                class="form-input" min="1">
+                                        </td>
+                                    </tr>
+                                @endif
                                 <tr>
                                     <td>تعداد تکلیف/سمینار (در طول ترم)</td>
                                     <td>
@@ -1168,24 +1190,21 @@
                                     </td>
 
                                     <td>
-                                        <input
-                                            type="number"
-                                            name="max_gozaresh"
+                                        <input type="number" name="max_gozaresh"
                                             value="{{ old('max_gozaresh', $courseSetting->max_gozaresh ?? 1) }}"
-                                            class="form-input"
-                                            min="1"
-                                            style="max-width: 150px;"
-                                        >
+                                            class="form-input" min="1" style="max-width: 150px;">
 
                                         <small style="display:block; font-size:12px; color:#6b7280; margin-top:6px;">
-                                            منظور از گزارش، خلاصهٔ درس یا تحقیق درسی (بسته به نظر استاد) است که دانشجو در هر جلسه انجام می‌دهد.
+                                            منظور از گزارش، خلاصهٔ درس یا تحقیق درسی (بسته به نظر استاد) است که دانشجو در هر
+                                            جلسه انجام می‌دهد.
                                         </small>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>
                                         سقف تعداد داوری‌های دانشجو در هر روز
-                                        <span class="min-score-badge" style="background: #e0f2fe; color: #0369a1;">پیش‌فرض:
+                                        <span class="min-score-badge"
+                                            style="background: #e0f2fe; color: #0369a1;">پیش‌فرض:
                                             ۵</span>
                                     </td>
                                     <td>
@@ -1200,15 +1219,14 @@
                                 <tr>
                                     <td>هدایت دانشجو در بخش طراحی سوال</td>
                                     <td>
-                                        <textarea name="tarahi_soal_desc" class="form-textarea"
-                                            rows="3">{{ $courseSetting->tarahi_soal_desc }}</textarea>
+                                        <textarea name="tarahi_soal_desc" class="form-textarea" rows="3">{{ $courseSetting->tarahi_soal_desc }}</textarea>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>هدایت دانشجو در بخش ارسال گزارش</td>
                                     <td>
-                                        <textarea name="ersal_gozaresh_desc"  class="form-textarea">
-                {{ $courseSetting->ersal_gozaresh_desc ?? $siteSetting->ersal_gozaresh_desc ?? 'موضوع اصلی این جلسه چه بود و چه هدفی داشت؟ لطفاً یک نکتهٔ آموزنده از مطالب ارائه شده را با بیانی دیگر (به زبان خودتان) بازنویسی کنید.' }}
+                                        <textarea name="ersal_gozaresh_desc" class="form-textarea">
+                {{ $courseSetting->ersal_gozaresh_desc ?? ($siteSetting->ersal_gozaresh_desc ?? 'موضوع اصلی این جلسه چه بود و چه هدفی داشت؟ لطفاً یک نکتهٔ آموزنده از مطالب ارائه شده را با بیانی دیگر (به زبان خودتان) بازنویسی کنید.') }}
             </textarea>
                                     </td>
                                 </tr>
@@ -1249,19 +1267,22 @@
                                 <tr>
                                     <td>تعداد سوالات در هر خودآزمایی</td>
                                     <td>
-                                        <input type="number" name="q_num" id="q_num" value="{{ $courseSetting->q_num }}"
-                                            class="form-input" min="1">
+                                        <input type="number" name="q_num" id="q_num"
+                                            value="{{ $courseSetting->q_num }}" class="form-input" min="1">
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>سطح سوالات در هر خودآزمایی</td>
                                     <td>
                                         <select name="sath_khod" class="form-select">
-                                            <option value="1" {{ $courseSetting->sath_khod == 1 ? 'selected' : '' }}>عالی
+                                            <option value="1" {{ $courseSetting->sath_khod == 1 ? 'selected' : '' }}>
+                                                عالی
                                             </option>
-                                            <option value="2" {{ $courseSetting->sath_khod == 2 ? 'selected' : '' }}>عالی و
+                                            <option value="2" {{ $courseSetting->sath_khod == 2 ? 'selected' : '' }}>
+                                                عالی و
                                                 خوب</option>
-                                            <option value="3" {{ $courseSetting->sath_khod == 3 ? 'selected' : '' }}>خوب
+                                            <option value="3" {{ $courseSetting->sath_khod == 3 ? 'selected' : '' }}>
+                                                خوب
                                             </option>
                                         </select>
                                     </td>
@@ -1272,7 +1293,9 @@
                                         <div style="display: flex; align-items: center; gap: 12px;">
                                             <label class="toggle-switch">
                                                 <input type="hidden" name="natije" value="0">
-                                                <input type="checkbox" name="natije" value="1" {{ $courseSetting->natije ? 'checked' : '' }} class="toggle-text" data-target="natije-text">
+                                                <input type="checkbox" name="natije" value="1"
+                                                    {{ $courseSetting->natije ? 'checked' : '' }} class="toggle-text"
+                                                    data-target="natije-text">
                                                 <span class="toggle-slider"></span>
                                             </label>
                                             <span id="natije-text"
@@ -1286,7 +1309,8 @@
                                         <div style="display: flex; align-items: center; gap: 12px;">
                                             <label class="toggle-switch">
                                                 <input type="hidden" name="show_quiz" value="0">
-                                                <input type="checkbox" name="show_quiz" value="1" {{ $courseSetting->show_quiz ? 'checked' : '' }} class="toggle-text"
+                                                <input type="checkbox" name="show_quiz" value="1"
+                                                    {{ $courseSetting->show_quiz ? 'checked' : '' }} class="toggle-text"
                                                     data-target="quiz-text">
                                                 <span class="toggle-slider"></span>
                                             </label>
@@ -1301,8 +1325,9 @@
                                         <div style="display: flex; align-items: center; gap: 12px;">
                                             <label class="toggle-switch">
                                                 <input type="hidden" name="time_limit_khod" value="0">
-                                                <input type="checkbox" name="time_limit_khod" id="timeToggle" value="1" {{ $courseSetting->time_limit_khod ? 'checked' : '' }} class="toggle-text"
-                                                    data-target="time-limit-text">
+                                                <input type="checkbox" name="time_limit_khod" id="timeToggle"
+                                                    value="1" {{ $courseSetting->time_limit_khod ? 'checked' : '' }}
+                                                    class="toggle-text" data-target="time-limit-text">
                                                 <span class="toggle-slider"></span>
                                             </label>
                                             <span id="time-limit-text"
@@ -1326,7 +1351,8 @@
                                                 <label
                                                     class="time-option {{ ($courseSetting->time_per_question > 0 && $courseSetting->total_time_limit == 0) || ($courseSetting->time_per_question == 0 && $courseSetting->total_time_limit == 0) ? 'selected' : '' }}"
                                                     id="perQuestionOption">
-                                                    <input type="radio" name="time_type" value="per_question" {{ ($courseSetting->time_per_question > 0 && $courseSetting->total_time_limit == 0) || ($courseSetting->time_per_question == 0 && $courseSetting->total_time_limit == 0) ? 'checked' : '' }}>
+                                                    <input type="radio" name="time_type" value="per_question"
+                                                        {{ ($courseSetting->time_per_question > 0 && $courseSetting->total_time_limit == 0) || ($courseSetting->time_per_question == 0 && $courseSetting->total_time_limit == 0) ? 'checked' : '' }}>
                                                     <span class="option-icon">⏱️</span>
                                                     <div>
                                                         <div class="option-label">به ازای هر سوال</div>
@@ -1336,7 +1362,8 @@
                                                 <label
                                                     class="time-option {{ $courseSetting->total_time_limit > 0 ? 'selected' : '' }}"
                                                     id="totalOption">
-                                                    <input type="radio" name="time_type" value="total" {{ $courseSetting->total_time_limit > 0 ? 'checked' : '' }}>
+                                                    <input type="radio" name="time_type" value="total"
+                                                        {{ $courseSetting->total_time_limit > 0 ? 'checked' : '' }}>
                                                     <span class="option-icon">⏳</span>
                                                     <div>
                                                         <div class="option-label">کل آزمون</div>
@@ -1352,7 +1379,8 @@
                                                     <label>زمان هر سوال:</label>
                                                     <input type="number" name="time_per_question" id="time_per_question"
                                                         value="{{ $courseSetting->time_per_question > 0 ? $courseSetting->time_per_question : 45 }}"
-                                                        class="form-input" min="10" max="300" {{ $courseSetting->time_limit_khod ? '' : 'disabled' }}>
+                                                        class="form-input" min="10" max="300"
+                                                        {{ $courseSetting->time_limit_khod ? '' : 'disabled' }}>
                                                     <span class="unit">ثانیه</span>
                                                     <span class="hint">(حداقل ۱۰، حداکثر ۳۰۰)</span>
                                                 </div>
@@ -1360,7 +1388,7 @@
                                                     <i class="fas fa-calculator"></i>
                                                     زمان کل آزمون ≈
                                                     <strong
-                                                        id="total-time-calc">{{ round((($courseSetting->q_num) * ($courseSetting->time_per_question > 0 ? $courseSetting->time_per_question : 45)) / 60) }}</strong>
+                                                        id="total-time-calc">{{ round(($courseSetting->q_num * ($courseSetting->time_per_question > 0 ? $courseSetting->time_per_question : 45)) / 60) }}</strong>
                                                     دقیقه
                                                     <span class="calc-result" id="perQuestionResult">
                                                         {{ $courseSetting->time_per_question > 0 ? $courseSetting->time_per_question : 45 }}
@@ -1375,8 +1403,9 @@
                                                 <div class="input-row">
                                                     <label>زمان کل آزمون:</label>
                                                     <input type="number" name="total_time_limit" id="total_time_limit"
-                                                        value="{{ $courseSetting->total_time_limit > 0 ? $courseSetting->total_time_limit : round((($courseSetting->q_num) * 45) / 60) }}"
-                                                        class="form-input" min="1" max="120" {{ $courseSetting->time_limit_khod ? '' : 'disabled' }}>
+                                                        value="{{ $courseSetting->total_time_limit > 0 ? $courseSetting->total_time_limit : round(($courseSetting->q_num * 45) / 60) }}"
+                                                        class="form-input" min="1" max="120"
+                                                        {{ $courseSetting->time_limit_khod ? '' : 'disabled' }}>
                                                     <span class="unit">دقیقه</span>
                                                     <span class="hint">(حداقل ۱، حداکثر ۱۲۰)</span>
                                                 </div>
@@ -1384,10 +1413,10 @@
                                                     <i class="fas fa-calculator"></i>
                                                     میانگین زمان هر سوال ≈
                                                     <strong
-                                                        id="avg-time-per-question">{{ round((($courseSetting->total_time_limit > 0 ? $courseSetting->total_time_limit : round((($courseSetting->q_num) * 45) / 60)) * 60) / ($courseSetting->q_num)) }}</strong>
+                                                        id="avg-time-per-question">{{ round((($courseSetting->total_time_limit > 0 ? $courseSetting->total_time_limit : round(($courseSetting->q_num * 45) / 60)) * 60) / $courseSetting->q_num) }}</strong>
                                                     ثانیه
                                                     <span class="calc-result" id="totalResult">
-                                                        {{ $courseSetting->total_time_limit > 0 ? $courseSetting->total_time_limit : round((($courseSetting->q_num) * 45) / 60) }}
+                                                        {{ $courseSetting->total_time_limit > 0 ? $courseSetting->total_time_limit : round(($courseSetting->q_num * 45) / 60) }}
                                                         دقیقه
                                                     </span>
                                                 </div>
@@ -1414,7 +1443,8 @@
                                     <span class="vis-icon"><i class="fas fa-list-ul"></i></span>
                                     <span class="vis-text">نمایش جلسات درس</span>
                                     <div class="switch">
-                                        <input type="checkbox" class="vis-checkbox" data-field="active" id="visActive" {{ $course->active ? 'checked' : '' }}>
+                                        <input type="checkbox" class="vis-checkbox" data-field="active" id="visActive"
+                                            {{ $course->active ? 'checked' : '' }}>
                                         <span class="slider round"></span>
                                     </div>
                                 </label>
@@ -1424,7 +1454,8 @@
                                     <span class="vis-icon"><i class="fas fa-gavel"></i></span>
                                     <span class="vis-text">امکان داوری</span>
                                     <div class="switch">
-                                        <input type="checkbox" class="vis-checkbox" data-field="davari" id="visDavari" {{ $course->davari ? 'checked' : '' }}>
+                                        <input type="checkbox" class="vis-checkbox" data-field="davari" id="visDavari"
+                                            {{ $course->davari ? 'checked' : '' }}>
                                         <span class="slider round"></span>
                                     </div>
                                 </label>
@@ -1434,7 +1465,8 @@
                                     <span class="vis-icon"><i class="fas fa-pencil-alt"></i></span>
                                     <span class="vis-text">شرکت در خودآزمایی</span>
                                     <div class="switch">
-                                        <input type="checkbox" class="vis-checkbox" data-field="quiz" id="visQuiz" {{ $course->quiz ? 'checked' : '' }}>
+                                        <input type="checkbox" class="vis-checkbox" data-field="quiz" id="visQuiz"
+                                            {{ $course->quiz ? 'checked' : '' }}>
                                         <span class="slider round"></span>
                                     </div>
                                 </label>
@@ -1444,7 +1476,8 @@
                                     <span class="vis-icon"><i class="fas fa-eye"></i></span>
                                     <span class="vis-text">مشاهده فعالیت‌ها</span>
                                     <div class="switch">
-                                        <input type="checkbox" class="vis-checkbox" data-field="faaliat" id="visFaaliat" {{ $course->faaliat ? 'checked' : '' }}>
+                                        <input type="checkbox" class="vis-checkbox" data-field="faaliat" id="visFaaliat"
+                                            {{ $course->faaliat ? 'checked' : '' }}>
                                         <span class="slider round"></span>
                                     </div>
                                 </label>
@@ -1454,8 +1487,8 @@
                                     <span class="vis-icon"><i class="fas fa-chart-line"></i></span>
                                     <span class="vis-text">مشاهده پیشرفت درسی</span>
                                     <div class="switch">
-                                        <input type="checkbox" class="vis-checkbox" data-field="pishraft" id="visPishraft"
-                                            {{ $course->pishraft ? 'checked' : '' }}>
+                                        <input type="checkbox" class="vis-checkbox" data-field="pishraft"
+                                            id="visPishraft" {{ $course->pishraft ? 'checked' : '' }}>
                                         <span class="slider round"></span>
                                     </div>
                                 </label>
@@ -1486,7 +1519,7 @@
         var siteSettings = @json($siteSetting);
 
         // ========== مقداردهی Jodit ==========
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const reportEditorElement = document.getElementById('reportDescEditor');
             if (reportEditorElement) {
                 new Jodit('#reportDescEditor', {
@@ -1517,11 +1550,13 @@
                                     if (!file) return;
                                     let formData = new FormData();
                                     formData.append('file', file);
-                                    fetch('{{ route("upload.image") }}', {
-                                        method: 'POST',
-                                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                                        body: formData
-                                    })
+                                    fetch('{{ route('upload.image') }}', {
+                                            method: 'POST',
+                                            headers: {
+                                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                            },
+                                            body: formData
+                                        })
                                         .then(res => res.json())
                                         .then(data => {
                                             if (data.files && data.files[0].url) {
@@ -1551,11 +1586,13 @@
                                     if (!file) return;
                                     let formData = new FormData();
                                     formData.append('file', file);
-                                    fetch('{{ route("upload.video") }}', {
-                                        method: 'POST',
-                                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                                        body: formData
-                                    })
+                                    fetch('{{ route('upload.video') }}', {
+                                            method: 'POST',
+                                            headers: {
+                                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                            },
+                                            body: formData
+                                        })
                                         .then(res => res.json())
                                         .then(data => {
                                             if (data.files && data.files[0].url) {
@@ -1634,7 +1671,8 @@
                 document.getElementById('payan_term_nomre').classList.add('error');
             }
             if (total !== 20) {
-                errorMessages.push(total > 20 ? 'مجموع نمرات نمی‌تواند از ۲۰ بیشتر باشد (مجموع فعلی: ' + total + ')' : 'مجموع نمرات باید دقیقاً برابر با ۲۰ باشد (مجموع فعلی: ' + total + ')');
+                errorMessages.push(total > 20 ? 'مجموع نمرات نمی‌تواند از ۲۰ بیشتر باشد (مجموع فعلی: ' + total + ')' :
+                    'مجموع نمرات باید دقیقاً برابر با ۲۰ باشد (مجموع فعلی: ' + total + ')');
                 scoreInputs.forEach(input => input.classList.add('error'));
             }
 
@@ -1680,8 +1718,10 @@
             document.querySelector('input[name="daily_judgment_limit"]').value = siteSettings.daily_judgment_limit || 5;
 
             // توضیحات متنی
-            document.querySelector('textarea[name="tarahi_soal_desc"]').value = siteSettings.tarahi_soal_desc || 'یک سؤال خلاقانه طراحی کنید که به یادگیری دوستانتان کمک کند و به نام خودتان منتشر شود. قبل از ارسال، حتماً سؤالاتی که دیگران طرح کرده اند را مرور کنید تا از تکراری نبودن سوال خود مطمئن شوید.';
-            document.querySelector('textarea[name="ersal_gozaresh_desc"]').value = siteSettings.ersal_gozaresh_desc || 'یک سؤال خلاقانه طراحی کنید که به یادگیری دوستانتان کمک کند و به نام خودتان منتشر شود. قبل از ارسال، حتماً سؤالاتی که دیگران طرح کرده اند را مرور کنید تا از تکراری نبودن سوال خود مطمئن شوید.';
+            document.querySelector('textarea[name="tarahi_soal_desc"]').value = siteSettings.tarahi_soal_desc ||
+                'یک سؤال خلاقانه طراحی کنید که به یادگیری دوستانتان کمک کند و به نام خودتان منتشر شود. قبل از ارسال، حتماً سؤالاتی که دیگران طرح کرده اند را مرور کنید تا از تکراری نبودن سوال خود مطمئن شوید.';
+            document.querySelector('textarea[name="ersal_gozaresh_desc"]').value = siteSettings.ersal_gozaresh_desc ||
+                'یک سؤال خلاقانه طراحی کنید که به یادگیری دوستانتان کمک کند و به نام خودتان منتشر شود. قبل از ارسال، حتماً سؤالاتی که دیگران طرح کرده اند را مرور کنید تا از تکراری نبودن سوال خود مطمئن شوید.';
 
             // تنظیمات خودآزمایی
             document.querySelector('input[name="min_w_khod"]').value = siteSettings.min_w_khod || 14;
@@ -1695,7 +1735,8 @@
 
             // زمان‌ها
             document.querySelector('input[name="time_per_question"]').value = siteSettings.time_per_question || 45;
-            document.querySelector('input[name="total_time_limit"]').value = siteSettings.total_time_limit || Math.round((siteSettings.q_num || 10) * 45 / 60);
+            document.querySelector('input[name="total_time_limit"]').value = siteSettings.total_time_limit || Math.round((
+                siteSettings.q_num || 10) * 45 / 60);
 
             // رادیو time_type
             var timeType = siteSettings.time_type || 'per_question';
@@ -1723,7 +1764,9 @@
                 body.style.maxHeight = '0';
                 body.style.paddingTop = '0';
                 body.style.paddingBottom = '0';
-                setTimeout(function () { body.style.display = 'none'; }, 400);
+                setTimeout(function() {
+                    body.style.display = 'none';
+                }, 400);
             } else {
                 body.style.display = 'block';
                 body.classList.add('active');
@@ -1733,7 +1776,7 @@
                 body.style.maxHeight = '0';
                 body.style.paddingTop = '0';
                 body.style.paddingBottom = '0';
-                setTimeout(function () {
+                setTimeout(function() {
                     body.style.maxHeight = height + 'px';
                     body.style.paddingTop = '20px';
                     body.style.paddingBottom = '20px';
@@ -1741,8 +1784,8 @@
             }
         }
 
-        document.querySelectorAll('.toggle-text').forEach(function (cb) {
-            cb.addEventListener('change', function () {
+        document.querySelectorAll('.toggle-text').forEach(function(cb) {
+            cb.addEventListener('change', function() {
                 var spanId = this.getAttribute('data-target');
                 var span = document.getElementById(spanId);
                 if (this.checked) {
@@ -1759,28 +1802,34 @@
         });
 
         // ========== مدیریت چک‌باکس‌های نمایش ==========
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const checkboxes = document.querySelectorAll('.vis-checkbox');
             const courseId = {{ $course->id }};
             checkboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function () {
+                checkbox.addEventListener('change', function() {
                     const field = this.dataset.field;
                     const value = this.checked ? 1 : 0;
                     const switchContainer = this.closest('.switch');
                     if (switchContainer) switchContainer.classList.add('loading');
                     this.disabled = true;
                     fetch(`/teacher/courses/toggle-visibility/${courseId}`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({ field: field, value: value })
-                    })
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                field: field,
+                                value: value
+                            })
+                        })
                         .then(response => {
                             if (!response.ok) {
-                                return response.json().then(err => { throw new Error(err.message || 'خطا در ارتباط با سرور'); });
+                                return response.json().then(err => {
+                                    throw new Error(err.message ||
+                                        'خطا در ارتباط با سرور');
+                                });
                             }
                             return response.json();
                         })
@@ -1789,7 +1838,8 @@
                                 this.checked = !this.checked;
                                 showToast('error', data.message || 'خطا در به‌روزرسانی');
                             } else {
-                                showToast('success', data.message || 'وضعیت با موفقیت به‌روزرسانی شد');
+                                showToast('success', data.message ||
+                                    'وضعیت با موفقیت به‌روزرسانی شد');
                             }
                         })
                         .catch(error => {
@@ -1811,7 +1861,8 @@
             if (oldToast) oldToast.remove();
             const toast = document.createElement('div');
             toast.className = `custom-toast ${type}`;
-            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-exclamation-circle'}"></i><span>${message}</span>`;
+            toast.innerHTML =
+                `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-exclamation-circle'}"></i><span>${message}</span>`;
             document.body.appendChild(toast);
             setTimeout(() => toast.classList.add('show'), 10);
             setTimeout(() => {
@@ -1960,7 +2011,8 @@
                 document.getElementById('perQuestionResult').textContent = timePerQuestion + ' ثانیه ' + q_num + ' X سوال';
                 document.getElementById('time_per_question').value = timePerQuestion;
             } else if (timeType && timeType.value === 'total') {
-                const totalMinutes = parseInt(document.getElementById('total_time_limit').value) || Math.round((q_num * 45) / 60);
+                const totalMinutes = parseInt(document.getElementById('total_time_limit').value) || Math.round((q_num *
+                    45) / 60);
                 const avgSeconds = Math.round((totalMinutes * 60) / q_num);
                 document.getElementById('avg-time-per-question').textContent = avgSeconds;
                 document.getElementById('totalResult').textContent = totalMinutes + ' دقیقه';
@@ -1968,7 +2020,7 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const qNumInput = document.getElementById('q_num');
             if (qNumInput) {
                 qNumInput.addEventListener('change', updateTimeCalculations);
@@ -1984,9 +2036,10 @@
                 totalTimeInput.addEventListener('change', updateTimeCalculations);
                 totalTimeInput.addEventListener('input', updateTimeCalculations);
             }
-            document.querySelectorAll('input[name="time_type"]').forEach(function (radio) {
-                radio.addEventListener('change', function () {
-                    document.querySelectorAll('.time-option').forEach(opt => opt.classList.remove('selected'));
+            document.querySelectorAll('input[name="time_type"]').forEach(function(radio) {
+                radio.addEventListener('change', function() {
+                    document.querySelectorAll('.time-option').forEach(opt => opt.classList.remove(
+                        'selected'));
                     if (this.value === 'per_question') {
                         document.getElementById('perQuestionOption').classList.add('selected');
                         document.getElementById('per-question-time').classList.add('visible');
@@ -2010,19 +2063,23 @@
         });
 
         // ========== جلوگیری از ارسال فرم در صورت نامعتبر بودن ==========
-        document.addEventListener('DOMContentLoaded', function () {
-            document.getElementById('settingsForm').addEventListener('submit', function (e) {
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('settingsForm').addEventListener('submit', function(e) {
                 if (!validateScores()) {
                     e.preventDefault();
                     showToast('error', 'لطفاً خطاهای بارم‌بندی را اصلاح کنید');
-                    var accordionHeader = document.querySelector('.accordion-item:first-child .accordion-header');
+                    var accordionHeader = document.querySelector(
+                        '.accordion-item:first-child .accordion-header');
                     if (accordionHeader) {
                         var body = accordionHeader.nextElementSibling;
                         if (!body.classList.contains('active')) {
                             toggleAccordion(accordionHeader);
                         }
                     }
-                    document.getElementById('scoreValidationError').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    document.getElementById('scoreValidationError').scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
                 }
             });
         });
