@@ -1587,6 +1587,7 @@ class CourseController extends Controller
 
         // انجام داوری
         $peerReview = $this->peerReviewScore(
+            $davari_q + $davari_gozaresh,
             $setting->daily_judgment_limit,
             $setting->jalasat,
             $evaluationLimits->judging_completion,
@@ -1792,6 +1793,7 @@ class CourseController extends Controller
     }
 
     private function peerReviewScore(
+        $n_actual = 0,
         $a = 5,
         $b = 16,
         $c = 8,
@@ -1802,7 +1804,7 @@ class CourseController extends Controller
     ) {
         $g = 3;
 
-        if ($d <= 1) {
+        if ($d <= 1 || $n_actual <= 0) {
             return ['n' => 0, 'score' => 0];
         }
 
@@ -1810,13 +1812,9 @@ class CourseController extends Controller
         $dailyCapacity = $a * $h;
         $availableItems = ($d - 1) * ($e + $f);
         $m = min($dailyCapacity, $r, $availableItems);
-
-        $n = $b * $m;
-        $nTarget = 0.95 * $b * $r;
-
-        if ($nTarget == 0) {
-            return ['n' => $n, 'score' => 0];
-        }
+        $nMax = $b * $m;
+        $n = min($n_actual, $nMax);
+        $nTarget = 182;
 
         $score = round(min($c * $n / $nTarget, $c), 2);
 

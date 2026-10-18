@@ -221,7 +221,7 @@ class StudentSiteController extends Controller
     {
         $user = Auth::user();
 
-        $courses = $user->s()->where('courses.archieve', 0)->where('is_ended', 0)->whereIn('courses.type', ['0', '2'])->get();
+        $courses = $user->courses()->where('courses.archieve', 0)->where('is_ended', 0)->whereIn('courses.type', ['0', '2'])->get();
 
         return view('student.courses', compact('courses'));
     }
@@ -781,7 +781,14 @@ class StudentSiteController extends Controller
             $disc_all * $evaluationLimits->report_submission / $max_session
         );
 
+        $davari_q = ScoreQuestion::where('user_id', $user->id)->count();
+
+        $davari_gozaresh = ScoreDiscussion::where('user_id', $user->id)->count();
+
+        $n_actual = $davari_q + $davari_gozaresh;
+
         $peerReview = $this->peerReviewScore(
+            $n_actual,
             $setting->daily_judgment_limit,
             $setting->jalasat,
             $evaluationLimits->judging_completion,
@@ -928,6 +935,7 @@ class StudentSiteController extends Controller
     }
 
     private function peerReviewScore(
+        $n_actual = 0,
         $a = 5,
         $b = 16,
         $c = 8,
@@ -938,7 +946,7 @@ class StudentSiteController extends Controller
     ) {
         $g = 3;
 
-        if ($d <= 1) {
+        if ($d <= 1 || $n_actual <= 0) {
             return ['n' => 0, 'score' => 0];
         }
 
@@ -947,18 +955,18 @@ class StudentSiteController extends Controller
         $availableItems = ($d - 1) * ($e + $f);
         $m = min($dailyCapacity, $r, $availableItems);
 
-        $n = $b * $m;
-        $nTarget = 0.95 * $b * $r;
+        $nMax = $b * $m;
+        $n = min($n_actual, $nMax);
+        $nTarget = 182;
 
-        if ($nTarget == 0) {
-            return ['n' => $n, 'score' => 0];
-        }
+        $rawScore = $c * $n / $nTarget;
+        $score = round(min($rawScore, $c), 2);
 
-        $score = round(min($c * $n / $nTarget, $c), 2);
-
-        return [
+        $result = [
             'n' => $n,
             'score' => $score,
         ];
+
+        return $result;
     }
 }
