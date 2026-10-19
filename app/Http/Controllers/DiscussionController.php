@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Discussion;
 use App\Models\Session;
-use App\Models\Course;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,19 +18,25 @@ class DiscussionController extends Controller
     {
         $session = Session::with('course')->findOrFail($sessionId);
         $course = $session->course;
-        
+
         // دریافت تنظیمات درس
         $setting = Setting::where('course_id', $course->id)->first();
-        
+
         if ($setting && $setting->gozaresh_last == 1) {
             $lastSession = Session::where('course_id', $course->id)
                 ->orderBy('id', 'desc')
                 ->first();
-                
-            if (!$lastSession || $session->id != $lastSession->id) {
+
+            if (! $lastSession || $session->id != $lastSession->id) {
                 return redirect()->back()->with('error', 'شما فقط می‌توانید برای آخرین جلسه این درس گزارش ارسال کنید.');
             }
         }
+
+        $gozareshs = Discussion::where('user_id',Auth::user()->id)->where('session_id',$sessionId)->count();
+        if ($setting && $setting->max_gozaresh <= $gozareshs) {
+                return redirect()->back()->with('error', 'شما حداکثر گزارش برای این جلسه را ارسال کردید.');
+        }
+
         return view('student.discussion-create', compact('session', 'course'));
     }
 
@@ -49,7 +54,7 @@ class DiscussionController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        $discussion = new Discussion();
+        $discussion = new Discussion;
         $discussion->user_id = Auth::id();
         $discussion->session_id = $request->session_id;
         $discussion->text = $request->text;
