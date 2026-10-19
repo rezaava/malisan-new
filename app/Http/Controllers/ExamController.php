@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Angizesh;
 use App\Models\Answer;
-use App\Models\Azmon;
 use App\Models\Course;
 use App\Models\Question;
 use App\Models\Quiz;
@@ -12,18 +11,15 @@ use App\Models\ScoreQuestion;
 use App\Models\Session;
 use App\Models\Setting;
 use App\Models\User;
-use App\Models\Score;
 use Carbon\Carbon;
 use Hekmatinasser\Verta\Verta;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use Log;
 
 class ExamController extends Controller
 {
-
     /**
      * نمایش فرم ایجاد سوال (دانشجو)
      */
@@ -33,13 +29,13 @@ class ExamController extends Controller
         $course = $session->course;
 
         $setting = Setting::where('course_id', $course->id)->first();
-        
-        if ($setting && !Auth::user()->hasRole('admin|teacher') && $setting->soal_last == 1) {
+
+        if ($setting && ! Auth::user()->hasRole('admin|teacher') && $setting->soal_last == 1) {
             $lastSession = Session::where('course_id', $course->id)
                 ->orderBy('id', 'desc') // یا orderBy('session_number', 'desc') اگر چنین فیلدی دارید
                 ->first();
-                
-            if (!$lastSession || $session->id != $lastSession->id) {
+
+            if (! $lastSession || $session->id != $lastSession->id) {
                 return redirect()->back()->with('error', 'شما فقط می‌توانید برای آخرین جلسه این درس سوال طراحی کنید.');
             }
         }
@@ -97,7 +93,7 @@ class ExamController extends Controller
                 ->orderBy('id', 'desc')
                 ->first();
 
-            if (!$lastSession || $session->id != $lastSession->id) {
+            if (! $lastSession || $session->id != $lastSession->id) {
                 return redirect()->back()
                     ->with('error', 'شما فقط می‌توانید برای آخرین جلسه این درس سوال طراحی کنید.')
                     ->withInput();
@@ -107,7 +103,7 @@ class ExamController extends Controller
         try {
             $user = Auth::user();
 
-            if ($setting && $setting->max_soal && !$user->hasRole('teacher')) {
+            if ($setting && $setting->max_soal && ! $user->hasRole('teacher')) {
                 $questionCount = Question::where('session_id', $session_id)
                     ->where('user_id', $user->id)
                     ->count();
@@ -122,7 +118,7 @@ class ExamController extends Controller
             $isTeacher = $user->hasRole('teacher||admin');
             $status = $isTeacher ? 5 : null;
 
-            $question = new Question();
+            $question = new Question;
 
             $question->question = $request->question;
             $question->type = $type;
@@ -159,7 +155,98 @@ class ExamController extends Controller
             return redirect()->back()->with('success', $message);
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('error', 'خطا در ثبت سوال: ' . $e->getMessage())
+                ->with('error', 'خطا در ثبت سوال: '.$e->getMessage())
+                ->withInput();
+        }
+    }
+
+    public function studentUpdate(Request $request, $id)
+    {
+        $type = (int) $request->type;
+
+        $rules = [
+            'question' => 'required|string|min:5',
+            'type' => 'required|in:0,1',
+        ];
+
+        if ($type === 0) {
+            $rules['options'] = 'required|array|size:4';
+            $rules['options.*'] = 'required|string|min:1';
+            $rules['correct_answer'] = 'required|integer|min:0|max:3';
+        } else {
+            $rules['options'] = 'required|array|min:1';
+            $rules['options.0'] = 'required|string|min:1';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        if ($type === 1) {
+            $shortAnswer = trim($request->options[0]);
+            $wordCount = count(preg_split('/\s+/u', $shortAnswer, -1, PREG_SPLIT_NO_EMPTY));
+
+            if ($wordCount > 3) {
+                return redirect()->back()
+                    ->with('error', 'پاسخ کوتاه باید حداکثر سه کلمه باشد.')
+                    ->withInput();
+            }
+        }
+
+        try {
+            $user = Auth::user();
+
+            $question = Question::where('id', $id)
+                ->where('user_id', $user->id)
+                ->whereNull('status')
+                ->firstOrFail();
+
+            $session = Session::findOrFail($question->session_id);
+            $setting = Setting::where('course_id', $session->course_id)->first();
+
+            if ($setting && $setting->soal_last == 1) {
+                $lastSession = Session::where('course_id', $session->course_id)
+                    ->orderBy('id', 'desc')
+                    ->first();
+
+                if (! $lastSession || $session->id != $lastSession->id) {
+                    return redirect()->back()
+                        ->with('error', 'شما فقط می‌توانید سوالات آخرین جلسه این درس را ویرایش کنید.')
+                        ->withInput();
+                }
+            }
+
+            $question->question = $request->question;
+            $question->type = $type;
+            $question->is_edit = 1;
+
+            if ($type === 0) {
+                $question->answer1 = trim($request->options[0]);
+                $question->answer2 = trim($request->options[1]);
+                $question->answer3 = trim($request->options[2]);
+                $question->answer4 = trim($request->options[3]);
+                $question->answer = (int) $request->correct_answer + 1;
+            } else {
+                $question->answer1 = null;
+                $question->answer2 = null;
+                $question->answer3 = null;
+                $question->answer4 = null;
+                $question->answer = trim($request->options[0]);
+            }
+
+            $question->save();
+
+            return redirect()->back()->with('success', 'سوال شما با موفقیت ویرایش شد.');
+
+        } catch (ModelNotFoundException $e) {
+            return redirect()->back()
+                ->with('error', 'سوال موردنظر پیدا نشد یا امکان ویرایش آن وجود ندارد.')
+                ->withInput();
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'خطا در ویرایش سوال: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -200,7 +287,7 @@ class ExamController extends Controller
 
         // اطلاعات طراح
         $designer = $question->user;
-        $designerName = $designer ? $designer->name . ' ' . $designer->family : 'نامشخص';
+        $designerName = $designer ? $designer->name.' '.$designer->family : 'نامشخص';
 
         return view('teacher.question-show', compact(
             'question',
@@ -209,10 +296,10 @@ class ExamController extends Controller
             'statusOptions',
             'designerName'
         ))->with([
-                    'pageTitle' => 'نمایش سوال',
-                    'pageName' => 'سوال',
-                    'pageDescription' => 'مشاهده جزئیات سوال',
-                ]);
+            'pageTitle' => 'نمایش سوال',
+            'pageName' => 'سوال',
+            'pageDescription' => 'مشاهده جزئیات سوال',
+        ]);
     }
 
     /**
@@ -241,7 +328,7 @@ class ExamController extends Controller
             'success' => true,
             'message' => 'وضعیت سوال با موفقیت تغییر یافت.',
             'status' => $request->status,
-            'status_label' => $statusLabels[$request->status] ?? 'نامشخص'
+            'status_label' => $statusLabels[$request->status] ?? 'نامشخص',
         ]);
     }
 
@@ -277,7 +364,7 @@ class ExamController extends Controller
             if ($question->user) {
                 $question->designer_name = $question->user->hasRole('teacher')
                     ? 'استاد'
-                    : $question->user->name . ' ' . $question->user->family;
+                    : $question->user->name.' '.$question->user->family;
             } else {
                 $question->designer_name = 'نامشخص';
             }
@@ -366,7 +453,7 @@ class ExamController extends Controller
         $course = Course::findOrFail($courseId);
         $setting = Setting::where('course_id', $course->id)->first();
 
-        if (!$setting) {
+        if (! $setting) {
             return redirect()->back()->with('error', 'تنظیمات این دوره کامل نیست.');
         }
 
@@ -384,15 +471,15 @@ class ExamController extends Controller
 
         $quiz = Quiz::create([
             'course_id' => $course->id,
-            'user_id'   => $user->id,
-            'start'     => Carbon::now(),
-            'azmon_id'  => null,
+            'user_id' => $user->id,
+            'start' => Carbon::now(),
+            'azmon_id' => null,
         ]);
 
         $question = $this->getQuestionForSelfTest($sessions, $setting);
         $q_num = $setting->q_num ?? 10;
 
-        if (!$question) {
+        if (! $question) {
             return redirect()->back()->with('error', 'هنوز سوالی برای خودآزمایی طرح نشده است.');
         }
 
@@ -413,16 +500,16 @@ class ExamController extends Controller
             }
         }
 
-        \Session::put('shuffled_question_' . $question->id, [
-            'options'       => $options,
+        \Session::put('shuffled_question_'.$question->id, [
+            'options' => $options,
             'correct_index' => $correctIndex,
         ]);
 
         $shuffledOptions = $options;
 
         $answer = Answer::create([
-            'quiz_id'       => $quiz->id,
-            'question_id'   => $question->id,
+            'quiz_id' => $quiz->id,
+            'question_id' => $question->id,
         ]);
 
         $num = 1;
@@ -459,9 +546,9 @@ class ExamController extends Controller
             'timerData',
             'quiz'
         ))->with([
-            'pageTitle'        => 'خودآزمایی',
-            'pageName'         => 'خودآزمایی',
-            'pageDescription'  => 'به سوالات با دقت پاسخ دهید',
+            'pageTitle' => 'خودآزمایی',
+            'pageName' => 'خودآزمایی',
+            'pageDescription' => 'به سوالات با دقت پاسخ دهید',
         ]);
     }
 
@@ -472,13 +559,14 @@ class ExamController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'answer_id' => 'required|exists:answers,id',
-            'answer'    => 'nullable|string',
+            'answer' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
             if ($request->ajax()) {
                 return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
             }
+
             return redirect()->back()->withErrors($validator);
         }
 
@@ -487,10 +575,11 @@ class ExamController extends Controller
         $course = Course::findOrFail($quiz->course_id);
         $setting = Setting::where('course_id', $course->id)->first();
 
-        if (!$setting) {
+        if (! $setting) {
             if ($request->ajax()) {
                 return response()->json(['success' => false, 'message' => 'تنظیمات دوره کامل نیست.']);
             }
+
             return redirect()->back()->with('error', 'تنظیمات این دوره کامل نیست.');
         }
 
@@ -512,10 +601,10 @@ class ExamController extends Controller
 
             if ($showQuiz == 1) {
                 $previousQuestion = Question::find($currentAnswer->question_id);
-                $shuffledData = \Session::get('shuffled_question_' . $previousQuestion->id);
+                $shuffledData = \Session::get('shuffled_question_'.$previousQuestion->id);
                 if ($shuffledData) {
                     $shuffledOptionsPrev = $shuffledData['options'];
-                    $correctIndexPrev    = $shuffledData['correct_index'];
+                    $correctIndexPrev = $shuffledData['correct_index'];
                     $isCorrect = ($currentAnswer->answer == ($correctIndexPrev + 1));
                 }
             }
@@ -526,10 +615,10 @@ class ExamController extends Controller
 
             if ($showQuiz == 1) {
                 $previousQuestion = Question::find($currentAnswer->question_id);
-                $shuffledData = \Session::get('shuffled_question_' . $previousQuestion->id);
+                $shuffledData = \Session::get('shuffled_question_'.$previousQuestion->id);
                 if ($shuffledData) {
                     $shuffledOptionsPrev = $shuffledData['options'];
-                    $correctIndexPrev    = $shuffledData['correct_index'];
+                    $correctIndexPrev = $shuffledData['correct_index'];
                     $isCorrect = false;
                     $userAnswerIndex = null;
                 }
@@ -554,13 +643,14 @@ class ExamController extends Controller
                     'quiz_id' => $quiz->id,
                 ]);
             }
+
             return $this->finishSelfTest($quiz, $course, $setting);
         }
 
         // ─── دریافت سوال بعدی ───
         $nextQuestion = $this->getNextQuestionForSelfTest($sessions, $setting, $oldQuestions);
 
-        if (!$nextQuestion) {
+        if (! $nextQuestion) {
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
@@ -568,6 +658,7 @@ class ExamController extends Controller
                     'quiz_id' => $quiz->id,
                 ]);
             }
+
             return $this->finishSelfTest($quiz, $course, $setting);
         }
 
@@ -588,8 +679,8 @@ class ExamController extends Controller
             }
         }
 
-        \Session::put('shuffled_question_' . $nextQuestion->id, [
-            'options'       => $options,
+        \Session::put('shuffled_question_'.$nextQuestion->id, [
+            'options' => $options,
             'correct_index' => $correctIndex,
         ]);
 
@@ -597,7 +688,7 @@ class ExamController extends Controller
 
         // --- ایجاد پاسخ جدید برای سوال بعدی ---
         $newAnswer = Answer::create([
-            'quiz_id'     => $quiz->id,
+            'quiz_id' => $quiz->id,
             'question_id' => $nextQuestion->id,
         ]);
 
@@ -611,20 +702,20 @@ class ExamController extends Controller
                 'show_quiz' => $showQuiz,
                 'previous' => [
                     'question' => $previousQuestion ? $previousQuestion->question : null,
-                    'options'  => $shuffledOptionsPrev,
+                    'options' => $shuffledOptionsPrev,
                     'correct_index' => $correctIndexPrev,
                     'user_answer_index' => $userAnswerIndex,
                     'is_correct' => $isCorrect,
                     'has_answer' => $hasAnswer,
                 ],
                 'next' => [
-                    'question_id'   => $nextQuestion->id,
+                    'question_id' => $nextQuestion->id,
                     'question_text' => $nextQuestion->question,
-                    'options'       => $shuffledOptions,
-                    'answer_id'     => $newAnswer->id,
-                    'num'           => $num,
-                    'total'         => $q_num,
-                ]
+                    'options' => $shuffledOptions,
+                    'answer_id' => $newAnswer->id,
+                    'num' => $num,
+                    'total' => $q_num,
+                ],
             ]);
         }
 
@@ -643,9 +734,9 @@ class ExamController extends Controller
             'correctIndexPrev',
             'shuffledOptions'
         ))->with([
-            'pageTitle'        => 'خودآزمایی',
-            'pageName'         => 'خودآزمایی',
-            'pageDescription'  => 'به سوالات با دقت پاسخ دهید',
+            'pageTitle' => 'خودآزمایی',
+            'pageName' => 'خودآزمایی',
+            'pageDescription' => 'به سوالات با دقت پاسخ دهید',
         ]);
     }
 
@@ -659,7 +750,7 @@ class ExamController extends Controller
         $correctAnswers = 0;
 
         foreach ($answers as $ans) {
-            $shuffledData = \Session::get('shuffled_question_' . $ans->question_id);
+            $shuffledData = \Session::get('shuffled_question_'.$ans->question_id);
             if ($shuffledData) {
                 $correctIndex = $shuffledData['correct_index']; // ۰ تا ۳
                 // پاسخ ذخیره‌شده ۱ تا ۴ است، پس باید با ($correctIndex + 1) مقایسه شود
@@ -703,7 +794,7 @@ class ExamController extends Controller
                 ->first();
             $question['user_answer'] = $answer;
 
-            $shuffledData = \Session::get('shuffled_question_' . $question->id);
+            $shuffledData = \Session::get('shuffled_question_'.$question->id);
             if ($shuffledData) {
                 $question['shuffled_options'] = $shuffledData['options'];
                 $question['shuffled_correct_index'] = $shuffledData['correct_index'];
@@ -815,10 +906,10 @@ class ExamController extends Controller
         $course = Course::findOrFail($courseId);
         $setting = Setting::where('course_id', $course->id)->first();
 
-        if (!$setting) {
+        if (! $setting) {
             return response()->json([
                 'success' => false,
-                'message' => 'تنظیمات این دوره کامل نیست.'
+                'message' => 'تنظیمات این دوره کامل نیست.',
             ]);
         }
 
@@ -832,6 +923,7 @@ class ExamController extends Controller
             'show_results' => $setting->natije ?? 0,
         ]);
     }
+
     private function getCorrectOptionIndex($question)
     {
         $options = [
@@ -843,6 +935,7 @@ class ExamController extends Controller
 
         return array_search($question->answer, $options); // 0,1,2,3
     }
+
     /**
      * دریافت داده‌های سوال برای ویرایش (AJAX)
      */
@@ -852,9 +945,10 @@ class ExamController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $question
+            'data' => $question,
         ]);
     }
+
     /**
      * به‌روزرسانی وضعیت سوال (استاد)
      */
@@ -873,7 +967,7 @@ class ExamController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -890,9 +984,10 @@ class ExamController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'سوال با موفقیت بروزرسانی شد.',
-            'data' => $question
+            'data' => $question,
         ]);
     }
+
     /**
      * دریافت لیست سوالات یک جلسه برای نمایش در مودال (AJAX)
      */
@@ -903,7 +998,7 @@ class ExamController extends Controller
                 ->with('user')
                 ->orderBy('created_at', 'desc')
                 ->get();
-            
+
             $result = [];
             foreach ($questions as $q) {
                 // استفاده از ورتا برای تبدیل تاریخ
@@ -912,7 +1007,7 @@ class ExamController extends Controller
                     $verta = Verta::instance($q->created_at);
                     $date = $verta->format('Y/m/d');
                 }
-                
+
                 $result[] = [
                     'id' => $q->id,
                     'question' => $q->question,
@@ -924,23 +1019,22 @@ class ExamController extends Controller
                     'user_id' => $q->user_id,
                     'type' => $q->type,
                     'status' => $q->status,
-                    'user_name' => $q->user ? $q->user->name . ' ' . $q->user->family : 'نامشخص',
+                    'user_name' => $q->user ? $q->user->name.' '.$q->user->family : 'نامشخص',
                     'date' => $date,
                 ];
             }
-            
+
             return response()->json([
                 'success' => true,
                 'questions' => $result,
-                'count' => count($result)
+                'count' => count($result),
             ]);
-            
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در دریافت سوالات: ' . $e->getMessage()
+                'message' => 'خطا در دریافت سوالات: '.$e->getMessage(),
             ], 500);
         }
     }
-
 }

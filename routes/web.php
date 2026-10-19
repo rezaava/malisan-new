@@ -1,30 +1,30 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminCoinController;
 use App\Http\Controllers\AdminAngizeshController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminCourseController;
+use App\Http\Controllers\AdminEvaluationActivityLimitController;
 use App\Http\Controllers\AdminSurveyController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AzmonController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DiscussionController;
+use App\Http\Controllers\ExamController;
 use App\Http\Controllers\ExerciseController;
-use App\Http\Controllers\StudentMessageController;
 use App\Http\Controllers\JudgmentController;
 use App\Http\Controllers\QuestionReportController;
 use App\Http\Controllers\Student\StudentCourseController;
 use App\Http\Controllers\Student\StudentSkillController;
-use App\Http\Controllers\Admin\AdminCoinController;
+use App\Http\Controllers\StudentMessageController;
 use App\Http\Controllers\StudentSiteController;
+use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\Teacher\CourseController;
 use App\Http\Controllers\Teacher\SkillController;
 use App\Http\Controllers\Teacher\StudentAdjectiveController;
 use App\Http\Controllers\Teacher\StudentEventController;
-use App\Http\Controllers\AdminEvaluationActivityLimitController;
-use App\Http\Controllers\SurveyController;
-use App\Http\Controllers\TeacherSiteController;
-use App\Http\Controllers\ExamController;
 use App\Http\Controllers\Teacher\TeacherCoinController;
+use App\Http\Controllers\TeacherSiteController;
 use App\Http\Controllers\UploadController;
 use Illuminate\Support\Facades\Route;
 
@@ -41,8 +41,8 @@ Route::post('/registerPost', [AuthController::class, 'registerPost'])->name('reg
 Route::post('/upload/video', [UploadController::class, 'uploadVideo'])->name('upload.video');
 Route::post('/upload/image', [UploadController::class, 'uploadImage'])->name('upload.image');
 
-Route::get("/", function () {
-    return redirect("/login");
+Route::get('/', function () {
+    return redirect('/login');
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -80,16 +80,16 @@ Route::prefix('/admin')->middleware(['role:admin'])->group(function () {
     });
 
     Route::prefix('/survey')->group(function () {
-        Route::get('/',[AdminSurveyController::class, 'index'])->name('admin_survey');
-        Route::get('/category/{id}',[AdminSurveyController::class, 'category'])->name('admin.survey.category');
-        Route::get('/question/{id}',[AdminSurveyController::class, 'show'])->name('admin.survey.show');
-        Route::post('/category/store',[AdminSurveyController::class, 'storeCategory'])->name('admin.survey.category.store');
-        Route::put('/category/{id}',[AdminSurveyController::class, 'updateCategory'])->name('admin.survey.category.update');
-        Route::delete('/category/{id}',[AdminSurveyController::class, 'deleteCategory'])->name('admin.survey.category.delete');
-        Route::post('/category/{id}/deactivate-all',[AdminSurveyController::class, 'deactivateCategorySurveys'])->name('admin.survey.category.deactivate-all');
-        Route::post('/toggle-student',[AdminSurveyController::class, 'toggleStudentSurvey'])->name('admin.toggle-student-survey');
-        Route::post('/toggle-teacher',[AdminSurveyController::class, 'toggleTeacherSurvey'])->name('admin.toggle-teacher-survey');
-        Route::get('/settings',[AdminSurveyController::class, 'getSettings'])->name('admin.get-settings');
+        Route::get('/', [AdminSurveyController::class, 'index'])->name('admin_survey');
+        Route::get('/category/{id}', [AdminSurveyController::class, 'category'])->name('admin.survey.category');
+        Route::get('/question/{id}', [AdminSurveyController::class, 'show'])->name('admin.survey.show');
+        Route::post('/category/store', [AdminSurveyController::class, 'storeCategory'])->name('admin.survey.category.store');
+        Route::put('/category/{id}', [AdminSurveyController::class, 'updateCategory'])->name('admin.survey.category.update');
+        Route::delete('/category/{id}', [AdminSurveyController::class, 'deleteCategory'])->name('admin.survey.category.delete');
+        Route::post('/category/{id}/deactivate-all', [AdminSurveyController::class, 'deactivateCategorySurveys'])->name('admin.survey.category.deactivate-all');
+        Route::post('/toggle-student', [AdminSurveyController::class, 'toggleStudentSurvey'])->name('admin.toggle-student-survey');
+        Route::post('/toggle-teacher', [AdminSurveyController::class, 'toggleTeacherSurvey'])->name('admin.toggle-teacher-survey');
+        Route::get('/settings', [AdminSurveyController::class, 'getSettings'])->name('admin.get-settings');
     });
 
     Route::middleware(['auth'])->group(function () {
@@ -370,7 +370,6 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
     // ==========================================
     Route::prefix('/questions')->middleware(['role:teacher|admin'])->group(function () {
         Route::get('/create/{session_id}', [ExamController::class, 'studentCreate'])->name('student.question.create');
-        Route::post('/store/{session_id}', [ExamController::class, 'studentStore'])->name('student.question.store');
         Route::get('/random/{count?}', [ExamController::class, 'getRandomQuestions'])->name('api.random.questions');
         Route::get('/show/{id}', [ExamController::class, 'show'])->name('question.show');
         Route::get('/show/{id}', [ExamController::class, 'getQuestionData'])->name('question.getData');
@@ -378,7 +377,6 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
         Route::get('/{id}', [ExamController::class, 'destroy'])->name('question.destroy');
         Route::get('/list', [ExamController::class, 'list'])->name('question.list');
     });
-
 
     // ==========================================
     // مسیرهای گزارش ایراد سوال
@@ -413,13 +411,13 @@ Route::prefix('/teacher')->middleware(['role:teacher|admin'])->group(function ()
     Route::prefix('/student-messages')->group(function () {
         // ارسال پیام از طرف استاد
         Route::post('/send', [StudentMessageController::class, 'send'])->name('teacher.student-messages.send');
-        
+
         // دریافت لیست پیام‌های یک دانشجو (برای استاد)
         Route::get('/{studentId}', [StudentMessageController::class, 'getMessages'])->name('teacher.student-messages.get');
-        
+
         // دریافت تعداد پیام‌های خوانده نشده
         Route::get('/unread/count', [StudentMessageController::class, 'getUnreadCount'])->name('teacher.student-messages.unread');
-        
+
         // علامت‌گذاری پیام به عنوان خوانده شده
         Route::post('/{messageId}/read', [StudentMessageController::class, 'markAsRead'])->name('teacher.student-messages.read');
     });
@@ -487,7 +485,6 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
         Route::get('/progress/{course_id}', [StudentSiteController::class, 'progress'])->name('student.progress.skill');
     });
 
-
     // ==========================================
     // خودآزمایی - دانشجو
     // ==========================================
@@ -518,6 +515,8 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
         Route::get('/list/{session_id}', [ExamController::class, 'getSessionQuestions'])->name('student.questions.list');
         Route::get('/create/{session_id}', [ExamController::class, 'studentCreate'])->name('student.question.create');
         Route::post('/store/{session_id}', [ExamController::class, 'studentStore'])->name('student.question.store');
+        Route::post('/update/{id}', [ExamController::class, 'studentUpdate'])->name('student.question.update');
+
     });
 
     // ==========================================
@@ -579,11 +578,10 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
     // ==========================================
     Route::prefix('/messages')->group(function () {
         Route::get('/', [StudentMessageController::class, 'studentIndex'])->name('student.messages.index');
-        Route::get('/get', [StudentMessageController::class, 'studentGetMessages'])->name('student.messages.get');        
+        Route::get('/get', [StudentMessageController::class, 'studentGetMessages'])->name('student.messages.get');
         Route::post('/{messageId}/read', [StudentMessageController::class, 'markAsRead'])->name('student.messages.read');
     });
 });
-
 
 // ==========================================
 // مسیر عمومی برای دریافت تعداد پیام‌های خوانده نشده (برای هدر)

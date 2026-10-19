@@ -115,6 +115,28 @@
             display: none !important;
         }
 
+        .edit-question-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            margin-top: 12px;
+            padding: 9px 16px;
+            border: none;
+            border-radius: 8px;
+            background: #1e6f9f;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .edit-question-btn:hover {
+            background: #155779;
+            color: #fff;
+        }
+
         @media (max-width: 768px) {
             .modal-box {
                 width: 95%;
@@ -179,8 +201,11 @@
                         <i class="fas fa-user"></i>
                         سوالات من
                     </button>
+
                     <button type="button" class="header-btn header-btn-danger" onclick="window.history.back()"
-                        title="بستن"> <i class="fas fa-times"></i> </button>
+                        title="بستن">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             </div>
 
@@ -202,7 +227,8 @@
                 </div>
             @endif
 
-            <form class="question-form" action="{{ route('student.question.store', $session->id) }}" method="POST">
+            <form id="questionForm" action="{{ route('student.question.store', $session->id) }}" method="POST">
+                <input type="hidden" name="question_id" id="question_id">
                 @csrf
 
                 <div class="form-group question-type-wrapper">
@@ -540,24 +566,14 @@
                             label.textContent = 'پاسخ (حداکثر سه کلمه)';
                             input.placeholder = 'پاسخ را وارد کنید (حداکثر سه کلمه)';
 
-                            if (button) {
-                                button.style.display = 'none';
-                            }
-
-                            if (badgeCorrect) {
-                                badgeCorrect.style.display = 'none';
-                            }
-
-                            if (correctLabel) {
-                                correctLabel.style.display = 'none';
-                            }
+                            if (button) button.style.display = 'none';
+                            if (badgeCorrect) badgeCorrect.style.display = 'none';
+                            if (correctLabel) correctLabel.style.display = 'none';
                         } else {
                             item.classList.add('hidden-option');
                             input.value = '';
 
-                            if (button) {
-                                button.style.display = 'none';
-                            }
+                            if (button) button.style.display = 'none';
                         }
                     });
 
@@ -577,23 +593,14 @@
                         label.textContent = 'گزینه ' + (index + 1);
                         input.placeholder = 'متن گزینه ' + (index + 1) + ' را وارد کنید';
 
-                        if (button) {
-                            button.style.display = '';
-                        }
-
-                        if (badgeCorrect) {
-                            badgeCorrect.style.display = '';
-                        }
-
-                        if (correctLabel) {
-                            correctLabel.style.display = '';
-                        }
+                        if (button) button.style.display = '';
+                        if (badgeCorrect) badgeCorrect.style.display = '';
+                        if (correctLabel) correctLabel.style.display = '';
                     });
 
                     shortAnswerNote.classList.remove('active');
 
                     const correctValue = correctAnswerInput.value === '' ? 0 : parseInt(correctAnswerInput.value);
-
                     setCorrectOption(correctValue);
                 }
             }
@@ -604,9 +611,7 @@
 
                     const type = document.querySelector('input[name="type"]:checked')?.value || '0';
 
-                    if (type === '1') {
-                        return;
-                    }
+                    if (type === '1') return;
 
                     setCorrectOption(parseInt(this.getAttribute('data-option')));
                 });
@@ -666,23 +671,23 @@
             const body = document.getElementById('friendsQuestionsModalBody');
 
             body.innerHTML = `
-        <div class="loading-container">
-            <i class="fas fa-spinner fa-spin fa-2x loading-spinner"></i>
-            <p class="loading-text">در حال بارگذاری سوالات دوستان...</p>
-        </div>
-    `;
+                <div class="loading-container">
+                    <i class="fas fa-spinner fa-spin fa-2x loading-spinner"></i>
+                    <p class="loading-text">در حال بارگذاری سوالات دوستان...</p>
+                </div>
+            `;
 
             fetch('/student/questions/list/' + sessionId)
                 .then(response => response.json())
                 .then(data => {
                     if (!data.success || !data.questions || data.questions.length === 0) {
                         body.innerHTML = `
-                    <div class="empty-state">
-                        <span class="empty-icon"><i class="fas fa-inbox"></i></span>
-                        <h5>تاکنون سوالی برای این جلسه طرح نشده است</h5>
-                        <p>شما می‌توانید اولین سوال را طرح کنید.</p>
-                    </div>
-                `;
+                            <div class="empty-state">
+                                <span class="empty-icon"><i class="fas fa-inbox"></i></span>
+                                <h5>تاکنون سوالی برای این جلسه طرح نشده است</h5>
+                                <p>شما می‌توانید اولین سوال را طرح کنید.</p>
+                            </div>
+                        `;
                         return;
                     }
 
@@ -691,12 +696,12 @@
 
                     if (questions.length === 0) {
                         body.innerHTML = `
-                    <div class="empty-state">
-                        <span class="empty-icon"><i class="fas fa-inbox"></i></span>
-                        <h5>هنوز دوستانت سوالی طرح نکرده‌اند</h5>
-                        <p>اولین نفری باش که سوال خود را طراحی می‌کند!</p>
-                    </div>
-                `;
+                            <div class="empty-state">
+                                <span class="empty-icon"><i class="fas fa-inbox"></i></span>
+                                <h5>هنوز دوستانت سوالی طرح نکرده‌اند</h5>
+                                <p>اولین نفری باش که سوال خود را طراحی می‌کند!</p>
+                            </div>
+                        `;
                         return;
                     }
 
@@ -704,49 +709,47 @@
 
                     questions.forEach(function(q, index) {
                         let questionHtml = `
-                    <div class="question-list-item">
-                        <div class="q-text">
-                            <strong>سوال ${index + 1}:</strong>
-                            ${q.question}
-                        </div>
-                `;
+                            <div class="question-list-item">
+                                <div class="q-text">
+                                    <strong>سوال ${index + 1}:</strong>
+                                    ${q.question}
+                                </div>
+                        `;
 
                         if (parseInt(q.type) === 1) {
                             questionHtml += `
-                        <div class="q-options">
-                            <span class="correct">
-                                پاسخ: ${q.answer || ''}
-                            </span>
-                        </div>
+                                <div class="q-options">
+                                    <span class="correct">پاسخ: ${q.answer || ''}</span>
+                                </div>
 
-                        <div class="q-meta">
-                            <span>نوع سوال: پاسخ کوتاه</span>
-                            <span>تاریخ: ${q.date || ''}</span>
-                        </div>
-                    `;
+                                <div class="q-meta">
+                                    <span>نوع سوال: پاسخ کوتاه</span>
+                                    <span>تاریخ: ${q.date || ''}</span>
+                                </div>
+                            `;
                         } else {
                             const options = [q.answer1, q.answer2, q.answer3, q.answer4];
 
                             questionHtml += `
-                        <div class="q-options">
-                            ${options.map(function (opt, i) {
-                                return `
-                                        <span class="${q.answer == (i + 1) ? 'correct' : ''}">
-                                            ${i + 1}. ${opt}
-                                            ${q.answer == (i + 1) ? '✓' : ''}
-                                        </span>
-                                    `;
-                            }).join('')}
-                        </div>
+                                <div class="q-options">
+                                    ${options.map(function(opt, i) {
+                                        return `
+                                                            <span class="${q.answer == (i + 1) ? 'correct' : ''}">
+                                                                ${i + 1}. ${opt}
+                                                                ${q.answer == (i + 1) ? '✓' : ''}
+                                                            </span>
+                                                        `;
+                                    }).join('')}
+                                </div>
 
-                        <div class="q-meta">
-                            <span>نوع سوال: چهارگزینه‌ای</span>
-                            <span>تاریخ: ${q.date || ''}</span>
-                        </div>
-                    `;
+                                <div class="q-meta">
+                                    <span>نوع سوال: چهارگزینه‌ای</span>
+                                    <span>تاریخ: ${q.date || ''}</span>
+                                </div>
+                            `;
                         }
 
-                        questionHtml += `</div>`;
+                        questionHtml += '</div>';
                         html += questionHtml;
                     });
 
@@ -756,14 +759,14 @@
                     console.error(error);
 
                     body.innerHTML = `
-                <div class="empty-state">
-                    <span class="empty-icon">
-                        <i class="fas fa-exclamation-triangle" style="color:#f44336;"></i>
-                    </span>
-                    <h5>خطا در بارگذاری سوالات</h5>
-                    <p>مشکلی در ارتباط با سرور رخ داده است. لطفاً مجدداً تلاش کنید.</p>
-                </div>
-            `;
+                        <div class="empty-state">
+                            <span class="empty-icon">
+                                <i class="fas fa-exclamation-triangle" style="color:#f44336;"></i>
+                            </span>
+                            <h5>خطا در بارگذاری سوالات</h5>
+                            <p>مشکلی در ارتباط با سرور رخ داده است. لطفاً مجدداً تلاش کنید.</p>
+                        </div>
+                    `;
                 });
         }
 
@@ -774,23 +777,23 @@
             const body = document.getElementById('myQuestionsModalBody');
 
             body.innerHTML = `
-        <div class="loading-container">
-            <i class="fas fa-spinner fa-spin fa-2x loading-spinner"></i>
-            <p class="loading-text">در حال بارگذاری سوالات من...</p>
-        </div>
-    `;
+                <div class="loading-container">
+                    <i class="fas fa-spinner fa-spin fa-2x loading-spinner"></i>
+                    <p class="loading-text">در حال بارگذاری سوالات من...</p>
+                </div>
+            `;
 
             fetch('/student/questions/list/' + sessionId)
                 .then(response => response.json())
                 .then(data => {
                     if (!data.success || !data.questions || data.questions.length === 0) {
                         body.innerHTML = `
-                    <div class="empty-state">
-                        <span class="empty-icon"><i class="fas fa-inbox"></i></span>
-                        <h5>تاکنون سوالی برای این جلسه طرح نشده است</h5>
-                        <p>شما می‌توانید اولین سوال را طرح کنید.</p>
-                    </div>
-                `;
+                            <div class="empty-state">
+                                <span class="empty-icon"><i class="fas fa-inbox"></i></span>
+                                <h5>تاکنون سوالی برای این جلسه طرح نشده است</h5>
+                                <p>شما می‌توانید اولین سوال را طرح کنید.</p>
+                            </div>
+                        `;
                         return;
                     }
 
@@ -799,12 +802,12 @@
 
                     if (questions.length === 0) {
                         body.innerHTML = `
-                    <div class="empty-state">
-                        <span class="empty-icon"><i class="fas fa-inbox"></i></span>
-                        <h5>شما هنوز سوالی برای این جلسه طرح نکرده‌اید</h5>
-                        <p>اولین سوال خود را طراحی کنید!</p>
-                    </div>
-                `;
+                            <div class="empty-state">
+                                <span class="empty-icon"><i class="fas fa-inbox"></i></span>
+                                <h5>شما هنوز سوالی برای این جلسه طرح نکرده‌اید</h5>
+                                <p>اولین سوال خود را طراحی کنید!</p>
+                            </div>
+                        `;
                         return;
                     }
 
@@ -813,54 +816,66 @@
                     questions.forEach(function(q, index) {
                         const statusBadge = getStatusBadge(q.status);
 
+                        const editButton = q.status === null || q.status === undefined ?
+                            `
+                                <button type="button" class="edit-question-btn"
+                                    onclick="editQuestion(${Number(q.id)})">
+                                    <i class="fas fa-edit"></i>
+                                    ویرایش سوال
+                                </button>
+                            ` :
+                            '';
+
                         let questionHtml = `
-                    <div class="question-list-item">
-                        <div class="q-text">
-                            <strong>سوال ${index + 1}:</strong>
-                            ${q.question}
-                        </div>
-                `;
+                            <div class="question-list-item">
+                                <div class="q-text">
+                                    <strong>سوال ${index + 1}:</strong>
+                                    ${q.question}
+                                </div>
+                        `;
 
                         if (parseInt(q.type) === 1) {
                             questionHtml += `
-                        <div class="q-options">
-                            <span class="correct">
-                                پاسخ: ${q.answer || ''}
-                            </span>
-                        </div>
+                                <div class="q-options">
+                                    <span class="correct">پاسخ: ${q.answer || ''}</span>
+                                </div>
 
-                        <div class="q-meta">
-                            <span>طراح: ${q.user_name || 'نامشخص'}</span>
-                            <span>${statusBadge}</span>
-                            <span>نوع سوال: پاسخ کوتاه</span>
-                            <span>تاریخ: ${q.date || ''}</span>
-                        </div>
-                    `;
+                                <div class="q-meta">
+                                    <span>طراح: ${q.user_name || 'نامشخص'}</span>
+                                    <span>${statusBadge}</span>
+                                    <span>نوع سوال: پاسخ کوتاه</span>
+                                    <span>تاریخ: ${q.date || ''}</span>
+                                </div>
+
+                                ${editButton}
+                            `;
                         } else {
                             const options = [q.answer1, q.answer2, q.answer3, q.answer4];
 
                             questionHtml += `
-                        <div class="q-options">
-                            ${options.map(function (opt, i) {
-                                return `
-                                        <span class="${q.answer == (i + 1) ? 'correct' : ''}">
-                                            ${i + 1}. ${opt}
-                                            ${q.answer == (i + 1) ? '✓' : ''}
-                                        </span>
-                                    `;
-                            }).join('')}
-                        </div>
+                                <div class="q-options">
+                                    ${options.map(function(opt, i) {
+                                        return `
+                                                            <span class="${q.answer == (i + 1) ? 'correct' : ''}">
+                                                                ${i + 1}. ${opt || ''}
+                                                                ${q.answer == (i + 1) ? '✓' : ''}
+                                                            </span>
+                                                        `;
+                                    }).join('')}
+                                </div>
 
-                        <div class="q-meta">
-                            <span>طراح: ${q.user_name || 'نامشخص'}</span>
-                            <span>${statusBadge}</span>
-                            <span>نوع سوال: چهارگزینه‌ای</span>
-                            <span>تاریخ: ${q.date || ''}</span>
-                        </div>
-                    `;
+                                <div class="q-meta">
+                                    <span>طراح: ${q.user_name || 'نامشخص'}</span>
+                                    <span>${statusBadge}</span>
+                                    <span>نوع سوال: چهارگزینه‌ای</span>
+                                    <span>تاریخ: ${q.date || ''}</span>
+                                </div>
+
+                                ${editButton}
+                            `;
                         }
 
-                        questionHtml += `</div>`;
+                        questionHtml += '</div>';
                         html += questionHtml;
                     });
 
@@ -870,14 +885,84 @@
                     console.error(error);
 
                     body.innerHTML = `
-                <div class="empty-state">
-                    <span class="empty-icon">
-                        <i class="fas fa-exclamation-triangle" style="color:#f44336;"></i>
-                    </span>
-                    <h5>خطا در بارگذاری سوالات</h5>
-                    <p>مشکلی در ارتباط با سرور رخ داده است. لطفاً مجدداً تلاش کنید.</p>
-                </div>
-            `;
+                        <div class="empty-state">
+                            <span class="empty-icon">
+                                <i class="fas fa-exclamation-triangle" style="color:#f44336;"></i>
+                            </span>
+                            <h5>خطا در بارگذاری سوالات</h5>
+                            <p>مشکلی در ارتباط با سرور رخ داده است. لطفاً مجدداً تلاش کنید.</p>
+                        </div>
+                    `;
+                });
+        }
+
+        function editQuestion(questionId) {
+            fetch('/student/questions/list/{{ $session->id }}')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success || !data.questions) {
+                        alert('خطا در دریافت اطلاعات سوال');
+                        return;
+                    }
+
+                    const question = data.questions.find(q => Number(q.id) === Number(questionId));
+
+                    if (!question) {
+                        alert('سوال موردنظر پیدا نشد');
+                        return;
+                    }
+
+                    const form = document.getElementById('questionForm');
+                    form.action = '/student/questions/update/' + question.id;
+                    document.getElementById('question_id').value = question.id;
+
+                    const typeInput = document.querySelector('input[name="type"][value="' + question.type + '"]');
+
+                    if (typeInput) {
+                        typeInput.checked = true;
+                        typeInput.dispatchEvent(new Event('change'));
+                    }
+
+                    const questionEditor = Jodit.instances.questionEditor;
+
+                    if (questionEditor) {
+                        questionEditor.value = question.question || '';
+                    } else {
+                        document.getElementById('questionEditor').value = question.question || '';
+                    }
+
+                    const optionInputs = document.querySelectorAll('input[name="options[]"]');
+                    const correctAnswerInput = document.getElementById('correct_answer');
+
+                    if (Number(question.type) === 1) {
+                        optionInputs[0].value = question.answer || '';
+                        optionInputs[1].value = '';
+                        optionInputs[2].value = '';
+                        optionInputs[3].value = '';
+                        correctAnswerInput.value = '';
+                    } else {
+                        optionInputs[0].value = question.answer1 || '';
+                        optionInputs[1].value = question.answer2 || '';
+                        optionInputs[2].value = question.answer3 || '';
+                        optionInputs[3].value = question.answer4 || '';
+
+                        correctAnswerInput.value = Number(question.answer) - 1;
+
+                        document.querySelector(
+                            '.set-correct-btn[data-option="' + (Number(question.answer) - 1) + '"]'
+                        )?.click();
+                    }
+
+                    closeModal('myQuestionsModal');
+
+                    document.querySelector('#questionForm').scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert('خطا در دریافت اطلاعات سوال');
                 });
         }
 
