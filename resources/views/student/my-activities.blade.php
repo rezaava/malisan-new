@@ -102,7 +102,7 @@
                         'type_label' => 'گزارش',
                         'type_icon' => 'fa-file-alt',
                         'id' => $d->id,
-                        'title' => $d->session->name ?? 'بدون عنوان',
+                        'title' => strip_tags($d->text ?? ($d->title ?? 'بدون عنوان')),
                         'session_name' => $d->session->name ?? 'نامشخص',
                         'created_at' => $d->created_at,
                         'display_status' => $d->display_status,
@@ -133,8 +133,8 @@
                 $allItems = $allItems->sortByDesc('created_at');
             @endphp
 
-            @if($allItems->count() > 0)
-                @foreach($allItems as $item)
+            @if ($allItems->count() > 0)
+                @foreach ($allItems as $item)
                     <div class="item-card">
                         <div class="item-header">
                             <div style="flex:1;min-width:150px;">
@@ -155,7 +155,7 @@
                                         <i class="fas fa-calendar-alt"></i>
                                         {{ \Hekmatinasser\Verta\Verta::instance($item['created_at'])->format('Y/m/d H:i') }}
                                     </span>
-                                    @if($item['scores_count'] > 0)
+                                    @if ($item['scores_count'] > 0)
                                         <span class="meta-item">
                                             <i class="fas fa-star" style="color:#ffd700;"></i>
                                             {{ $item['approved_count'] }}/{{ $item['scores_count'] }} داوری
@@ -165,7 +165,7 @@
                             </div>
                             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                                 <span class="status-badge {{ $item['display_status'] }}">
-                                    @if($item['display_status'] == 'pending')
+                                    @if ($item['display_status'] == 'pending')
                                         <i class="fas fa-clock"></i>
                                     @elseif($item['display_status'] == 'approved')
                                         <i class="fas fa-check-circle"></i>
@@ -178,29 +178,39 @@
                                 </span>
                                 <div class="item-actions">
                                     {{-- برای سوالات --}}
-                                    @if($item['type'] == 'question')
+                                    @if ($item['type'] == 'question')
                                         <a href="{{ route('student.question.view', $item['id']) }}">
                                             مشاهده
                                         </a>
                                     @endif
 
                                     {{-- برای گزارش‌ها --}}
-                                    @if($item['type'] == 'discussion')
+                                    @if ($item['type'] == 'discussion')
                                         <a href="{{ route('student.discussion.view', $item['id']) }}">
                                             مشاهده
                                         </a>
                                     @endif
 
                                     {{-- برای تکالیف --}}
-                                    @if($item['type'] == 'exercise')
+                                    @if ($item['type'] == 'exercise')
                                         <a href="{{ route('student.exercise.view', $item['id']) }}">
                                             مشاهده
                                         </a>
                                     @endif
-                                    @if($item['is_returned'])
-                                        <a href="{{ route('student.judgment.returned') }}" class="btn-edit">
-                                            <i class="fas fa-edit"></i> اصلاح
-                                        </a>
+                                    @if ($item['is_returned'])
+                                        @if ($item['type'] == 'discussion')
+                                            <a href="{{ route('student.discussion.edit', $item['id']) }}" class="btn-edit">
+                                                <i class="fas fa-edit"></i> اصلاح
+                                            </a>
+                                        @elseif($item['type'] == 'question')
+                                            <a href="{{ route('student.judgment.returned') }}" class="btn-edit">
+                                                <i class="fas fa-edit"></i> اصلاح
+                                            </a>
+                                        @elseif($item['type'] == 'exercise')
+                                            <a href="{{ route('student.judgment.returned') }}" class="btn-edit">
+                                                <i class="fas fa-edit"></i> اصلاح
+                                            </a>
+                                        @endif
                                     @endif
                                 </div>
                             </div>
@@ -218,8 +228,8 @@
 
         {{-- ===== QUESTIONS TAB ===== --}}
         <div class="items-container" id="tab-questions">
-            @if($questions->count() > 0)
-                @foreach($questions as $question)
+            @if ($questions->count() > 0)
+                @foreach ($questions as $question)
                     <div class="item-card">
                         <div class="item-header">
                             <div style="flex:1;min-width:150px;">
@@ -235,7 +245,7 @@
                                         <i class="fas fa-calendar-alt"></i>
                                         {{ \Hekmatinasser\Verta\Verta::instance($question->created_at)->format('Y/m/d H:i') }}
                                     </span>
-                                    @if($question->scores_count > 0)
+                                    @if ($question->scores_count > 0)
                                         <span class="meta-item">
                                             <i class="fas fa-star" style="color:#ffd700;"></i>
                                             {{ $question->approved_count }}/{{ $question->scores_count }} داوری
@@ -245,7 +255,7 @@
                             </div>
                             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                                 <span class="status-badge {{ $question->display_status }}">
-                                    @if($question->display_status == 'pending')
+                                    @if ($question->display_status == 'pending')
                                         <i class="fas fa-clock"></i>
                                     @elseif($question->display_status == 'approved')
                                         <i class="fas fa-check-circle"></i>
@@ -256,7 +266,7 @@
                                     @endif
                                     {{ $question->status_label }}
                                 </span>
-                                @if($question->status === 0)
+                                @if ($question->status === 0)
                                     <a href="{{ route('student.judgment.returned') }}" class="btn-edit">
                                         <i class="fas fa-edit"></i> اصلاح
                                     </a>
@@ -276,8 +286,8 @@
 
         {{-- ===== DISCUSSIONS TAB ===== --}}
         <div class="items-container" id="tab-discussions">
-            @if($discussions->count() > 0)
-                @foreach($discussions as $discussion)
+            @if ($discussions->count() > 0)
+                @foreach ($discussions as $discussion)
                     <div class="item-card">
                         <div class="item-header">
                             <div style="flex:1;min-width:150px;">
@@ -293,17 +303,17 @@
                                         <i class="fas fa-calendar-alt"></i>
                                         {{ \Hekmatinasser\Verta\Verta::instance($discussion->created_at)->format('Y/m/d H:i') }}
                                     </span>
-                                    @if($discussion->scores_count > 0)
+                                    @if ($discussion->scores_count > 0)
                                         <span class="meta-item">
                                             <i class="fas fa-star" style="color:#ffd700;"></i>
-                                            {{ $discussion->approved_count }}/{{ $discussion->scores_count }} داوری
+                                            {{ $discussion->approved_count }}/3 داوری
                                         </span>
                                     @endif
                                 </div>
                             </div>
                             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                                 <span class="status-badge {{ $discussion->display_status }}">
-                                    @if($discussion->display_status == 'pending')
+                                    @if ($discussion->display_status == 'pending')
                                         <i class="fas fa-clock"></i>
                                     @elseif($discussion->display_status == 'approved')
                                         <i class="fas fa-check-circle"></i>
@@ -314,9 +324,9 @@
                                     @endif
                                     {{ $discussion->status_label }}
                                 </span>
-                                @if($discussion->status === 0)
-                                    <a href="{{ route('student.judgment.returned') }}" class="btn-edit">
-                                        <i class="fas fa-edit"></i> اصلاح
+                                @if ($discussion->approved_count == 0)
+                                    <a href="{{ route('student.discussion.edit', $discussion->id) }}" class="btn-edit p-3 btn btn-sm">
+                                        <i class="fas fa-edit"></i> ویرایش
                                     </a>
                                 @endif
                             </div>
@@ -334,8 +344,8 @@
 
         {{-- ===== EXERCISES TAB ===== --}}
         <div class="items-container" id="tab-exercises">
-            @if($exercises->count() > 0)
-                @foreach($exercises as $exercise)
+            @if ($exercises->count() > 0)
+                @foreach ($exercises as $exercise)
                     <div class="item-card">
                         <div class="item-header">
                             <div style="flex:1;min-width:150px;">
@@ -351,17 +361,17 @@
                                         <i class="fas fa-calendar-alt"></i>
                                         {{ \Hekmatinasser\Verta\Verta::instance($exercise->created_at)->format('Y/m/d H:i') }}
                                     </span>
-                                    @if($exercise->scores_count > 0)
+                                    @if ($exercise->scores_count > 0)
                                         <span class="meta-item">
                                             <i class="fas fa-star" style="color:#ffd700;"></i>
-                                            {{ $exercise->approved_count }}/{{ $exercise->scores_count }} داوری
+                                            {{ $exercise->approved_count }}/0 داوری
                                         </span>
                                     @endif
                                 </div>
                             </div>
                             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                                 <span class="status-badge {{ $exercise->display_status }}">
-                                    @if($exercise->display_status == 'pending')
+                                    @if ($exercise->display_status == 'pending')
                                         <i class="fas fa-clock"></i>
                                     @elseif($exercise->display_status == 'approved')
                                         <i class="fas fa-check-circle"></i>
@@ -372,7 +382,7 @@
                                     @endif
                                     {{ $exercise->status_label }}
                                 </span>
-                                @if($exercise->status === 'returned')
+                                @if ($exercise->status === 'returned')
                                     <a href="{{ route('student.judgment.returned') }}" class="btn-edit">
                                         <i class="fas fa-edit"></i> اصلاح
                                     </a>
@@ -394,7 +404,7 @@
     <script>
         // ===== TABS =====
         document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
+            btn.addEventListener('click', function() {
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
 

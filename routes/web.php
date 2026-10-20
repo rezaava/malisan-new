@@ -544,6 +544,8 @@ Route::prefix('/student')->middleware(['role:student|admin|teacher'])->group(fun
     Route::prefix('/discussion')->group(function () {
         Route::get('/create/{session_id}', [DiscussionController::class, 'create'])->name('student.discussion.create');
         Route::post('/store', [DiscussionController::class, 'store'])->name('student.discussion.store');
+        Route::get('/edit/{id}', [DiscussionController::class, 'edit'])->name('student.discussion.edit');
+        Route::post('/update/{id}', [DiscussionController::class, 'update'])->name('student.discussion.update');
     });
 
     // ==========================================

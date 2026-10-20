@@ -19,7 +19,6 @@ class DiscussionController extends Controller
         $session = Session::with('course')->findOrFail($sessionId);
         $course = $session->course;
 
-        // دریافت تنظیمات درس
         $setting = Setting::where('course_id', $course->id)->first();
 
         if ($setting && $setting->gozaresh_last == 1) {
@@ -27,17 +26,28 @@ class DiscussionController extends Controller
                 ->orderBy('id', 'desc')
                 ->first();
 
-            if (! $lastSession || $session->id != $lastSession->id) {
-                return redirect()->back()->with('error', 'شما فقط می‌توانید برای آخرین جلسه این درس گزارش ارسال کنید.');
+            if (!$lastSession || $session->id != $lastSession->id) {
+                return redirect()->back()
+                    ->with('error', 'شما فقط می‌توانید برای آخرین جلسه این درس گزارش ارسال کنید.');
             }
         }
 
-        $gozareshs = Discussion::where('user_id',Auth::user()->id)->where('session_id',$sessionId)->count();
+        $gozareshs = Discussion::where('user_id', Auth::id())
+            ->where('session_id', $sessionId)
+            ->count();
+
         if ($setting && $setting->max_gozaresh <= $gozareshs) {
-                return redirect()->back()->with('error', 'شما حداکثر گزارش برای این جلسه را ارسال کردید.');
+            return redirect()->back()
+                ->with('error', 'شما حداکثر گزارش برای این جلسه را ارسال کردید.');
         }
 
-        return view('student.discussion-create', compact('session', 'course'));
+        $discussion = null;
+
+        return view('student.discussion-create', compact(
+            'session',
+            'course',
+            'discussion'
+        ));
     }
 
     /**
@@ -51,7 +61,9 @@ class DiscussionController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
         }
 
         $discussion = new Discussion;
@@ -60,7 +72,65 @@ class DiscussionController extends Controller
         $discussion->text = $request->text;
         $discussion->save();
 
-        return redirect()->route('view.coure.St', $discussion->session->course_id)
+        return redirect()
+            ->route('view.coure.St', $discussion->session->course_id)
             ->with('success', 'گزارش شما با موفقیت ثبت شد.');
+    }
+
+    /**
+     * نمایش فرم ویرایش گزارش
+     */
+    public function edit($id)
+    {
+        $discussion = Discussion::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->where(function ($query) {
+                $query->whereNull('status')
+                    ->orWhere('status', 0);
+            })
+            ->firstOrFail();
+
+        $discussion->load('session.course');
+
+        $session = $discussion->session;
+        $course = $session->course;
+
+        return view('student.discussion-create', compact(
+            'discussion',
+            'session',
+            'course'
+        ));
+    }
+
+    /**
+     * ذخیره تغییرات گزارش
+     */
+    public function update(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'text' => 'required|string|min:10',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $discussion = Discussion::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->where(function ($query) {
+                $query->whereNull('status')
+                    ->orWhere('status', 0);
+            })
+            ->firstOrFail();
+
+        $discussion->text = $request->text;
+        $discussion->status = null;
+        $discussion->save();
+
+        return redirect()
+            ->route('view.coure.St', $discussion->session->course_id)
+            ->with('success', 'گزارش شما با موفقیت اصلاح و برای داوری مجدد ارسال شد.');
     }
 }
