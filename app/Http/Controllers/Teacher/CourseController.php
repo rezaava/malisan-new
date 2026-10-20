@@ -17,6 +17,8 @@ use App\Models\QuestionReport;
 use App\Models\Quiz;
 use App\Models\Role;
 use App\Models\Score;
+use App\Models\ScoreDiscussion;
+use App\Models\ScoreQuestion;
 use App\Models\Scoring;
 use App\Models\Session;
 use App\Models\Setting;
@@ -1522,21 +1524,18 @@ class CourseController extends Controller
         $all_q = Question::whereIn('session_id', $sessions)->pluck('id');
         $all_d = Discussion::whereIn('session_id', $sessions)->pluck('id');
 
-        $davari_q = Score::withTrashed()
-            ->whereIn('sub_id', $all_q)
-            ->where('type', 1)
-            ->where('user_id', $userId)
+        $davari_q = ScoreQuestion::where('user_id', $user->id)
+            ->whereIn('question_id', $all_q)
             ->count();
 
-        $davari_gozaresh = Score::withTrashed()
-            ->whereIn('sub_id', $all_d)
-            ->where('type', 2)
-            ->where('user_id', $userId)
+        $davari_gozaresh = ScoreDiscussion::where('user_id', $user->id)
+            ->whereIn('discussion_id', $all_d)
             ->count();
 
         $davarii = [
             'q' => $davari_q,
             'gozaresh' => $davari_gozaresh,
+            'total' => $davari_gozaresh + $davari_q,
         ];
 
         // ==========================================
@@ -2136,20 +2135,14 @@ class CourseController extends Controller
                 ->count();
 
             $all_d = Discussion::whereIn('session_id', $sessions)->pluck('id');
-            $davari_gozaresh = Score::withTrashed()
-                ->whereIn('sub_id', $all_d)
-                ->where('type', 2)
-                ->where('user_id', $user->id)
-                ->get();
 
             $all_q = Question::whereIn('session_id', $sessions)->pluck('id');
-            $davari = Score::withTrashed()
-                ->whereIn('sub_id', $all_q)
-                ->where('type', 1)
-                ->where('user_id', $user->id)
-                ->get();
 
-            $user['davari'] = $davari_gozaresh->count() + $davari->count();
+            $davari = ScoreQuestion::where('user_id', $user->id)->whereIn('question_id', $all_q)->count();
+
+            $davari_gozaresh = ScoreDiscussion::where('user_id', $user->id)->whereIn('discussion_id', $all_d)->count();
+
+            $user['davari'] = $davari_gozaresh + $davari;
             $user['khod_total'] = Quiz::where('course_id', $course->id)
                 ->where('user_id', $user->id)
                 ->count();

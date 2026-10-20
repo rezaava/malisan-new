@@ -91,7 +91,7 @@
                                     ],
                                     [
                                         'label' => 'انجام داوری',
-                                        'count' => ($davarii['q'] ?? 0) + ($davarii['gozaresh'] ?? 0),
+                                        'count' => $davarii['total'],
                                         'score' => $score_davari ?? 0,
                                         'max' => $evaluationLimits->judging_completion ?? 0
                                     ],
