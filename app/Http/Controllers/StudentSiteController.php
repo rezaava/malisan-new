@@ -853,19 +853,15 @@ class StudentSiteController extends Controller
             $evaluationLimits->self_test_quality +
             $evaluationLimits->judging_quality;
 
-        $pishraft = min(
-            $pishraftMax,
-            $score_pish_soal +
-            $score_pish_gozaresh +
-            $score_pish_azmoon +
-            $score_keifiat
-        );
+        $pishraft = 0;
         // ارزشیابی مستمر
         $mostamer = ($pishraft + $kelasi) * 12 / 100;
         if ($mostamer > 12) {
             $mostamer = 12;
         }
-        $mostamer_score = ($setting->mostamar_nomre > 0) ? ($mostamer * 20 / $setting->mostamar_nomre) : 0;
+        $mostamer = 0;
+
+        $mostamer_score = 0;
 
         // نمره تلاش
         $nomre_har_talash = 5;
@@ -875,11 +871,11 @@ class StudentSiteController extends Controller
         $talash_davari_gozaresh = min(5, $nomre_har_talash * $davarii['gozaresh'] / ($setting->jalasat * 6));
         $talash_khod = min(5, $nomre_har_talash * $count_azmoon / ($setting->jalasat * (7 * 5)));
 
-        $nomre['talash'] = round($talash_davari_soal + $talash_davari_gozaresh + $talash_soal + $talash_gozaresh + $talash_khod, 2);
+        $nomre['talash'] = 0;
 
         // نمره نهایی
-        $nomre['pish'] = round($pishraft, 2);
-        $nomre['total'] = $pishraft + $d_nomre + $q_nomre + $e_nomre + $nomre['talash'];
+        $nomre['pish'] = 0;
+        $nomre['total'] = 0 + $d_nomre + $q_nomre + $e_nomre + $nomre['talash'];
 
         // نمره پایان ترم
         $final = Amali::where('course_id', $course->id)
