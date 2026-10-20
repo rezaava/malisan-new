@@ -91,7 +91,7 @@
                 </div>
 
                 <div class="question-result-text">
-                    {{ $question->question }}
+                    {!! $question->question !!}
                 </div>
 
                 <div class="options-grid">
